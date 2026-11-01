@@ -1,18 +1,18 @@
 #lang s-exp syntax/module-reader
 
-fhir/cql/base
+cql/base
 
 #:read        cql-read
 #:read-syntax cql-read-syntax
 #:whole-body-readers? #t
 
-;; The reader for #lang fhir/cql. A CQL source file is ONE library: parse the whole body with
-;; parse-cql and emit a single (cql-library-form <prefab-ast>) form into the fhir/cql/base module
+;; The reader for #lang cql. A CQL source file is ONE library: parse the whole body with
+;; parse-cql and emit a single (cql-library-form <prefab-ast>) form into the cql/base module
 ;; language, which compiles it to ELM. A parse failure raises with the CQL error message.
 
-(require (only-in fhir/cql/parser/parse parse-cql)
+(require (only-in cql/parser/parse parse-cql)
          (only-in fhir/result/result ok? ok-value err-error)
-         (only-in fhir/cql/error cql-error-string)
+         (only-in cql/error cql-error-string)
          (only-in racket/port port->string))
 
 (define (cql-read-syntax src in)

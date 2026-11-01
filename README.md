@@ -1,26 +1,36 @@
-# fhir-cql
+# cql — Clinical Quality Language for Racket
 
-Clinical Quality Language for Racket: CQL parser, CQL-to-ELM compiler, ELM interpreter and #lang fhir/cql.
+CQL (cql.hl7.org) compiled to ELM and run by an ELM interpreter: the expression + definition core with System-typed values, ~150 operators, intervals, queries and the cqframework/cql-tests suite at 1819/1823. Retrieves, terminology membership and library includes are the next slice.
 
-Part of **fhir — FHIR as a family of Racket `#lang`s** (main repo: `oloveluck/fhir`). This package
-contributes `cql/` to the shared `fhir` collection. `#lang fhir/cql`.
+Part of **fhir — FHIR as a family of Racket `#lang`s** ([oloveluck/fhir](https://github.com/oloveluck/fhir)).
+Collection `cql`. `#lang cql` — a `.cql` file is a module; `racket file` prints the compiled JSON.
 
-## Depends on
+## Install
 
-`fhir-core`, `fhir-fhirpath`
-(Racket packages; link them first) plus `brag-lib`, `br-parser-tools-lib`.
+```sh
+raco pkg install cql          # once published on pkgs.racket-lang.org
+# from source, with the family repos side by side:
+raco pkg install --link --auto ../fhir/fhir .
+```
+
+Depends on `fhir`, `fhirpath` (System value carriers: decimals, quantities, temporals).
+
+## Use
+
+```racket
+(require cql/parser/parse cql/compile cql/interp cql/elm/json)   ; parse-cql, compile-library, run-library, elm->json-string
+```
+
+```sh
+raco cql library.cql     # ELM JSON
+raco cql --tck [-v]      # official cqframework/cql-tests (floor 1819)
+```
 
 ## Develop
 
 ```sh
-raco pkg install --link --auto .     # link into the `fhir` collection
-raco test cql/
+raco test .          # unit tests (the conformance runners are explicit: see the --tck commands above)
 ```
 
-The `raco fhir` CLI and the conformance-suite runners are driven from the main `fhir` package:
-
-```
-raco fhir cql <file.cql>, raco fhir cql-tck   (ELM JSON; the cqframework/cql-tests suite)
-```
-
-Architecture notes: `CLAUDE.md` here; conventions and the ratchet table: the main repo's `CLAUDE.md`.
+Architecture notes: `CLAUDE.md`. Conventions, design style and the family-wide conformance table: the
+main repo's `CLAUDE.md`. License: MIT (vendored test corpora keep their own terms — see `tests/vendor`).

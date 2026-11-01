@@ -1,6 +1,6 @@
 #lang racket/base
 
-;;; base.rkt — the module language for #lang fhir/cql.
+;;; base.rkt — the module language for #lang cql.
 ;;;
 ;;; The reader (lang/reader.rkt) parses a CQL source file into one library AST and emits a single
 ;;; (cql-library-form <prefab-ast>) form here. This custom #%module-begin compiles it to ELM
@@ -8,11 +8,11 @@
 ;;; AST, the ELM AST, the ELM JSON, and the results. Run the file to print the ELM JSON.
 
 (require (for-syntax racket/base)
-         (only-in fhir/cql/compile compile-library)
-         (only-in fhir/cql/elm/json elm->json-string)
-         (only-in fhir/cql/interp run-library)
+         (only-in cql/compile compile-library)
+         (only-in cql/elm/json elm->json-string)
+         (only-in cql/interp run-library)
          (only-in fhir/result/result ok? ok-value err-error)
-         (only-in fhir/cql/error cql-error-string))
+         (only-in cql/error cql-error-string))
 
 (provide (except-out (all-from-out racket/base) #%module-begin)
          (rename-out [cql-module-begin #%module-begin])

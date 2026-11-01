@@ -19,7 +19,7 @@
          (only-in "error.rkt" cql-error cql-error?)
          racket/contract
          (only-in fhir/result/result ok err ok? err?)
-         (only-in fhir/fhirpath/temporal-ops
+         (only-in fhirpath/temporal-ops
                   parse-fp-date parse-fp-datetime parse-fp-time
                   moment-year moment-month moment-day moment-hour moment-minute moment-second
                   moment-frac moment-tzmin))

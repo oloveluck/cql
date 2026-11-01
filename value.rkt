@@ -9,9 +9,9 @@
 
 (require racket/contract
          (only-in racket/string string-join)
-         (only-in fhir/fhirpath/decimal fp-decimal? decimal->string)
-         (only-in fhir/fhirpath/value fp-long? fp-long fp-long-v fp-quantity? fp-quantity fp-quantity-value fp-quantity-unit)
-         (only-in fhir/fhirpath/temporal-ops moment? moment->string))
+         (only-in fhirpath/decimal fp-decimal? decimal->string)
+         (only-in fhirpath/value fp-long? fp-long fp-long-v fp-quantity? fp-quantity fp-quantity-value fp-quantity-unit)
+         (only-in fhirpath/temporal-ops moment? moment->string))
 
 (provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio)
          (struct-out cql-code) (struct-out cql-concept) (struct-out cql-obj)

@@ -1,6 +1,6 @@
 #lang racket/base
 
-;;; run.rkt — the `raco fhir cql-tck` entry point: run the vendored OFFICIAL CQL conformance suites
+;;; run.rkt — the `raco cql --tck` entry point: run the vendored OFFICIAL CQL conformance suites
 ;;; (cqframework/cql-tests) and report pass/total per suite + overall, ratcheting a floor. Mirrors
 ;;; fhirpath/tests/run-r5.rkt. Library-style tests and the deferred CQL slices (retrieves, queries,
 ;;; timing, terminology) surface as skips/failures until those slices land — that's the honest signal.

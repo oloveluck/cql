@@ -1,11 +1,12 @@
-# CLAUDE.md — fhir-cql
+# CLAUDE.md — cql
 
 Conventions, HTDP design style, and the conformance ratchet table live in the main `fhir` repo's
-CLAUDE.md (`~/Projects/fhir`); this file holds only the notes for this package. Cross-directory
-imports use collection paths (`fhir/model/node`, never `../model/node.rkt`): the family of packages
-splices into the one `fhir` collection, so a directory can move between repos without edits.
+CLAUDE.md (`~/Projects/fhir`); this file holds only the notes for this package. This repo root IS the
+`cql` collection (`(define collection "cql")`): modules are `cql/compile` etc., and imports of the
+foundation use collection paths (`fhir/model/node`, never a relative path into another package).
+The CLI is `cli.rkt` (`raco cql`); the conformance runner(s) live in `tests/` behind `--tck`.
 
-## CQL / ELM lang (`#lang fhir/cql`, `cql/`)
+## CQL / ELM lang (`#lang cql`, `cql/`)
 Clinical Quality Language (https://cql.hl7.org/) as the next sibling lang. Unlike FHIRPath (evaluated
 directly), **CQL is compiled to ELM** (Expression Logical Model, the machine-readable form of a
 library) and the ELM is then RUN — the interpreter never evaluates CQL directly. This is the
@@ -32,7 +33,7 @@ operators, `if`/`case`. Layers:
   carriers (`cql-interval`/`cql-tuple`/`cql-ratio`/`cql-code`/`cql-concept`) + the `cql-null` singleton.
   Key semantic bridge: CQL is single-value-with-`null` (three-valued And/Or/Xor/Implies; null-propagating
   arithmetic/comparison), not FHIRPath's always-collection model.
-- `#lang fhir/cql` (`cql/lang/reader.rkt` + `cql/base.rkt`): a `.cql` file is one library; the reader
+- `#lang cql` (`cql/lang/reader.rkt` + `cql/base.rkt`): a `.cql` file is one library; the reader
   parses it and emits `(cql-library-form <ast>)`; the custom `#%module-begin` compiles to ELM and
   provides `library` (CQL AST), `elm` (ELM AST), `elm-json`, and `results` (define-name → interpreted
   value); `main` prints the ELM JSON. `examples/demo.cql` runs it.
