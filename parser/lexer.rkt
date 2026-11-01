@@ -38,8 +38,10 @@
   [dateformat (:: numeric numeric numeric numeric
                   (:? (:: "-" numeric numeric (:? (:: "-" numeric numeric)))))])
 
+;; lexer-srcloc: every token carries its source location (line, column, position, span), so brag's
+;; parse errors name the place in the .cql file
 (define cql-lexer
-  (lexer
+  (lexer-srcloc
    [(eof) (void)]
    [(:or " " "\t" "\r" "\n" "\f") (token 'WS lexeme #:skip? #t)]
    [(:: "//" (:* (:~ "\n"))) (token 'COMMENT lexeme #:skip? #t)]
@@ -92,7 +94,10 @@
 
 (define (tokenize ip)
   (port-count-lines! ip)
-  (lambda () (cql-lexer ip)))
+  (lambda ()
+    (define t (cql-lexer ip))
+    ;; at end of input lexer-srcloc wraps the eof marker; hand brag a plain eof
+    (if (and (srcloc-token? t) (void? (srcloc-token-token t))) (void) t)))
 
 (module+ test
   (require rackunit brag/support)
@@ -103,8 +108,10 @@
       (define t (next))
       (cond
         [(void? t) (reverse acc)]
-        [(eq? (token-struct-type t) 'WS) (loop acc)]
-        [else (loop (cons (cons (token-struct-type t) (token-struct-val t)) acc))])))
+        [else
+         (define tok (if (srcloc-token? t) (srcloc-token-token t) t))
+         (cond [(or (void? tok) (eq? (token-struct-type tok) 'WS)) (loop acc)]
+               [else (loop (cons (cons (token-struct-type tok) (token-struct-val tok)) acc))])])))
   ;; keyword/operator token types are interned to symbols by brag's `token`; `defined` stays an identifier
   (check-equal? (map car (lex "define X: 1 + 2"))
                 (list 'define 'IDENTIFIER ': 'NUMBER '+ 'NUMBER))
@@ -118,4 +125,7 @@
   ;; null / booleans
   (check-equal? (map car (lex "null true false")) (list 'null 'BOOL 'BOOL))
   ;; set operators are keywords
-  (check-equal? (map car (lex "a union b")) (list 'IDENTIFIER 'union 'IDENTIFIER)))
+  (check-equal? (map car (lex "a union b")) (list 'IDENTIFIER 'union 'IDENTIFIER))
+  ;; tokens carry their location
+  (define t2 (let ([next (tokenize (open-input-string "define\n  X"))]) (next) (next) (next)))
+  (check-equal? (srcloc-line (srcloc-token-srcloc t2)) 2))
