@@ -35,7 +35,7 @@
   ;; contradicting its own literal-range rules (Floor(2147483648) vs ValueLiterals), 1× a standalone
   ;; uncertainty bound contradicting the same corpus's arithmetic convention, 1× the
   ;; `starts N <unit> or less on or after` timing-phrase family (a whole grammar for one test).
-  (define floor 1819)
+  (define floor 1820)
   (unless (>= tp floor)
     (eprintf "CQL conformance regressed: ~a < floor ~a\n" tp floor)
     (exit 1)))

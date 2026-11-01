@@ -54,7 +54,7 @@ operators, `if`/`case`. Layers:
   `invalid` expression as expected-to-fail and a `<library>` test as skipped). The **official HL7 suites
   are vendored verbatim** in `cql/tests/vendor/cql-tests/` (from `cqframework/cql-tests`, commit
   `36a47eb…`, see its SOURCE.txt); `raco cql --tck` (→ `cql/tests/run.rkt`, floor-ratcheted) runs
-  them: **1819/1823 (99.8%)** — 11 of 16 suites at 100% (incl. Interval 410/411, DateTime 314/317,
+  them: **1820/1823 (99.8%)** — 11 of 16 suites at 100% (incl. Interval 410/411, DateTime 314/317,
   Arithmetic 234/236, List/Comparison/String/Types near-full). Notable semantics implemented:
   **uncertainty as Interval[min,max]** (operands filled to their full MILLISECOND low/high boundaries,
   extremes over the four corners; comparisons do band comparison; uncertainty intervals participate in
@@ -68,7 +68,7 @@ operators, `if`/`case`. Layers:
   (pairwise 1 year = 12 months AND = 365 days); literal domains enforced at compile (Integer 32-bit,
   Decimal 28/8 digits); `X between A and B` desugars at the comparison level with the unit-word left
   operand recognised as a duration (context-sensitive, like the reference grammar). The **4 remaining
-  misses are irreducible corpus edges**: `Floor(±2^31)` expects out-of-range literals to evaluate while
+  misses are irreducible corpus edges** (were 4; the interval-phrase grammar closed the 4th): `Floor(±2^31)` expects out-of-range literals to evaluate while
   ValueLiteralsAndSelectors requires the SAME literals to error (corpus self-contradiction, 2); one
   standalone uncertainty bound (`[17,44]`) contradicts the same corpus's arithmetic convention
   (`[16,44]`-derived, 1); and the `starts 1 day or less on or after day of` timing-phrase family
@@ -79,7 +79,7 @@ operators, `if`/`case`. Layers:
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **32/32 parse; 3/32 compile; 7/803 definitions ELM-equal** — ratcheted. The
+  metadata dropped). **32/32 parse; 32/32 compile; 421/803 definitions ELM-equal** — ratcheted. The
   grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
   modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
   fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
@@ -88,7 +88,28 @@ operators, `if`/`case`. Layers:
   `cql-within`). Keywords are admitted as names after `.`, as tuple keys and as function names
   (`period.start`, `System.Code`, `define fluent function version`). A query may be the RIGHT operand
   of a set operator only (on the left it would end a greedy where/aggregate body early — a TCK test
-  caught that). Compile failures now are includes, terminology refs and retrieve ELM (next stage).
+  caught that). Libraries parse DEFINITION BY DEFINITION (`parse.rkt` splits the token stream before
+  each definition keyword in column 0): brag's CFG parser is superlinear, FHIRHelpers took seconds whole.
+- **Typed translation over a data model** (`compile.rkt`, `model/`): `using FHIR version '4.0.1'` loads
+  the reference translator's own FHIR ModelInfo (`model/fhir-modelinfo-4.0.1.xml.gz`, cqframework,
+  Apache-2.0; `model/gen-modelinfo.rkt` derives the compact `fhir-4.0.1.rktd` that
+  `model/modelinfo.rkt` reads: element types, base types, primaryCodePath, profile urls, contexts, and
+  the FHIRHelpers conversion table). `compile` returns `(values elm CType)`; a library compiles in an
+  `lctx` (every declared name, the model, includes) with definitions compiled ON DEMAND and memoized
+  (a reference needs the definition's type). Includes resolve through `current-library-resolver`
+  (name version -> library AST; the corpus harness resolves within the package). The translator's
+  behaviours implemented: Retrieve (dataType `{url}Type`, templateId, codeProperty = primaryCodePath,
+  `in` for a ValueSet, `~` + ToList for a Code); the implicit `context Patient` definition
+  (SingletonFrom([Patient])); Property `scope` on query aliases, AliasRef/QueryLetRef/IdentifierRef;
+  model->System implicit conversion (FHIRHelpers.ToString/ToConcept/ToInterval/… — only when the library
+  includes FHIRHelpers, inherited through base types) at every System-typed operator; System promotions
+  (Integer->Decimal, Date->DateTime, Code->Concept); overload resolution by conversion cost with
+  argument coercion (incl. a choice argument to a member-typed parameter = implicit As); fluent
+  functions; FHIRPath-style methods (`.where(…)` = Query over `$this`, `.first()`, `.single()`,
+  lowercase System names); InValueSet/AnyInValueSet; quantity-offset timing phrases (`3 years or less on
+  or before` = And(In(A, Interval[B - q, B]), Not(IsNull(B)))); AgeIn*/CalculateAge*At over the model's
+  birth-date path; ELM operators with named attributes (First.source, Split.stringToSplit, …). Unqualified
+  type names mean the model's type when it has one (`Quantity` in a FHIR library is FHIR.Quantity).
 - **Deferred CQL slices**: retrieves (`[Condition: "vs"]`) + a FHIR data-source/retrieve layer (absent —
   `navigate.rkt` assumes in-memory roots), queries (`with`/`where`/`return`/`sort`/`aggregate`),
   terminology-backed membership via the `tx-service`, FHIR model-info from `full-field-specs`, ELM XML

@@ -7,7 +7,7 @@
 ;;; behavior. `drop-false` (shared util) omits absent optional attributes. Each expression object
 ;;; carries its ELM `type` discriminator; a full library wraps in {"library": {…}}.
 
-(require racket/contract
+(require racket/contract racket/match
          json
          (only-in fhir/serialize/jsexpr-util drop-false)
          "ast.rkt")
@@ -29,9 +29,14 @@
     [(timezoneoffset timezone) "TimezoneOffsetFrom"]
     [(date) "DateFrom"] [(time) "TimeFrom"]
     [else "DateTimeComponentFrom"]))
-(define (timing-elm-type op)
-  (case op [(before) "Before"] [(after) "After"] [(same-as) "SameAs"]
-    [(same-or-before) "SameOrBefore"] [(same-or-after) "SameOrAfter"] [else (symbol->string op)]))
+(define timing-elm-types
+  (hasheq 'before "Before" 'after "After" 'same-as "SameAs" 'same-or-before "SameOrBefore"
+          'same-or-after "SameOrAfter" 'meets "Meets" 'meets-before "MeetsBefore" 'meets-after "MeetsAfter"
+          'overlaps "Overlaps" 'overlaps-before "OverlapsBefore" 'overlaps-after "OverlapsAfter"
+          'starts "Starts" 'ends "Ends" 'includes "Includes" 'properly-includes "ProperIncludes"
+          'included-in "IncludedIn" 'properly-included-in "ProperIncludedIn" 'during "IncludedIn"
+          'in "In" 'contains "Contains" 'proper-in "ProperIn" 'proper-contains "ProperContains"))
+(define (timing-elm-type op) (hash-ref timing-elm-types op (lambda () (symbol->string op))))
 (define (component-precision-name prec)
   (case prec
     [(year) "Year"] [(month) "Month"] [(day) "Day"] [(hour) "Hour"]
@@ -52,7 +57,66 @@
      'schemaIdentifier (hasheq 'id "urn:hl7-org:elm" 'version "r1")
      'usings (and (pair? (elm-library-usings lib))
                   (hasheq 'def (map using->jsexpr (elm-library-usings lib))))
+     'includes (section (elm-library-includes lib)
+                        (lambda (i) (drop-false (hasheq 'localIdentifier (elm-include-local-id i)
+                                                        'path (elm-include-path i) 'version (elm-include-version i)))))
+     'parameters (section (elm-library-parameters lib)
+                          (lambda (p) (drop-false (hasheq 'name (elm-parameter-def-name p)
+                                                          'accessLevel (access->json (elm-parameter-def-access p))
+                                                          'default (opt-expr (elm-parameter-def-default p))
+                                                          'parameterTypeSpecifier (and (elm-parameter-def-type p)
+                                                                                       (type->jsexpr (elm-parameter-def-type p)))))))
+     'codeSystems (section (elm-library-codesystems lib)
+                           (lambda (c) (drop-false (hasheq 'name (elm-codesystem-def-name c) 'id (elm-codesystem-def-id c)
+                                                           'version (elm-codesystem-def-version c)
+                                                           'accessLevel (access->json (elm-codesystem-def-access c))))))
+     'valueSets (section (elm-library-valuesets lib)
+                         (lambda (v) (drop-false (hasheq 'name (elm-valueset-def-name v) 'id (elm-valueset-def-id v)
+                                                         'version (elm-valueset-def-version v)
+                                                         'accessLevel (access->json (elm-valueset-def-access v))
+                                                         'codeSystem (and (pair? (elm-valueset-def-codesystems v))
+                                                                          (map term-ref-body (elm-valueset-def-codesystems v)))))))
+     'codes (section (elm-library-codes lib)
+                     (lambda (c) (drop-false (hasheq 'name (elm-code-def-name c) 'id (elm-code-def-id c)
+                                                     'display (elm-code-def-display c)
+                                                     'accessLevel (access->json (elm-code-def-access c))
+                                                     'codeSystem (term-ref-body (elm-code-def-codesystem c))))))
+     'concepts (section (elm-library-concepts lib)
+                        (lambda (c) (drop-false (hasheq 'name (elm-concept-def-name c) 'display (elm-concept-def-display c)
+                                                        'accessLevel (access->json (elm-concept-def-access c))
+                                                        'code (map term-ref-body (elm-concept-def-codes c))))))
+     'contexts (section (elm-library-contexts lib) (lambda (c) (hasheq 'name (elm-context-def-name c))))
      'statements (hasheq 'def (map statement->jsexpr (elm-library-statements lib)))))))
+
+;; ELM operators whose operands are NAMED attributes rather than `operand` (aggregates read `source`,
+;; Split reads stringToSplit/separator, …): op -> attribute names, in argument order
+(define operator-attributes
+  (hash "First" '(source) "Last" '(source) "Count" '(source) "Sum" '(source) "Min" '(source) "Max" '(source)
+        "Avg" '(source) "Median" '(source) "Mode" '(source) "StdDev" '(source) "Variance" '(source)
+        "PopulationStdDev" '(source) "PopulationVariance" '(source) "AllTrue" '(source) "AnyTrue" '(source)
+        "Product" '(source) "GeometricMean" '(source)
+        "Split" '(stringToSplit separator) "SplitOnMatches" '(stringToSplit separatorPattern)
+        "Combine" '(source separator) "Substring" '(stringToSub startIndex length)
+        "PositionOf" '(pattern string) "LastPositionOf" '(pattern string) "IndexOf" '(source element)
+        "Slice" '(source startIndex endIndex) "Round" '(operand precision)
+        "Message" '(source condition code severity message)))
+;; operator-body : string (listof elm) boolean -> jsexpr   unary operands are an object, n-ary a list
+(define (operator-body op operands unary?)
+  (match (hash-ref operator-attributes op #f)
+    [#f (hasheq 'type op 'operand (if unary? (expr->jsexpr (car operands)) (map expr->jsexpr operands)))]
+    [names (for/fold ([h (hasheq 'type op)]) ([nm (in-list names)] [o (in-list operands)])
+             (hash-set h nm (expr->jsexpr o)))]))
+
+;; section : (listof X) (X -> jsexpr) -> jsexpr|#f   an ELM {def: […]} section, absent when empty
+(define (section xs f) (and (pair? xs) (hasheq 'def (map f xs))))
+;; a reference inside a definition (codeSystem of a code, codes of a concept): name + libraryName, no type
+(define (term-ref-body r) (drop-false (hasheq 'name (elm-term-ref-name r) 'libraryName (elm-term-ref-library r))))
+(define (sort-by->jsexpr b)
+  (case (elm-sort-by-kind b)
+    [(direction) (hasheq 'type "ByDirection" 'direction (elm-sort-by-direction b))]
+    [(column) (hasheq 'type "ByColumn" 'direction (elm-sort-by-direction b) 'path (elm-sort-by-target b))]
+    [else (hasheq 'type "ByExpression" 'direction (elm-sort-by-direction b)
+                  'expression (expr->jsexpr (elm-sort-by-target b)))]))
 
 (define (using->jsexpr u)
   (drop-false (hasheq 'localIdentifier (elm-using-local-id u)
@@ -64,10 +128,10 @@
     [(elm-def? s)
      (drop-false (hasheq 'name (elm-def-name s)
                          'context (or (elm-def-context s) "Unfiltered")
-                         'accessLevel (access->json (elm-def-access s))
+                         'accessLevel (and (elm-def-access s) (access->json (elm-def-access s)))
                          'expression (expr->jsexpr (elm-def-expression s))))]
     [(elm-function-def? s)
-     (drop-false (hasheq 'type "FunctionDef"
+     (drop-false (hasheq 'type "FunctionDef" 'fluent (elm-function-def-fluent? s)
                          'name (elm-function-def-name s)
                          'context (or (elm-function-def-context s) "Unfiltered")
                          'accessLevel (access->json (elm-function-def-access s))
@@ -147,22 +211,45 @@
      (drop-false
       (hasheq 'type "Query"
               'source (for/list ([s (in-list (elm-query-sources e))])
-                        (hasheq 'type "AliasedQuerySource" 'alias (car s) 'expression (expr->jsexpr (cdr s))))
+                        (hasheq 'alias (car s) 'expression (expr->jsexpr (cdr s))))
+              ;; the reference translator always emits relationship, even empty
+              'relationship (for/list ([r (in-list (elm-query-relationships e))])
+                              (hasheq 'type (if (eq? (elm-relationship-kind r) 'with) "With" "Without")
+                                      'alias (elm-relationship-alias r)
+                                      'expression (expr->jsexpr (elm-relationship-expression r))
+                                      'suchThat (expr->jsexpr (elm-relationship-such-that r))))
               'let (and (pair? (elm-query-lets e))
                         (for/list ([l (in-list (elm-query-lets e))])
                           (hasheq 'identifier (car l) 'expression (expr->jsexpr (cdr l)))))
               'where (and (elm-query-where e) (expr->jsexpr (elm-query-where e)))
               'return (and (elm-query-ret e)
                            (drop-false (hasheq 'distinct (elm-query-ret-distinct e) 'expression (expr->jsexpr (elm-query-ret e)))))
-              'sort (and (elm-query-sort e)
-                         (hasheq 'by (list (hasheq 'type "ByDirection" 'direction (symbol->string (elm-query-sort e))))))))]
+              'sort (and (elm-query-sort e) (hasheq 'by (map sort-by->jsexpr (elm-query-sort e))))))]
+    [(elm-retrieve? e)
+     (drop-false (hasheq 'type "Retrieve" 'dataType (elm-retrieve-data-type e)
+                         'templateId (elm-retrieve-template-id e)
+                         'codeProperty (elm-retrieve-code-property e)
+                         'codeComparator (elm-retrieve-code-comparator e)
+                         'codes (opt-expr (elm-retrieve-codes e))))]
+    [(elm-alias-ref? e) (hasheq 'type "AliasRef" 'name (elm-alias-ref-name e))]
+    [(elm-query-let-ref? e) (hasheq 'type "QueryLetRef" 'name (elm-query-let-ref-name e))]
+    [(elm-identifier-ref? e) (hasheq 'type "IdentifierRef" 'name (elm-identifier-ref-name e))]
+    [(elm-term-ref? e) (hash-set (term-ref-body e) 'type (elm-term-ref-kind e))]
+    [(elm-code? e)
+     (drop-false (hasheq 'type "Code" 'code (elm-code-code e) 'system (term-ref-body (elm-code-system e))
+                         'display (elm-code-display e)))]
+    [(elm-concept? e)
+     (drop-false (hasheq 'type "Concept" 'code (map expr->jsexpr (elm-concept-codes e)) 'display (elm-concept-display e)))]
+    [(elm-in-valueset? e)
+     (hasheq 'type (elm-in-valueset-kind e) 'code (expr->jsexpr (elm-in-valueset-code e))
+             'valueset (expr->jsexpr (elm-in-valueset-valueset e)))]
+    [(elm-precision-op? e)
+     (hasheq 'type (elm-precision-op-op e) 'precision (elm-precision-op-precision e)
+             'operand (map expr->jsexpr (elm-precision-op-operands e)))]
     [(elm-nary? e)
-     (with-rt (hasheq 'type (elm-nary-op e)
-                      'operand (map expr->jsexpr (elm-nary-operands e)))
-              (elm-nary-result-type e))]
+     (with-rt (operator-body (elm-nary-op e) (elm-nary-operands e) #f) (elm-nary-result-type e))]
     [(elm-unary? e)
-     (with-rt (hasheq 'type (elm-unary-op e) 'operand (expr->jsexpr (elm-unary-operand e)))
-              (elm-unary-result-type e))]
+     (with-rt (operator-body (elm-unary-op e) (list (elm-unary-operand e)) #t) (elm-unary-result-type e))]
     [(elm-interval? e)
      ;; lowClosed/highClosed are meaningful booleans — must NOT be dropped when #f
      (hash-set*
@@ -193,7 +280,8 @@
                                         (elm-case-items e))
                          'else (and (elm-case-els e) (expr->jsexpr (elm-case-els e)))))]
     [(elm-property? e)
-     (hasheq 'type "Property" 'source (expr->jsexpr (elm-property-source e)) 'path (elm-property-path e))]
+     (drop-false (hasheq 'type "Property" 'source (opt-expr (elm-property-source e)) 'path (elm-property-path e)
+                         'scope (elm-property-scope e)))]
     [(elm-expression-ref? e)
      (drop-false (hasheq 'type "ExpressionRef" 'name (elm-expression-ref-name e)
                          'libraryName (elm-expression-ref-library e)))]
@@ -227,6 +315,11 @@
      (hasheq 'type "IntervalTypeSpecifier" 'pointType (type->jsexpr (elm-interval-type-point t)))]
     [(elm-list-type? t)
      (hasheq 'type "ListTypeSpecifier" 'elementType (type->jsexpr (elm-list-type-element t)))]
+    [(elm-choice-type? t) (hasheq 'type "ChoiceTypeSpecifier" 'choice (map type->jsexpr (elm-choice-type-types t)))]
+    [(elm-tuple-type? t)
+     (hasheq 'type "TupleTypeSpecifier"
+             'element (for/list ([el (in-list (elm-tuple-type-elements t))])
+                        (hasheq 'name (car el) 'elementType (type->jsexpr (cdr el)))))]
     [else (error 'elm->jsexpr "unknown type specifier: ~s" t)]))
 
 (module+ test
@@ -244,7 +337,7 @@
   ;; interval with closed flags
   (check-equal? (hash-ref (expr->jsexpr (elm-interval (elm-literal "Integer" "1") (elm-literal "Integer" "10") #t #f)) 'highClosed) #f)
   ;; a whole library round-trips to a JSON string containing the library wrapper
-  (define lib (elm-library "Demo" "1.0" '() (list (elm-def "X" #f 'public (elm-literal "Integer" "1")))))
+  (define lib (elm-library "Demo" "1.0" '() '() '() '() '() '() '() '() (list (elm-def "X" #f 'public (elm-literal "Integer" "1")))))
   (define js (library->jsexpr lib))
   (check-true (hash-has-key? js 'library))
   (check-equal? (hash-ref (hash-ref (hash-ref js 'library) 'identifier) 'id) "Demo")

@@ -18,7 +18,7 @@
 
 (require racket/contract racket/list racket/string racket/file racket/path racket/match json
          (only-in cql/parser/parse parse-cql)
-         (only-in cql/compile compile-library)
+         (only-in cql/compile compile-library current-library-resolver)
          (only-in cql/elm/json elm->jsexpr)
          (only-in cql/error cql-error-string cql-error?)
          (only-in fhir/result/result ok? ok-value err-error))
@@ -70,7 +70,10 @@
     [(string? pr) (fail #f pr)]
     [(not (ok? pr)) (fail #f (error-text (err-error pr)))]
     [else
-     (define cr (with-handlers ([exn:fail? (lambda (e) (exn-message e))]) (compile-library (ok-value pr))))
+     ;; includes resolve to the libraries shipped in the same package (FHIRHelpers, Global, SDE …)
+     (define cr (with-handlers ([exn:fail? (lambda (e) (exn-message e))])
+                  (parameterize ([current-library-resolver (package-resolver (path-only cql-file))])
+                    (compile-library (ok-value pr)))))
      (cond
        [(string? cr) (fail #t cr)]
        [(not (ok? cr)) (fail #t (error-text (err-error cr)))]
@@ -88,6 +91,14 @@
                    (values (add1 p) (add1 e) ms)
                    (values (add1 p) e (cons (list n (first-diff rd od '())) ms)))])))
         (lib-result pkg name #t #t #f (hash-count ref-defs) present equal (reverse mismatches))])]))
+
+;; package-resolver : dir -> (sym version -> cql-library|#f)   <dir>/<Name>.cql, parsed once
+(define parsed (make-hash))
+(define ((package-resolver dir) name _version)
+  (define f (build-path dir (format "~a.cql" name)))
+  (and (file-exists? f)
+       (hash-ref! parsed (path->string f)
+                  (lambda () (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r)))))))
 
 (define (check-elm-corpus dir)
   (for*/list ([pkg (in-list (sort (map path->string (directory-list dir)) string<?))]

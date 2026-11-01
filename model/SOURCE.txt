@@ -1,0 +1,10 @@
+fhir-modelinfo-4.0.1.xml.gz — the FHIR 4.0.1 ModelInfo the reference CQL-to-ELM translator uses.
+
+Upstream: https://github.com/cqframework/clinical_quality_language
+  path   quick/src/main/resources/org/hl7/fhir/fhir-modelinfo-4.0.1.xml
+  commit 92e5668410c9115f0359c22daf2642215b1b1631 (retrieved 2026-11-01), stored gzip -9, unmodified
+License: Apache-2.0 (the cqframework repository's licence).
+
+fhir-4.0.1.rktd is DERIVED from it by gen-modelinfo.rkt (types, base types, element types, primary
+code paths, retrievability, FHIRHelpers conversions, contexts — descriptions dropped). Regenerate with
+  racket model/gen-modelinfo.rkt

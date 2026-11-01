@@ -2,20 +2,23 @@
 
 ;;; compile.rkt — CQL AST -> ELM AST (the translator).
 ;;;
-;;; CQL surface operators are overloaded (`+` is Add on numbers but Concatenate on strings; `=` is
-;;; Equal; membership picks In/Contains), so translation needs a light System-type inference. We infer
-;;; bottom-up: `compile` returns (values elm-node type), where `type` is a System type descriptor
-;;; (a simple-name string like "Integer", or a `(vector 'list T)` / `(vector 'interval T)` composite,
-;;; or "Any"). The inferred simple-name is stamped onto ELM nodes as resultType so the emitted ELM is
-;;; self-describing. Errors raise a cql-error caught at the API boundary and returned as (err …).
+;;; Translation needs TYPES: CQL surface operators are overloaded (`+` is Add on numbers but
+;;; Concatenate on strings; `in` is In, InValueSet or AnyInValueSet), function calls resolve among
+;;; overloads (FHIRHelpers has one ToString per FHIR code type), and a model type meeting a System
+;;; operator is converted implicitly (FHIR.EncounterStatus -> FHIRHelpers.ToString(…)). So `compile`
+;;; returns (values elm-node CType) — CType is defined in model/modelinfo.rkt: a System simple name
+;;; ("Integer"), a model name ("FHIR.Encounter"), "Any", or a list/interval/choice/tuple vector.
 ;;;
-;;; Slice-1 simplification: temporal literals (@date/@time) compile to an ELM Literal carrying the
-;;; lexeme (canonical ELM Date/DateTime/Time *constructor* nodes are deferred) — this round-trips
-;;; through our interpreter, which is what the closed-loop conformance harness checks.
+;;; A library compiles in a library context (`lctx`, below): every name it declares, its data model
+;;; (from `using`, see model/modelinfo.rkt), its includes (compiled lazily through
+;;; `current-library-resolver`), and memo tables — definitions compile ON DEMAND when first referenced
+;;; (their type is needed at the reference), so forward references and included libraries both work.
+;;; Errors raise a cql-error caught at the API boundary and returned as (err …).
 
-(require racket/match
+(require racket/match racket/list racket/string
          "parser/ast.rkt"
          "elm/ast.rkt"
+         "model/modelinfo.rkt"
          (only-in "error.rkt" cql-error cql-error?)
          racket/contract
          (only-in fhir/result/result ok err ok? err?)
@@ -25,69 +28,238 @@
                   moment-frac moment-tzmin))
 
 (provide
+ current-library-resolver
  (contract-out
   ;; compile-library : cql-library -> (ok elm-library) | (err cql-error)
   [compile-library (-> cql-library? (or/c ok? err?))]
   ;; compile-expr : cql-expression-AST -> (ok elm-expr) | (err cql-error)  (bare-expression entry)
   [compile-expr    (-> any/c (or/c ok? err?))]))
 
-;; ---- compile scope ---------------------------------------------------------
-;; what names are in scope, so a bare identifier resolves to the right ELM ref kind
-(struct cenv (defs funcs operands params) #:transparent)
-(define empty-cenv (cenv (hash) (hash) (hash) (hash)))
-(define (cenv-add-operands e names)
-  (cenv (cenv-defs e) (cenv-funcs e)
-        (for/fold ([h (cenv-operands e)]) ([n (in-list names)]) (hash-set h n #t))
-        (cenv-params e)))
+;; current-library-resolver : (parameter (symbol (or string #f) -> (or cql-library #f)))
+;; finds an included library's source AST by name and version; #f = unknown (references into it still
+;; compile, untyped)
+(define current-library-resolver (make-parameter (lambda (name version) #f)))
+
+;; ---- library context -------------------------------------------------------
+;; An lctx is everything one library declares, by name:
+;;   model      : model|#f              the `using` data model (FHIR 4.0.1), #f for System-only
+;;   defs       : sym -> cql-def | 'context   (a `context X` adds the implicit definition X)
+;;   contexts   : sym -> string         each define's context ("Patient", "Unfiltered")
+;;   funcs      : sym -> (listof cql-func)    overloads in declaration order
+;;   params     : sym -> cql-parameter
+;;   terms      : sym -> kind           "ValueSetRef" | "CodeSystemRef" | "CodeRef" | "ConceptRef"
+;;   includes   : sym(alias) -> (cons cql-include (-> lctx|#f))   the included library, lazily
+;;   memo       : sym -> (cons elm CType) | 'pending       compiled definitions
+;;   fmemo      : cql-func -> CType                         inferred function result types
+(struct lctx (name model defs contexts funcs params terms includes memo fmemo))
+(define current-lctx (make-parameter #f))
+(define (L) (current-lctx))
+
+;; make-lctx : cql-library -> lctx
+(define (make-lctx lib)
+  (define defs (cql-library-defs lib))
+  (define usings (filter cql-using? defs))
+  (define model (for/or ([u (in-list usings)])
+                  (find-model (symbol->string (cql-using-model u)) (cql-using-version u))))
+  (define-values (dmap cmap)
+    (for/fold ([dm (hash)] [cm (hash)] [ctx "Unfiltered"] #:result (values dm cm)) ([d (in-list defs)])
+      (match d
+        [(cql-context name)
+         (define cname (symbol->string name))
+         (values (if (and model (model-context-type model cname)) (hash-set dm name 'context) dm)
+                 (hash-set cm name cname) cname)]
+        [(? cql-def?) (values (hash-set dm (cql-def-name d) d) (hash-set cm (cql-def-name d) ctx) ctx)]
+        [(? cql-func?) (values dm (hash-set cm (cql-func-name d) ctx) ctx)]
+        [_ (values dm cm ctx)])))
+  (define funcs (for/fold ([h (hash)]) ([d (in-list defs)] #:when (cql-func? d))
+                  (hash-update h (cql-func-name d) (lambda (l) (append l (list d))) '())))
+  (define params (for/hash ([d (in-list defs)] #:when (cql-parameter? d)) (values (cql-parameter-name d) d)))
+  (define terms (for/hash ([d (in-list defs)]
+                           #:when (or (cql-valueset? d) (cql-codesystem? d) (cql-code-def? d) (cql-concept-def? d)))
+                  (match d
+                    [(? cql-valueset?) (values (cql-valueset-name d) "ValueSetRef")]
+                    [(? cql-codesystem?) (values (cql-codesystem-name d) "CodeSystemRef")]
+                    [(? cql-code-def?) (values (cql-code-def-name d) "CodeRef")]
+                    [(? cql-concept-def?) (values (cql-concept-def-name d) "ConceptRef")])))
+  (define includes
+    (for/hash ([d (in-list defs)] #:when (cql-include? d))
+      (define alias (or (cql-include-alias d) (cql-include-lib d)))
+      (define cell #f)
+      (values alias
+              (cons d (lambda ()
+                        (unless cell
+                          (set! cell 'none)
+                          (define src ((current-library-resolver) (cql-include-lib d) (cql-include-version d)))
+                          (when src (set! cell (make-lctx src))))
+                        (and (lctx? cell) cell))))))
+  (lctx (cql-library-id lib) model dmap cmap funcs params terms includes (make-hasheq) (make-hasheq)))
+
+(define empty-lctx (lctx #f #f (hash) (hash) (hash) (hash) (hash) (hash) (make-hasheq) (make-hasheq)))
+
+;; the include alias under which a library NAMED `libname` is visible here (FHIRHelpers), or #f
+(define (include-alias-for libname)
+  (for/or ([(alias inc) (in-hash (lctx-includes (L)))])
+    (and (eq? (cql-include-lib (car inc)) libname) (symbol->string alias))))
+(define (included alias) (let ([i (hash-ref (lctx-includes (L)) alias #f)]) (and i ((cdr i)))))
+
+;; ---- local scope -----------------------------------------------------------
+;; A cenv maps names bound INSIDE an expression to (cons kind CType): kind 'operand (function
+;; operand), 'alias (query source), 'let (query let), 'acc (aggregate accumulator). `row` is the
+;; element type a `sort by` expression is evaluated against (#f elsewhere).
+;; `this` is the alias ("$this") whose properties bare names reach inside a FHIRPath-style
+;; .where(…)/.select(…), #f elsewhere.
+(struct cenv (locals row this) #:transparent)
+(define empty-cenv (cenv (hash) #f #f))
+(define (cenv-bind e kind pairs)
+  (cenv (for/fold ([h (cenv-locals e)]) ([p (in-list pairs)]) (hash-set h (car p) (cons kind (cdr p))))
+        (cenv-row e) (cenv-this e)))
+(define (cenv-add-operands e names) (cenv-bind e 'operand (map (lambda (n) (cons n "Any")) names)))
+(define (local-ref e name) (hash-ref (cenv-locals e) name #f))
 
 ;; ---- public API ------------------------------------------------------------
 ;; compile-library : cql-library -> (ok elm-library) | (err cql-error)
 (define (compile-library lib)
   (with-handlers ([cql-error? (lambda (e) (err e))])
-    (define defs (cql-library-defs lib))
-    ;; gather top-level names first so forward references resolve
-    (define def-names (for/hash ([d (in-list defs)] #:when (cql-def? d)) (values (cql-def-name d) #t)))
-    (define func-names (for/hash ([d (in-list defs)] #:when (cql-func? d)) (values (cql-func-name d) #t)))
-    (define param-names (for/hash ([d (in-list defs)] #:when (cql-parameter? d)) (values (cql-parameter-name d) #t)))
-    (define base (cenv def-names func-names (hash) param-names))
-    (define usings (cons (elm-using "System" "urn:hl7-org:elm-types:r1" "1.0.0")
-                         (for/list ([d (in-list defs)] #:when (cql-using? d))
-                           (elm-using (or (cql-using-alias d) (symbol->string (cql-using-model d)))
-                                      (symbol->string (cql-using-model d)) (cql-using-version d)))))
-    (define statements
-      (for/list ([d (in-list defs)] #:when (or (cql-def? d) (cql-func? d)))
-        (compile-statement d base)))
-    (ok (elm-library (and (cql-library-id lib) (symbol->string (cql-library-id lib)))
-                     (cql-library-version lib) usings statements))))
+    (define lx (make-lctx lib))
+    (parameterize ([current-lctx lx] [compile-memo (make-hasheq)])
+      (ok (assemble-library lib lx)))))
 
 ;; compile-expr : cql-ast -> (ok elm-node) | (err cql-error)  — a bare expression (harness/CLI)
 (define (compile-expr ast)
   (with-handlers ([cql-error? (lambda (e) (err e))])
-    (define-values (node _t) (compile ast empty-cenv))
-    (ok node)))
+    (parameterize ([current-lctx empty-lctx] [compile-memo (make-hasheq)])
+      (define-values (node _t) (compile ast empty-cenv))
+      (ok node))))
 
-(define (compile-statement d env)
-  (cond
-    [(cql-def? d)
-     (define-values (node _t) (compile (cql-def-body d) env))
-     (elm-def (symbol->string (cql-def-name d)) "Unfiltered" (cql-def-access d) node)]
-    [(cql-func? d)
-     (define opnames (map cql-operand-name (cql-func-operands d)))
-     (define env* (cenv-add-operands env opnames))
-     (define body (cql-func-body d))
-     (define node (if (eq? body 'external) (elm-null #f)
-                      (let-values ([(n _t) (compile body env*)]) n)))
-     (elm-function-def (symbol->string (cql-func-name d)) "Unfiltered" (cql-func-access d)
-                       (map (lambda (o) (elm-operand-def (symbol->string (cql-operand-name o))
-                                                         (compile-type (cql-operand-type o))))
-                            (cql-func-operands d))
-                       (and (cql-func-result-type d) (compile-type (cql-func-result-type d)))
-                       node)]))
+;; assemble-library : cql-library lctx -> elm-library   every section, statements in source order
+(define (assemble-library lib lx)
+  (define defs (cql-library-defs lib))
+  (define model (lctx-model lx))
+  (define (of pred f) (for/list ([d (in-list defs)] #:when (pred d)) (f d)))
+  (define usings
+    (cons (elm-using "System" "urn:hl7-org:elm-types:r1" #f)
+          (of cql-using?
+              (lambda (d)
+                (define m (find-model (symbol->string (cql-using-model d)) (cql-using-version d)))
+                (elm-using (if (cql-using-alias d) (symbol->string (cql-using-alias d)) (symbol->string (cql-using-model d)))
+                           (if m (model-url m) (symbol->string (cql-using-model d)))
+                           (cql-using-version d))))))
+  (define includes
+    (of cql-include?
+        (lambda (d) (elm-include (symbol->string (or (cql-include-alias d) (cql-include-lib d)))
+                                 (symbol->string (cql-include-lib d)) (cql-include-version d)))))
+  (define params
+    (of cql-parameter?
+        (lambda (d) (elm-parameter-def (symbol->string (cql-parameter-name d)) (cql-parameter-access d)
+                                       (and (cql-parameter-default d) (compile1 (cql-parameter-default d) empty-cenv))
+                                       (and (cql-parameter-type d) (compile-type (cql-parameter-type d)))))))
+  (define codesystems
+    (of cql-codesystem? (lambda (d) (elm-codesystem-def (symbol->string (cql-codesystem-name d)) (cql-codesystem-id d)
+                                                        (cql-codesystem-version d) (cql-codesystem-access d)))))
+  (define valuesets
+    (of cql-valueset? (lambda (d) (elm-valueset-def (symbol->string (cql-valueset-name d)) (cql-valueset-id d)
+                                                    (cql-valueset-version d) (cql-valueset-access d)
+                                                    (map (term-ref-of "CodeSystemRef") (cql-valueset-codesystems d))))))
+  (define codes
+    (of cql-code-def? (lambda (d) (elm-code-def (symbol->string (cql-code-def-name d)) (cql-code-def-id d)
+                                                (cql-code-def-display d) (cql-code-def-access d)
+                                                ((term-ref-of "CodeSystemRef") (cql-code-def-system d))))))
+  (define concepts
+    (of cql-concept-def? (lambda (d) (elm-concept-def (symbol->string (cql-concept-def-name d)) (cql-concept-def-display d)
+                                                      (cql-concept-def-access d)
+                                                      (map (term-ref-of "CodeRef") (cql-concept-def-codes d))))))
+  (define contexts (of cql-context? (lambda (d) (elm-context-def (symbol->string (cql-context-name d))))))
+  (define statements
+    (append*
+     (for/list ([d (in-list defs)])
+       (match d
+         [(cql-context name) (if (eq? (hash-ref (lctx-defs lx) name #f) 'context)
+                                 (list (elm-def (symbol->string name) (symbol->string name) #f (car (def-info lx name))))
+                                 '())]
+         [(? cql-def?)
+          (list (elm-def (symbol->string (cql-def-name d)) (hash-ref (lctx-contexts lx) (cql-def-name d) "Unfiltered")
+                         (cql-def-access d) (car (def-info lx (cql-def-name d)))))]
+         [(? cql-func?) (list (compile-function-def d lx))]
+         [_ '()]))))
+  (elm-library (and (cql-library-id lib) (symbol->string (cql-library-id lib))) (cql-library-version lib)
+               usings includes params codesystems valuesets codes concepts contexts statements))
 
-;; ---- expression compilation: cql-ast env -> (values elm-node type) ---------
+;; term-ref-of : kind -> (term-ref -> elm-term-ref)   a local name or Library.name
+(define ((term-ref-of kind) r)
+  (match r
+    [(cql-ref n) (elm-term-ref kind (symbol->string n) #f)]
+    [(cql-property (cql-ref lib) n) (elm-term-ref kind (symbol->string n) (symbol->string lib))]))
+
+;; def-info : lctx sym -> (cons elm CType)   compile a definition once; a cycle sees "Any"
+(define (def-info lx name)
+  (define memo (lctx-memo lx))
+  (match (hash-ref memo name #f)
+    [(? pair? r) r]
+    ['pending (cons #f "Any")]
+    [#f
+     (hash-set! memo name 'pending)
+     (define r
+       (parameterize ([current-lctx lx])
+         (match (hash-ref (lctx-defs lx) name)
+           ['context (context-definition (symbol->string name))]
+           [d (let-values ([(n t) (compile (cql-def-body d) empty-cenv)]) (cons n t))])))
+     (hash-set! memo name r)
+     r]))
+
+;; context-definition : string -> (cons elm CType)   `context Patient` = SingletonFrom([Patient])
+(define (context-definition cname)
+  (define m (lctx-model (L)))
+  (define t (model-context-type m cname))
+  (cons (elm-unary "SingletonFrom" (retrieve-node t #f #f #f) #f) t))
+
+;; compile-function-def : cql-func lctx -> elm-function-def
+(define (compile-function-def d lx)
+  (define operands (for/list ([o (in-list (cql-func-operands d))])
+                     (cons (cql-operand-name o) (type->ctype (cql-operand-type o)))))
+  (define body (cql-func-body d))
+  (define node (if (eq? body 'external) (elm-null #f)
+                   (compile1 body (cenv-bind empty-cenv 'operand operands))))
+  (elm-function-def (symbol->string (cql-func-name d)) (hash-ref (lctx-contexts lx) (cql-func-name d) "Unfiltered")
+                    (cql-func-access d)
+                    (for/list ([o (in-list (cql-func-operands d))])
+                      (elm-operand-def (symbol->string (cql-operand-name o)) (compile-type (cql-operand-type o))))
+                    (and (cql-func-result-type d) (compile-type (cql-func-result-type d)))
+                    node (cql-func-fluent? d)))
+
+;; func-result-type : lctx cql-func -> CType   declared, else inferred from the body
+(define (func-result-type lx f)
+  (parameterize ([current-lctx lx])
+    (cond
+      [(cql-func-result-type f) (type->ctype (cql-func-result-type f))]
+      [(eq? (cql-func-body f) 'external) "Any"]
+      [else
+       (define memo (lctx-fmemo lx))
+       (match (hash-ref memo f #f)
+         ['pending "Any"]
+         [(? values t) t]
+         [#f (hash-set! memo f 'pending)
+             (define ops (for/list ([o (in-list (cql-func-operands f))])
+                           (cons (cql-operand-name o) (type->ctype (cql-operand-type o)))))
+             (define-values (_n t) (compile (cql-func-body f) (cenv-bind empty-cenv 'operand ops)))
+             (hash-set! memo f t)
+             t])])))
+
+;; ---- expression compilation: cql-ast env -> (values elm-node CType) --------
 (define (fail msg) (raise (cql-error 'translate msg)))
 
+;; compile-memo : (parameter (or hasheq #f))   ast -> (list env elm CType). Overload resolution
+;; types a call's arguments before compiling them as operands; without the memo, nested calls would
+;; recompile their arguments exponentially often. Keyed by the AST node and the (eq?) scope.
+(define compile-memo (make-parameter #f))
 (define (compile ast env)
+  (define memo (compile-memo))
+  (define hit (and memo (hash-ref memo ast #f)))
+  (if (and hit (eq? (car hit) env) (eq? (cadddr hit) (L)))
+      (values (cadr hit) (caddr hit))
+      (let-values ([(n t) (compile* ast env)])
+        (when memo (hash-set! memo ast (list env n t (L))))
+        (values n t))))
+(define (compile* ast env)
   (match ast
     [(cql-lit v) (compile-literal v)]
     [(cql-ref name) (compile-ref name env)]
@@ -106,17 +278,25 @@
     [(cql-index target idx) (compile-index target idx env)]
     [(cql-component prec operand) (compile-component prec operand env)]
     [(cql-between kind prec a b) (compile-between kind prec a b env)]
-    [(cql-timing op prec a b)
-     (let-values ([(an _a) (compile a env)] [(bn _b) (compile b env)])
-       (values (elm-timing op (and prec (units->prec prec)) an bn) "Boolean"))]
+    [(cql-timing op prec a b) (compile-timing op prec a b env)]
+    [(cql-timing-offset op prec q qual a b) (compile-timing-offset op prec q qual a b env)]
+    [(cql-within properly? q a b) (compile-within properly? q a b env)]
     [(? cql-query?) (compile-query ast env)]
+    [(? cql-retrieve?) (compile-retrieve ast env)]
+    [(cql-code-selector code system display)
+     (values (elm-code code ((term-ref-of "CodeSystemRef") system) display) "Code")]
+    [(cql-concept-selector codes display)
+     (values (elm-concept (map (lambda (c) (compile1 c env)) codes) display) "Concept")]
     [(cql-minmax which type) (values (minmax-elm which (type-simple type)) (or (type-simple type) "Any"))]
     [(cql-instance type elems)
-     (values (elm-instance (symbol->string type)
+     (define t (named->ctype (symbol->string type)))
+     (values (elm-instance (ctype->elm-name t)
                            (for/list ([te (in-list elems)])
                              (elm-tuple-elem (cql-tuple-elem-name te) (compile1 (cql-tuple-elem-value te) env))))
-             (symbol->string type))]
+             t)]
     [_ (fail (format "unsupported expression: ~s" ast))]))
+
+(define (compile1 e env) (let-values ([(n _t) (compile e env)]) n))
 
 ;; minimum/maximum of a System type -> the boundary value as a canonical ELM literal/constructor
 (define (minmax-elm which t)
@@ -133,29 +313,6 @@
     [("Time") (if (eq? which 'min) (elm-time (int-lit 0) (int-lit 0) (int-lit 0) (int-lit 0)) (elm-time (int-lit 23) (int-lit 59) (int-lit 59) (int-lit 999)))]
     [else (fail (format "minimum/maximum not supported for type ~a" t))]))
 
-(define (compile1 e env) (let-values ([(n _t) (compile e env)]) n))
-
-;; a query: bind source aliases (and lets, and the aggregate accumulator) as operands so the body's
-;; references compile to OperandRefs the interpreter fills per row.
-(define (compile-query q env)
-  (define srcs (cql-query-sources q))
-  (define aliases (map cql-source-alias srcs))
-  (define src-elms (for/list ([s (in-list srcs)]) (cons (symbol->string (cql-source-alias s)) (compile1 (cql-source-expr s) env))))
-  (define env1 (cenv-add-operands env aliases))
-  (define lets (cql-query-lets q))
-  (define env2 (cenv-add-operands env1 (map cql-let-def-name lets)))
-  (define let-elms (for/list ([l (in-list lets)]) (cons (symbol->string (cql-let-def-name l)) (compile1 (cql-let-def-expr l) env2))))
-  (define where (and (cql-query-where q) (compile1 (cql-query-where q) env2)))
-  (define ret (and (cql-query-ret q) (compile1 (cql-return-expr (cql-query-ret q)) env2)))
-  (define ret-distinct (and (cql-query-ret q) (cql-return-distinct? (cql-query-ret q))))
-  (define agg
-    (and (cql-query-agg q)
-         (let* ([a (cql-query-agg q)] [envA (cenv-add-operands env2 (list (cql-agg-name a)))])
-           (list (symbol->string (cql-agg-name a)) (cql-agg-distinct? a)
-                 (and (cql-agg-starting a) (compile1 (cql-agg-starting a) env2))
-                 (compile1 (cql-agg-body a) envA)))))
-  (values (elm-query src-elms let-elms where ret ret-distinct (cql-query-sort q) agg) "Any"))
-
 ;; singularize a units word (years -> year) and validate it's a temporal precision
 (define duration-units '(year month week day hour minute second millisecond))
 (define (units->prec u)
@@ -164,15 +321,15 @@
 (define (compile-between kind units a b env)
   (define prec (units->prec units))
   (unless (memq prec duration-units) (fail (format "'~a' is not a valid duration unit" units)))
-  (define-values (an _at) (compile a env))
-  (define-values (bn _bt) (compile b env))
+  (define-values (an _at) (sys a env))
+  (define-values (bn _bt) (sys b env))
   (values (elm-between kind prec an bn) "Integer"))
 
 ;; <precision> from operand — validate the precision word, emit a canonical ELM component node
 (define component-precisions '(year month day hour minute second millisecond timezoneoffset timezone date time))
 (define (compile-component prec operand env)
   (unless (memq prec component-precisions) (fail (format "'~a from' is not a valid component extraction" prec)))
-  (define-values (o _t) (compile operand env))
+  (define-values (o _t) (sys operand env))
   (values (elm-component prec o)
           (case prec [(timezoneoffset timezone) "Decimal"] [(date) "Date"] [(time) "Time"] [else "Integer"])))
 
@@ -234,14 +391,82 @@
                    (let ([tz (moment-tzmin m)])
                      (and tz (elm-literal "Decimal" (number->string (exact->inexact (/ tz 60)))))))]))
 
+;; ---- implicit conversion ---------------------------------------------------
+;; A model type meets a System operator through the model's conversion function — but only when the
+;; library includes it (FHIRHelpers): inside FHIRHelpers itself, `value.value` is written explicitly.
+;; to-system : elm CType -> (values elm CType)
+(define (to-system n t)
+  (define m (lctx-model (L)))
+  (define conv (and m (string? t) (model-conversion m t)))
+  (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
+  (define alias (and fn (include-alias-for (string->symbol (cadr fn)))))
+  (if alias
+      (values (elm-function-ref (caddr fn) alias (list n)) (car conv))
+      (values n t)))
+(define (sys e env) (let-values ([(n t) (compile e env)]) (to-system n t)))
+
+;; System implicit promotions, the translator's order: Integer -> Long -> Decimal -> Quantity,
+;; Date -> DateTime, Code -> Concept. promote : elm CType CType -> elm (no-op when not applicable)
+(define promotions
+  (hash (cons "Integer" "Decimal") "ToDecimal" (cons "Integer" "Long") "ToLong" (cons "Long" "Decimal") "ToDecimal"
+        (cons "Integer" "Quantity") "ToQuantity" (cons "Decimal" "Quantity") "ToQuantity"
+        (cons "Date" "DateTime") "ToDateTime" (cons "Code" "Concept") "ToConcept"))
+(define (promote n from to)
+  (define op (hash-ref promotions (cons from to) #f))
+  (if op (elm-unary op n to) n))
+;; unify-pair : elm CType elm CType -> (values elm elm CType)   promote the narrower operand
+(define (unify-pair a at b bt)
+  (cond [(hash-ref promotions (cons at bt) #f) (values (promote a at bt) b bt)]
+        [(hash-ref promotions (cons bt at) #f) (values a (promote b bt at) at)]
+        [else (values a b at)]))
+(define (point-of t) (if (and (vector? t) (memq (vector-ref t 0) '(interval list))) (vector-ref t 1) #f))
+(define (interval-type? t) (and (vector? t) (eq? (vector-ref t 0) 'interval)))
+(define (list-type? t) (and (vector? t) (eq? (vector-ref t 0) 'list)))
+
 ;; ---- references ------------------------------------------------------------
+;; compile-ref : sym cenv -> (values elm CType)   local scope, then the library, then the sort row
 (define (compile-ref name env)
+  (define s (symbol->string name))
+  (match (local-ref env name)
+    [(cons 'alias t) (values (elm-alias-ref s) t)]
+    [(cons 'let t) (values (elm-query-let-ref s) t)]
+    [(cons _ t) (values (elm-operand-ref s) t)]
+    [#f
+     (define lx (L))
+     (cond
+       [(hash-ref (lctx-defs lx) name #f) (values (elm-expression-ref s #f) (cdr (def-info lx name)))]
+       [(hash-ref (lctx-params lx) name #f) => (lambda (p) (values (elm-parameter-ref s #f) (param-type p)))]
+       [(hash-ref (lctx-terms lx) name #f) => (lambda (k) (values (elm-term-ref k s #f) (term-type k)))]
+       [(and (cenv-row env) (property-type (cenv-row env) s))
+        => (lambda (t) (values (elm-identifier-ref s) t))]
+       [(and (cenv-this env) (property-type (cdr (local-ref env (string->symbol (cenv-this env)))) s))
+        => (lambda (t) (values (elm-property #f s (cenv-this env)) t))]
+       [else (fail (format "unknown identifier '~a'" name))])]))
+
+(define (term-type kind)
+  (case kind [("ValueSetRef") "ValueSet"] [("CodeSystemRef") "CodeSystem"] [("CodeRef") "Code"] [else "Concept"]))
+(define (param-type p)
+  (cond [(cql-parameter-type p) (type->ctype (cql-parameter-type p))]
+        [(cql-parameter-default p) (let-values ([(_n t) (compile (cql-parameter-default p) empty-cenv)]) t)]
+        [else "Any"]))
+
+;; a reference INTO an included library: Alias."name" -> (values elm CType) | #f when not a declared name
+(define (compile-qualified-ref alias name)
+  (define a (symbol->string alias))
+  (define s (symbol->string name))
+  (define lx (included alias))
   (cond
-    [(hash-ref (cenv-operands env) name #f) (values (elm-operand-ref (symbol->string name)) "Any")]
-    [(hash-ref (cenv-params env) name #f) (values (elm-parameter-ref (symbol->string name) #f) "Any")]
-    [(hash-ref (cenv-defs env) name #f) (values (elm-expression-ref (symbol->string name) #f) "Any")]
-    ;; a lone Boolean-ish literal keyword shouldn't reach here; unknown identifiers are errors
-    [else (fail (format "unknown identifier '~a'" name))]))
+    [(not lx) (values (elm-expression-ref s a) "Any")]          ; unresolved include: untyped
+    [(hash-ref (lctx-defs lx) name #f) (values (elm-expression-ref s a) (cdr (def-info lx name)))]
+    [(hash-ref (lctx-params lx) name #f)
+     => (lambda (p) (values (elm-parameter-ref s a) (parameterize ([current-lctx lx]) (param-type p))))]
+    [(hash-ref (lctx-terms lx) name #f) => (lambda (k) (values (elm-term-ref k s a) (term-type k)))]
+    [else (fail (format "unknown identifier '~a.~a'" alias name))]))
+
+(define (include-alias? env x)
+  (and (cql-ref? x) (not (local-ref env (cql-ref-name x)))
+       (not (hash-ref (lctx-defs (L)) (cql-ref-name x) #f))
+       (hash-ref (lctx-includes (L)) (cql-ref-name x) #f) #t))
 
 ;; ---- unary -----------------------------------------------------------------
 (define (compile-unop op operand env)
@@ -254,32 +479,48 @@
      (values (elm-literal "Integer" (number->string nv)) "Integer")]
     [else (compile-unop* op operand env)]))
 (define (compile-unop* op operand env)
-  (define-values (o t) (compile operand env))
   (case op
-    [(+) (values o t)]                                        ; unary plus is identity
-    [(-) (values (elm-unary "Negate" o t) t)]
-    [(not) (values (elm-unary "Not" o "Boolean") "Boolean")]
-    [(exists) (values (elm-unary "Exists" o "Boolean") "Boolean")]
+    [(+) (compile operand env)]                                        ; unary plus is identity
+    [(-) (let-values ([(o t) (sys operand env)]) (values (elm-unary "Negate" o (simple-rt t)) t))]
+    [(not) (let-values ([(o _t) (sys operand env)]) (values (elm-unary "Not" o "Boolean") "Boolean"))]
+    [(exists) (let-values ([(o _t) (compile operand env)]) (values (elm-unary "Exists" o "Boolean") "Boolean"))]
     [else (fail (format "unsupported unary operator ~a" op))]))
+;; the resultType stamped on an elm node: only System simple names (model/composite types: none)
+(define (simple-rt t) (and (string? t) (not (regexp-match? #rx"[.]" t)) (not (equal? t "Any")) t))
 
 ;; ---- binary ----------------------------------------------------------------
+(define generic-binops '(union intersect except))
 (define (compile-binop op l r env)
-  (define-values (lo lt) (compile l env))
-  (define-values (ro rt) (compile r env))
-  (define (bin name res) (values (elm-nary name (list lo ro) res) res))
+  (cond
+    [(memq op generic-binops)
+     (define-values (lo lt) (compile l env))
+     (define-values (ro rt) (compile r env))
+     (define name (case op [(union) "Union"] [(intersect) "Intersect"] [else "Except"]))
+     (values (elm-nary name (list lo ro) (simple-rt (or (composite-or lt rt) "Any"))) (or (composite-or lt rt) lt))]
+    [(memq op '(in contains)) (compile-membership op l r env)]
+    [else
+     (define-values (lo0 lt0) (sys l env))
+     (define-values (ro0 rt0) (sys r env))
+     (define-values (lo ro t) (if (memq op '(& and or xor implies)) (values lo0 ro0 lt0) (unify-pair lo0 lt0 ro0 rt0)))
+     (define lt (if (eq? lo lo0) lt0 t))
+     (define rt (if (eq? ro ro0) rt0 t))
+     (compile-binop* op lo lt ro rt)]))
+
+(define (compile-binop* op lo lt ro rt)
+  (define (bin name res) (values (elm-nary name (list lo ro) (simple-rt res)) res))
   (case op
     [(+) (if (or (equal? lt "String") (equal? rt "String"))
              (bin "Concatenate" "String")                    ; CQL `+` on strings is null-propagating
-             (bin "Add" (numeric-or lt rt)))]
+             (bin "Add" (arith-type lt rt)))]
     ;; CQL `&` treats null as '' — desugar to Concatenate(Coalesce(l,''), Coalesce(r,''))
-    [(&) (define e "") (define empty (elm-literal "String" e))
+    [(&) (define empty (elm-literal "String" ""))
          (values (elm-nary "Concatenate"
                            (list (elm-nary "Coalesce" (list lo empty) "String")
                                  (elm-nary "Coalesce" (list ro empty) "String"))
                            "String")
                  "String")]
-    [(-) (bin "Subtract" (numeric-or lt rt))]
-    [(*) (bin "Multiply" (numeric-or lt rt))]
+    [(-) (bin "Subtract" (arith-type lt rt))]
+    [(*) (bin "Multiply" (arith-type lt rt))]
     [(/) (bin "Divide" (if (equal? (numeric-or lt rt) "Quantity") "Quantity" "Decimal"))]
     [(div) (bin "TruncatedDivide" (numeric-or lt rt))]
     [(mod) (bin "Modulo" (numeric-or lt rt))]
@@ -296,12 +537,29 @@
     [(or) (bin "Or" "Boolean")]
     [(xor) (bin "Xor" "Boolean")]
     [(implies) (bin "Implies" "Boolean")]
-    [(in) (bin "In" "Boolean")]
-    [(contains) (bin "Contains" "Boolean")]
-    [(union) (bin "Union" (or (composite-or lt rt) "Any"))]
-    [(intersect) (bin "Intersect" (or (composite-or lt rt) "Any"))]
-    [(except) (bin "Except" (or (composite-or lt rt) "Any"))]
     [else (fail (format "unsupported binary operator ~a" op))]))
+
+;; arithmetic on temporals keeps the temporal type (DateTime - 1 day is a DateTime)
+(define (arith-type a b)
+  (cond [(member a '("Date" "DateTime" "Time")) a]
+        [(or (equal? a "Any") (equal? b "Any")) "Any"]
+        [else (numeric-or a b)]))
+
+;; membership: `x in ValueSet` -> InValueSet (AnyInValueSet for a list) ; `x in CodeSystem` ->
+;; InCodeSystem ; otherwise In/Contains over a list or interval, the point promoted to its element type
+(define (compile-membership op l r env)
+  (define-values (lo lt) (sys l env))
+  (define-values (ro rt) (sys r env))
+  (cond
+    [(and (eq? op 'in) (member rt '("ValueSet" "CodeSystem")))
+     (define kind (string-append (if (list-type? lt) "Any" "") (if (equal? rt "ValueSet") "InValueSet" "InCodeSystem")))
+     (values (elm-in-valueset kind lo ro) "Boolean")]
+    [(eq? op 'in)
+     (define el (point-of rt))
+     (values (elm-nary "In" (list (if el (promote lo lt el) lo) ro) "Boolean") "Boolean")]
+    [else
+     (define el (point-of lt))
+     (values (elm-nary "Contains" (list lo (if el (promote ro rt el) ro)) "Boolean") "Boolean")]))
 
 ;; numeric promotion Integer < Long < Decimal < Quantity ; #f/Any when not numeric
 (define numeric-rank (hash "Integer" 1 "Long" 2 "Decimal" 3 "Quantity" 4))
@@ -311,6 +569,142 @@
   (cond [(and ra rb) (if (>= ra rb) a b)]
         [ra a] [rb b] [else "Any"]))
 (define (composite-or a b) (cond [(vector? a) a] [(vector? b) b] [else #f]))
+
+;; ---- timing ----------------------------------------------------------------
+;; compile-timing : op prec cql cql cenv -> (values elm "Boolean")
+;; point-vs-interval picks the ELM form: `point during I` is In, `I includes point` is Contains
+(define (compile-timing op prec a b env)
+  (define-values (an0 at0) (sys a env))
+  (define-values (bn0 bt0) (sys b env))
+  (define-values (an bn _t)
+    (if (or (vector? at0) (vector? bt0)) (values an0 bn0 at0) (unify-pair an0 at0 bn0 bt0)))
+  (define a-point? (not (interval-type? at0)))
+  (define b-point? (not (interval-type? bt0)))
+  (define op*
+    (case op
+      [(included-in during) (if (and a-point? (interval-type? bt0)) 'in op)]
+      [(properly-included-in) (if (and a-point? (interval-type? bt0)) 'proper-in op)]
+      [(includes) (if (and b-point? (interval-type? at0)) 'contains op)]
+      [(properly-includes) (if (and b-point? (interval-type? at0)) 'proper-contains op)]
+      [else op]))
+  (values (elm-timing op* (and prec (units->prec prec)) an bn) "Boolean"))
+
+;; A <quantity> [or less|or more|…] before|after B — the translator's expansion:
+;;   or less / less than : In(A, Interval[B - q, B]) and not (B is null)   (bounds per phrase)
+;;   or more / more than : SameOrBefore|Before(A, B - q) (after: SameOrAfter|After(A, B + q))
+;;   exact               : SameAs(A, B -/+ q)
+;; an interval A is reduced to its end (before) or start (after); an interval B to its start
+;; (before) or end (after).
+(define (compile-timing-offset op prec q qual a b env)
+  (define-values (an0 at) (sys a env))
+  (define-values (bn0 bt) (sys b env))
+  (define before? (memq op '(before same-or-before)))
+  (define on? (memq op '(same-or-before same-or-after)))
+  (define an (if (interval-type? at) (elm-unary (if before? "End" "Start") an0 #f) an0))
+  (define bn (if (interval-type? bt) (elm-unary (if before? "Start" "End") bn0 #f) bn0))
+  (define-values (qn _qt) (compile-literal q))
+  (define shifted (elm-nary (if before? "Subtract" "Add") (list bn qn) #f))
+  (define p (and prec (units->prec prec)))
+  (case qual
+    [(or-less less-than)
+     (define edge-closed (and (eq? qual 'or-less) #t))
+     (define iv (if before?
+                    (elm-interval shifted bn edge-closed (and on? #t))
+                    (elm-interval bn shifted (and on? #t) edge-closed)))
+     (values (elm-nary "And" (list (elm-timing 'in p an iv)
+                                   (elm-unary "Not" (elm-unary "IsNull" bn "Boolean") "Boolean"))
+                       "Boolean")
+             "Boolean")]
+    [(or-more more-than)
+     (define t (if before? (if (eq? qual 'or-more) 'same-or-before 'before) (if (eq? qual 'or-more) 'same-or-after 'after)))
+     (values (elm-timing t p an shifted) "Boolean")]
+    [else (values (elm-timing 'same-as p an shifted) "Boolean")]))
+
+;; A [properly] within q of B : In(A, Interval[B - q, B + q]) and not (B is null)
+(define (compile-within properly? q a b env)
+  (define-values (an0 at) (sys a env))
+  (define-values (bn0 bt) (sys b env))
+  (define-values (qn _qt) (compile-literal q))
+  (define closed (not properly?))
+  (values (elm-nary "And"
+                    (list (elm-timing 'in #f an0 (elm-interval (elm-nary "Subtract" (list bn0 qn) #f)
+                                                              (elm-nary "Add" (list bn0 qn) #f) closed closed))
+                          (elm-unary "Not" (elm-unary "IsNull" bn0 "Boolean") "Boolean"))
+                    "Boolean")
+          "Boolean"))
+
+;; ---- retrieve --------------------------------------------------------------
+;; [Type: path comparator terminology] -> Retrieve over the model's class (profile url = templateId,
+;; default code path = the class's primaryCodePath; a Code terminology becomes ToList(code), compared ~)
+(define (compile-retrieve r env)
+  (match-define (cql-retrieve _ctx type path cmp term) r)
+  (define m (or (lctx-model (L)) (fail "a retrieve needs a data model (`using`)")))
+  (define qname (or (model-resolve-type m (symbol->string type)) (fail (format "unknown model type ~a" type))))
+  (define-values (codes ct) (if term (compile term env) (values #f #f)))
+  (values (retrieve-node qname
+                         (and term (or (and path (symbol->string path))
+                                       (class-info-primary-code-path (model-class m qname))))
+                         (and term (cond [cmp (symbol->string cmp)]
+                                         [(member ct '("ValueSet" "CodeSystem")) "in"]
+                                         [else "~"]))
+                         (and term (if (member ct '("Code" "Concept")) (elm-unary "ToList" codes #f) codes)))
+          (vector 'list qname)))
+(define (retrieve-node qname code-property comparator codes)
+  (define m (lctx-model (L)))
+  (elm-retrieve (format "{~a}~a" (model-url m) (local-name qname))
+                (class-info-identifier (model-class m qname)) code-property comparator codes))
+(define (local-name q) (let ([m (regexp-match #rx"[.]([^.]+)$" q)]) (if m (cadr m) q)))
+
+;; ---- queries ---------------------------------------------------------------
+;; sources/lets bind aliases with their element types; relationships, where, return and aggregate
+;; compile in that scope; `sort by` items compile against the result row (IdentifierRef / ByColumn).
+(define (compile-query q env)
+  (define srcs (for/list ([s (in-list (cql-query-sources q))])
+                 (define-values (n t) (compile (cql-source-expr s) env))
+                 (list (cql-source-alias s) n t)))
+  (define single? (= 1 (length srcs)))
+  (define (elem t) (if (list-type? t) (vector-ref t 1) t))
+  (define env1 (cenv-bind env 'alias (for/list ([s (in-list srcs)]) (cons (first s) (elem (third s))))))
+  (define-values (env2 let-elms)
+    (for/fold ([e env1] [acc '()] #:result (values e (reverse acc))) ([l (in-list (cql-query-lets q))])
+      (define-values (n t) (compile (cql-let-def-expr l) e))
+      (values (cenv-bind e 'let (list (cons (cql-let-def-name l) t)))
+              (cons (cons (symbol->string (cql-let-def-name l)) n) acc))))
+  (define rels
+    (for/list ([r (in-list (cql-query-rels q))])
+      (define src (cql-relationship-source r))
+      (define-values (n t) (compile (cql-source-expr src) env2))
+      (define envR (cenv-bind env2 'alias (list (cons (cql-source-alias src) (elem t)))))
+      (elm-relationship (cql-relationship-kind r) (symbol->string (cql-source-alias src)) n
+                        (let-values ([(sn _st) (sys (cql-relationship-such-that r) envR)]) sn))))
+  (define where (and (cql-query-where q) (let-values ([(n _t) (sys (cql-query-where q) env2)]) n)))
+  (define-values (ret ret-t)
+    (if (cql-query-ret q)
+        (compile (cql-return-expr (cql-query-ret q)) env2)
+        (values #f (if single? (elem (third (car srcs))) "Tuple"))))
+  (define ret-distinct (and (cql-query-ret q) (cql-return-distinct? (cql-query-ret q))))
+  (define agg
+    (and (cql-query-agg q)
+         (let* ([a (cql-query-agg q)] [envA (cenv-bind env2 'acc (list (cons (cql-agg-name a) "Any")))])
+           (list (symbol->string (cql-agg-name a)) (cql-agg-distinct? a)
+                 (and (cql-agg-starting a) (compile1 (cql-agg-starting a) env2))
+                 (compile1 (cql-agg-body a) envA)))))
+  (define sort
+    (match (cql-query-sort q)
+      [#f #f]
+      [(? symbol? dir) (list (elm-sort-by 'direction (symbol->string dir) #f))]
+      [items
+       (define row-env (cenv (cenv-locals env) ret-t #f))
+       (for/list ([it (in-list items)])
+         (define dir (symbol->string (cql-sort-item-direction it)))
+         (match (cql-sort-item-expr it)
+           [(cql-ref n) #:when (property-type ret-t (symbol->string n))
+            (elm-sort-by 'column dir (symbol->string n))]
+           [e (elm-sort-by 'expression dir (let-values ([(n _t) (sys e row-env)]) n))]))]))
+  (define scalar? (and single? (not (list-type? (third (car srcs))))))
+  (values (elm-query (for/list ([s (in-list srcs)]) (cons (symbol->string (first s)) (second s)))
+                     let-elms rels where ret ret-distinct sort agg)
+          (cond [agg "Any"] [scalar? ret-t] [else (vector 'list ret-t)])))
 
 ;; ---- control flow ----------------------------------------------------------
 (define (compile-if c t e env)
@@ -339,8 +733,8 @@
   (values (elm-list nodes) (vector 'list t)))
 
 (define (compile-interval low high lc hc env)
-  (define-values (ln lt) (compile low env))
-  (define-values (hn _ht) (compile high env))
+  (define-values (ln lt) (sys low env))
+  (define-values (hn _ht) (sys high env))
   (values (elm-interval ln hn lc hc) (vector 'interval lt)))
 
 (define (compile-tuple elems env)
@@ -350,14 +744,43 @@
           "Tuple"))
 
 ;; ---- navigation / calls / indexing ----------------------------------------
+;; X.name : an include alias names a definition there ; a query alias reads with `scope` ; otherwise a
+;; Property over the source, typed from the model (or a System structured type)
 (define (compile-property target name env)
-  (define-values (tn _t) (compile target env))
-  (values (elm-property tn (symbol->string name)) "Any"))
+  (cond
+    [(include-alias? env target) (compile-qualified-ref (cql-ref-name target) name)]
+    [(and (cql-ref? target) (match (local-ref env (cql-ref-name target)) [(cons 'alias _) #t] [_ #f]))
+     (define t (cdr (local-ref env (cql-ref-name target))))
+     (values (elm-property #f (symbol->string name) (symbol->string (cql-ref-name target)))
+             (or (property-type t (symbol->string name)) "Any"))]
+    [else
+     (define-values (tn tt) (compile target env))
+     (values (elm-property tn (symbol->string name) #f) (or (property-type tt (symbol->string name)) "Any"))]))
+
+;; property-type : CType string -> CType|#f
+(define system-properties
+  (hash "Code" (hash "code" "String" "system" "String" "version" "String" "display" "String")
+        "Concept" (hash "codes" (vector 'list "Code") "display" "String")
+        "Quantity" (hash "value" "Decimal" "unit" "String")
+        "Ratio" (hash "numerator" "Quantity" "denominator" "Quantity")))
+(define (property-type t name)
+  (match t
+    [(? string? s)
+     (define m (lctx-model (L)))
+     (cond [(hash-ref system-properties s #f) => (lambda (h) (hash-ref h name #f))]
+           [(and m (regexp-match? #rx"[.]" s)) (model-element-type m s name)]
+           [(equal? s "Any") "Any"]
+           [else #f])]
+    [(vector 'list el) (let ([p (property-type el name)]) (and p (if (list-type? p) p (vector 'list p))))]
+    [(vector 'interval el) (and (member name '("low" "high")) el)]
+    [(vector 'tuple els) (let ([e (assq (string->symbol name) els)]) (and e (cdr e)))]
+    [(vector 'choice _) "Any"]
+    [_ #f]))
 
 (define (compile-index target idx env)
   (define-values (tn tt) (compile target env))
   (define-values (in _it) (compile idx env))
-  (values (elm-nary "Indexer" (list tn in) (elem-type tt)) (elem-type tt)))
+  (values (elm-nary "Indexer" (list tn in) (simple-rt (elem-type tt))) (elem-type tt)))
 
 (define (elem-type t) (if (and (vector? t) (eq? (vector-ref t 0) 'list)) (vector-ref t 1) "Any"))
 
@@ -413,52 +836,227 @@
       (cql-lit (qty-lit 1 (symbol->string (cql-ref-name a))))
       a))
 
+
+;; system operators over Any (lists, nulls): their operands are NOT converted to System types
+(define generic-ops '(IsNull Exists Count First Last SingletonFrom Flatten Distinct Coalesce Message Indexer
+                      Tail Take Skip Slice IndexOf Length Combine))
+
+;; age functions: AgeInYears() / AgeInYearsAt(x) / CalculateAgeInYearsAt(b, x) -> CalculateAge[At]
+(define age-rx #px"^(Calculate)?AgeIn(Years|Months|Weeks|Days|Hours|Minutes|Seconds)(At)?$")
+
 (define (compile-call target name args env)
+  (define lx (L))
   (cond
     ;; temporal constructors (only in call position, no target)
     [(and (not target) (memq name '(Date DateTime Time))) (compile-constructor name args env)]
     ;; expand's per-argument may be a bare unit keyword (normalize, then compile as usual)
     [(and (not target) (eq? name 'Expand) (= 2 (length args)) (not (equal? args (map normalize-per-arg args))))
      (compile-call target 'Expand (map normalize-per-arg args) env)]
-    ;; user-defined function (local) -> FunctionRef
-    [(and (not target) (hash-ref (cenv-funcs env) name #f))
-     (values (elm-function-ref (symbol->string name) #f (map (lambda (a) (let-values ([(n _t) (compile a env)]) n)) args))
-             "Any")]
+    ;; Library.f(args) into an include
+    [(include-alias? env target) (call-function (cql-ref-name target) name args env)]
+    ;; a local function (or overload set)
+    [(and (not target) (resolve-overload (hash-ref (lctx-funcs lx) name '()) (arg-types args env) lx))
+     (call-function #f name args env)]
+    ;; x.f(args) where f is a fluent function, local or included
+    [(and target (fluent-home name (cons target args) env))
+     => (lambda (home) (call-function (if (eq? home 'local) #f home) name (cons target args) env))]
+    [(and (not target) (regexp-match age-rx (symbol->string name))) => (lambda (m) (compile-age m args env))]
+    ;; FHIRPath-style methods on a collection: x.first(), x.where(cond), x.single(), …
+    [(and target (hash-ref fhirpath-methods name #f)) => (lambda (op) (compile-method op target args env))]
+    [else (compile-system-call target name args env)]))
+
+;; FHIRPath-compatible method invocation, as the translator maps it
+(define fhirpath-methods
+  (hasheq 'first "First" 'last "Last" 'single "SingletonFrom" 'exists "Exists" 'count "Count"
+          'distinct "Distinct" 'where 'where 'select 'select 'empty 'empty
+          'skip 'skip 'take 'take 'tail 'tail))
+;; compile-method : op cql (listof cql) cenv -> (values elm CType)
+(define (compile-method op target args env)
+  (define-values (tn tt) (compile target env))
+  (define el (if (list-type? tt) (vector-ref tt 1) tt))
+  (define (this-env) (struct-copy cenv (cenv-bind env 'alias (list (cons '$this el))) [this "$this"]))
+  (match op
+    ['where
+     (define-values (c _ct) (sys (car args) (this-env)))
+     (values (elm-query (list (cons "$this" tn)) '() '() c #f #f #f #f) (vector 'list el))]
+    ['select
+     (define-values (r rt) (compile (car args) (this-env)))
+     (values (elm-query (list (cons "$this" tn)) '() '() #f r #f #f #f) (vector 'list rt))]
+    ['empty (values (elm-unary "Not" (elm-unary "Exists" tn "Boolean") "Boolean") "Boolean")]
+    ;; skip(n) / take(n) / tail() are Slice(source, start, end)
+    ['skip (values (elm-nary "Slice" (list tn (compile1 (car args) env) (elm-null #f)) #f) tt)]
+    ['take (values (elm-nary "Slice" (list tn (elm-literal "Integer" "0") (compile1 (car args) env)) #f) tt)]
+    ['tail (values (elm-nary "Slice" (list tn (elm-literal "Integer" "1") (elm-null #f)) #f) tt)]
+    [(or "First" "Last" "SingletonFrom") (values (elm-unary op tn #f) el)]
+    ["Count" (values (elm-unary op tn "Integer") "Integer")]
+    ["Exists" (values (elm-unary op tn "Boolean") "Boolean")]
+    [_ (values (elm-unary op tn #f) tt)]))
+
+;; arg-types : (listof cql) cenv -> (listof CType)
+(define (arg-types args env) (for/list ([a (in-list args)]) (let-values ([(_n t) (compile a env)]) t)))
+
+;; fluent-home : sym args cenv -> 'local | alias-sym | #f   where a fluent function `name` lives
+(define (fluent-home name args env)
+  ;; only type the arguments when some fluent function of that name exists (typing a FHIRPath-style
+  ;; .where(use = 'x') argument outside its $this scope would fail)
+  (define (named? lx) (ormap cql-func-fluent? (hash-ref (lctx-funcs lx) name '())))
+  (and (or (named? (L)) (for/or ([(alias _i) (in-hash (lctx-includes (L)))]) (let ([lx (included alias)]) (and lx (named? lx)))))
+       (fluent-home* name args env)))
+(define (fluent-home* name args env)
+  (define ts (arg-types args env))
+  (define (has? lx) (resolve-overload (filter cql-func-fluent? (hash-ref (lctx-funcs lx) name '())) ts lx))
+  (cond [(has? (L)) 'local]
+        [else (for/or ([(alias _inc) (in-hash (lctx-includes (L)))])
+                (define lx (included alias))
+                (and lx (has? lx) alias))]))
+
+;; call-function : alias|#f sym args cenv -> (values elm CType)   FunctionRef with overload resolution
+;; and argument conversion to the chosen overload's operand types
+(define (call-function alias name args env)
+  (define lx (if alias (included alias) (L)))
+  (define compiled (for/list ([a (in-list args)]) (let-values ([(n t) (compile a env)]) (cons n t))))
+  (define cands (if lx (hash-ref (lctx-funcs lx) name '()) '()))
+  (define f (and lx (resolve-overload cands (map cdr compiled) lx)))
+  (cond
+    [f
+     (define formals (parameterize ([current-lctx lx])
+                       (map (lambda (o) (type->ctype (cql-operand-type o))) (cql-func-operands f))))
+     (values (elm-function-ref (symbol->string name) (and alias (symbol->string alias))
+                               (for/list ([c (in-list compiled)] [ft (in-list formals)]) (coerce (car c) (cdr c) ft)))
+             (func-result-type lx f))]
+    [(and alias (not lx))                                  ; unresolved include: untyped reference
+     (values (elm-function-ref (symbol->string name) (symbol->string alias) (map car compiled)) "Any")]
+    [else (fail (format "no overload of ~a~a matches ~s" (if alias (format "~a." alias) "") name (map cdr compiled)))]))
+
+;; ---- overloads and conversions ----------------------------------------------
+;; conversion-cost : CType CType -> number|#f   0 exact/subtype, 1 one implicit conversion, 2 two
+(define (conversion-cost from to)
+  (define m (lctx-model (L)))
+  (cond
+    [(equal? from to) 0]
+    [(or (equal? to "Any") (equal? from "Any")) 0]
+    [(and (string? from) (string? to) m (model-subtype? m from to)) 0]
+    [(and (vector? to) (eq? (vector-ref to 0) 'choice))
+     ;; a choice argument fits a choice parameter when all its members do (0), or some do (1: the
+     ;; translator accepts the overlap)
+     (cond [(vector? from)
+            (if (eq? (vector-ref from 0) 'choice)
+                (let ([ks (map (lambda (f) (conversion-cost f to)) (vector-ref from 1))])
+                  (cond [(andmap values ks) 0] [(ormap values ks) 1] [else #f]))
+                #f)]
+           [else (for/or ([c (in-list (vector-ref to 1))]) (let ([k (conversion-cost from c)]) (and k (= k 0) 0)))])]
+;; a choice argument to a parameter of one of its member types: an implicit As (cost 1)
+    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
+          (for/or ([c (in-list (vector-ref from 1))]) (eqv? 0 (conversion-cost c to))))
+     1]
+    [(and (vector? from) (vector? to) (eq? (vector-ref from 0) (vector-ref to 0)) (memq (vector-ref from 0) '(list interval)))
+     (conversion-cost (vector-ref from 1) (vector-ref to 1))]
+    [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) 1]
+    [(and (string? from) m (model-conversion m from))
+     => (lambda (c) (let ([k (conversion-cost (car c) to)]) (and k (< k 2) (+ 1 k))))]
+    [(and (equal? to "Tuple") (vector? from) (eq? (vector-ref from 0) 'tuple)) 0]
+    [else #f]))
+
+;; coerce : elm CType CType -> elm   apply the implicit conversions conversion-cost counted
+(define (coerce n from to)
+  (define m (lctx-model (L)))
+  (cond
+    [(eqv? (conversion-cost from to) 0) n]
+    [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) (promote n from to)]
+    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to))
+     (elm-as n (elm-named-type (ctype->elm-name to)) #f)]
+    [(and (string? from) m (model-conversion m from))
+     (define-values (n2 t2) (to-system n from))
+     (if (eq? n2 n) n (coerce n2 t2 to))]
+    [else n]))
+
+;; resolve-overload : (listof cql-func) (listof CType) lctx -> cql-func|#f   cheapest applicable
+(define (resolve-overload cands ts lx)
+  (define scored
+    (parameterize ([current-lctx lx])
+      (for*/list ([f (in-list cands)]
+                  #:when (= (length (cql-func-operands f)) (length ts))
+                  [cost (in-value (for/fold ([acc 0]) ([o (in-list (cql-func-operands f))] [t (in-list ts)])
+                                    (define k (and acc (conversion-cost t (type->ctype (cql-operand-type o)))))
+                                    (and k (+ acc k))))]
+                  #:when cost)
+        (cons cost f))))
+  (and (pair? scored) (cdr (argmin car scored))))
+
+;; AgeIn<P>[At](x) / CalculateAgeIn<P>At(b, x) -> CalculateAge[At] over the model's birth date
+(define (compile-age m args env)
+  (define prec (let ([p (caddr m)]) (substring p 0 (sub1 (string-length p)))))
+  (define at? (and (cadddr m) #t))
+  (define calc? (and (cadr m) #t))
+  (define-values (operands types)
+    (for/lists (ns ts) ([a (in-list (if calc? args (if at? args '())))])
+      (sys a env)))
+  (define birth
+    (and (not calc?)
+         (let* ([lx (L)] [model (or (lctx-model lx) (fail "age functions need a data model"))])
+           (cons (elm-property (elm-expression-ref "Patient" #f) (model-birth-date-path model) #f) "Date"))))
+  (define all (if birth (cons (car birth) operands) operands))
+  (define all-t (if birth (cons (cdr birth) types) types))
+  ;; with a DateTime "as of", the birth date is promoted to DateTime
+  (define target (if (and (pair? all-t) (member "DateTime" all-t)) "DateTime" #f))
+  (define converted (for/list ([n (in-list all)] [t (in-list all-t)]) (if target (promote n t target) n)))
+  (values (elm-precision-op (if (or at? calc?) "CalculateAgeAt" "CalculateAge") prec converted) "Integer"))
+
+;; system functions (the operator registry's names), operands converted to System types
+(define (compile-system-call target name args env)
+  ;; method-style x.f(args) is sugar for f(x, args)
+  (define all-args (if target (cons target args) args))
+  ;; FHIRPath-style lowercase names reach the System function: x.toDateTime() = ToDateTime(x)
+  (define spec (or (hash-ref system-ops name #f) (hash-ref system-ops (capitalize name) #f)))
+  (set! name (if (hash-ref system-ops name #f) name (capitalize name)))
+  (cond
+    [(not spec) (fail (format "unknown function '~a'" name))]
     [else
-     ;; method-style x.f(args) is sugar for f(x, args)
-     (define all-args (if target (cons target args) args))
-     (define spec (hash-ref system-ops name #f))
-     (cond
-       [(not spec) (fail (format "unknown function '~a'" name))]
-       [else
-        (define nodes (map (lambda (a) (let-values ([(n _t) (compile a env)]) n)) all-args))
-        (define rt (cdr spec))
-        (case (car spec)
-          [(unary)
-           (unless (= 1 (length nodes)) (fail (format "~a expects 1 argument" name)))
-           (values (elm-unary (symbol->string name) (car nodes) rt) (or rt "Any"))]
-          [(nary)
-           (values (elm-nary (symbol->string name) nodes rt) (or rt "Any"))])])]))
+     (define-values (nodes types)
+       (for/lists (ns ts) ([a (in-list all-args)])
+         (if (memq name generic-ops) (compile a env) (sys a env))))
+     (define rt (cdr spec))
+     (define t (or rt (derived-result-type name types)))
+     (case (car spec)
+       [(unary)
+        (unless (= 1 (length nodes)) (fail (format "~a expects 1 argument" name)))
+        (values (elm-unary (symbol->string name) (car nodes) rt) t)]
+       [(nary)
+        (values (elm-nary (symbol->string name) nodes rt) t)])]))
+
+(define (capitalize sym)
+  (define s (symbol->string sym))
+  (if (string=? s "") sym (string->symbol (string-append (string-upcase (substring s 0 1)) (substring s 1)))))
+
+;; derived-result-type : sym (listof CType) -> CType   for system operators typed by their arguments
+(define (derived-result-type name ts)
+  (define t0 (if (pair? ts) (car ts) "Any"))
+  (define (el t) (or (point-of t) "Any"))
+  (case name
+    [(Start End PointFrom Width Min Max Sum First Last SingletonFrom Median Mode Product) (el t0)]
+    [(Abs Predecessor Successor Distinct Flatten Tail Take Skip Slice Expand Collapse LowBoundary HighBoundary) t0]
+    [(Coalesce) (or (for/first ([t (in-list ts)] #:unless (equal? t "Any")) t) "Any")]
+    [else "Any"]))
 
 ;; ---- type ops --------------------------------------------------------------
 (define (compile-typeop op operand type env)
   (define-values (o _t) (compile operand env))
   (case op
     [(is) (values (elm-is o (compile-type type)) "Boolean")]
-    [(as) (values (elm-as o (compile-type type) #f) (type-simple type))]
+    [(as) (values (elm-as o (compile-type type) #f) (type->ctype type))]
     [else (fail (format "unsupported type operator ~a" op))]))
 
 (define (compile-cast operand type env)
   (define-values (o _t) (compile operand env))
-  (values (elm-as o (compile-type type) #t) (type-simple type)))
+  (values (elm-as o (compile-type type) #t) (type->ctype type)))
 
 (define (compile-convert operand type env)
-  (define-values (o _t) (compile operand env))
+  (define-values (o _t) (sys operand env))
   (define simple (type-simple type))
   ;; convert to a System type -> a To<Type> operator when known, else a strict As
   (if (and simple (member simple '("String" "Integer" "Long" "Decimal" "Quantity" "Boolean" "Date" "DateTime" "Time")))
       (values (elm-to o simple) simple)
-      (values (elm-as o (compile-type type) #t) (or simple "Any"))))
+      (values (elm-as o (compile-type type) #t) (type->ctype type))))
 
 ;; a type-spec's simple System name (for result-type inference), or #f for composite/qualified
 (define (type-simple type)
@@ -466,21 +1064,43 @@
     [(named-type name) (let ([s (symbol->string name)]) (if (regexp-match? #rx"[.]" s) #f s))]
     [_ #f]))
 
-(define (compile-type type)
-  (match type
-    [(named-type name) (elm-named-type (qualify-type-name (symbol->string name)))]
-    [(interval-type el) (elm-interval-type (compile-type el))]
-    [(list-type el) (elm-list-type (compile-type el))]
-    [_ (fail (format "unsupported type specifier: ~s" type))]))
-
-;; a bare simple name is a System type; a qualified name (Model.Type) is passed through as-is
+;; ---- types -----------------------------------------------------------------
+;; named->ctype : string -> CType   "System.Code" -> "Code" ; "Encounter"/"FHIR.Encounter" -> "FHIR.Encounter"
 (define system-simple-types
   '("Integer" "Long" "Decimal" "Quantity" "Ratio" "String" "Boolean" "Date" "DateTime" "Time"
     "Code" "Concept" "Any" "Vocabulary" "ValueSet" "CodeSystem"))
-(define (qualify-type-name s)
-  (cond [(regexp-match? #rx"[.{]" s) s]                     ; already qualified
-        [(member s system-simple-types) (system-type-name s)]
+(define (named->ctype s)
+  (define m (lctx-model (L)))
+  ;; an unqualified name means the model's type when the model has one (Quantity, Ratio, Period in a
+  ;; FHIR library), else the System type
+  (cond [(regexp-match #rx"^System[.](.*)$" s) => cadr]
+        [(and m (model-resolve-type m s))]
         [else s]))
+;; type->ctype : type-spec -> CType
+(define (type->ctype t)
+  (match t
+    [(named-type name) (named->ctype (symbol->string name))]
+    [(interval-type el) (vector 'interval (type->ctype el))]
+    [(list-type el) (vector 'list (type->ctype el))]
+    [(choice-type ts) (vector 'choice (map type->ctype ts))]
+    [(tuple-type els) (vector 'tuple (map (lambda (e) (cons (car e) (type->ctype (cdr e)))) els))]
+    [_ "Any"]))
+;; ctype->elm-name : CType(string) -> "{urn:hl7-org:elm-types:r1}Integer" | "{http://hl7.org/fhir}Period"
+(define (ctype->elm-name s)
+  (define m (lctx-model (L)))
+  (cond [(and m (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name m)) "[.]")) s))
+         (format "{~a}~a" (model-url m) (local-name s))]
+        [(regexp-match? #rx"[.{]" s) s]
+        [else (system-type-name s)]))
+
+(define (compile-type type)
+  (match type
+    [(named-type name) (elm-named-type (ctype->elm-name (named->ctype (symbol->string name))))]
+    [(interval-type el) (elm-interval-type (compile-type el))]
+    [(list-type el) (elm-list-type (compile-type el))]
+    [(choice-type ts) (elm-choice-type (map compile-type ts))]
+    [(tuple-type els) (elm-tuple-type (map (lambda (e) (cons (symbol->string (car e)) (compile-type (cdr e)))) els))]
+    [_ (fail (format "unsupported type specifier: ~s" type))]))
 
 (module+ test
   (require rackunit

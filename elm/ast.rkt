@@ -12,7 +12,14 @@
 
 (require racket/contract)
 
-(provide (struct-out elm-library) (struct-out elm-using) (struct-out elm-def) (struct-out elm-function-def)
+(provide (struct-out elm-library) (struct-out elm-using)
+         (struct-out elm-include) (struct-out elm-parameter-def) (struct-out elm-codesystem-def)
+         (struct-out elm-valueset-def) (struct-out elm-code-def) (struct-out elm-concept-def)
+         (struct-out elm-context-def) (struct-out elm-retrieve) (struct-out elm-relationship)
+         (struct-out elm-sort-by) (struct-out elm-alias-ref) (struct-out elm-query-let-ref)
+         (struct-out elm-identifier-ref) (struct-out elm-term-ref) (struct-out elm-code)
+         (struct-out elm-concept) (struct-out elm-in-valueset) (struct-out elm-precision-op)
+         (struct-out elm-choice-type) (struct-out elm-tuple-type) (struct-out elm-def) (struct-out elm-function-def)
          (struct-out elm-operand-def)
          (struct-out elm-literal) (struct-out elm-null) (struct-out elm-quantity) (struct-out elm-ratio)
          (struct-out elm-date) (struct-out elm-time) (struct-out elm-datetime) (struct-out elm-component)
@@ -33,10 +40,19 @@
 (define (system-type-name simple) (format "{~a}~a" system-ns simple))
 
 ;; ---- library / statements --------------------------------------------------
-(struct elm-library      (id version usings statements) #:prefab) ; usings/statements: (listof …)
+;; An ELM library: its identifier, then one list per ELM library section (each possibly empty).
+(struct elm-library      (id version usings includes parameters codesystems valuesets codes concepts
+                             contexts statements) #:prefab)
 (struct elm-using        (local-id uri version)         #:prefab)
+(struct elm-include      (local-id path version)        #:prefab)
+(struct elm-parameter-def (name access default type)    #:prefab) ; default: elm|#f ; type: type-spec|#f
+(struct elm-codesystem-def (name id version access)     #:prefab)
+(struct elm-valueset-def (name id version access codesystems) #:prefab) ; codesystems: (listof elm-term-ref)
+(struct elm-code-def     (name id display access codesystem) #:prefab) ; codesystem: elm-term-ref
+(struct elm-concept-def  (name display access codes)    #:prefab) ; codes: (listof elm-term-ref)
+(struct elm-context-def  (name)                         #:prefab)
 (struct elm-def          (name context access expression) #:prefab) ; an ExpressionDef
-(struct elm-function-def (name context access operands result-type expression) #:prefab)
+(struct elm-function-def (name context access operands result-type expression fluent?) #:prefab)
 (struct elm-operand-def  (name type)                    #:prefab)
 
 ;; ---- expressions -----------------------------------------------------------
@@ -58,7 +74,13 @@
 (struct elm-timing       (op precision a b) #:prefab)
 ;; a query over lists/singletons. sources/lets: (Listof (cons string elm)) ; where/ret: elm|#f ;
 ;; sort: 'asc|'desc|#f ; agg: (list name distinct? starting-elm|#f body-elm)|#f
-(struct elm-query        (sources lets where ret ret-distinct sort agg) #:prefab)
+;; relationships: (listof elm-relationship) ; sort: #f | (listof elm-sort-by)
+(struct elm-query        (sources lets relationships where ret ret-distinct sort agg) #:prefab)
+(struct elm-relationship (kind alias expression such-that) #:prefab) ; kind 'with|'without
+;; kind 'direction|'column|'expression ; direction "asc"|"desc" ; target: #f | path string | elm
+(struct elm-sort-by      (kind direction target) #:prefab)
+;; [Type: codeProperty codeComparator codes] — data-type a qualified type name {uri}Name
+(struct elm-retrieve     (data-type template-id code-property code-comparator codes) #:prefab)
 ;; an Instance selector (Code{…}/Concept{…}/Quantity{…}/ClassType{…}): class-type string + named elements
 (struct elm-instance     (class-type elements) #:prefab) ; elements: (Listof elm-tuple-elem)
 (struct elm-nary         (op operands result-type) #:prefab) ; op: ELM type string e.g. "Add" ; operands: (listof elm)
@@ -70,7 +92,16 @@
 (struct elm-if           (cond then els)     #:prefab)
 (struct elm-case         (comparand items els) #:prefab) ; comparand #f for a standard case
 (struct elm-case-item    (when then)         #:prefab)
-(struct elm-property     (source path)       #:prefab)
+(struct elm-property     (source path scope) #:prefab) ; source elm|#f ; scope: alias name|#f
+(struct elm-alias-ref    (name)              #:prefab) ; a query alias used as a value
+(struct elm-query-let-ref (name)             #:prefab)
+(struct elm-identifier-ref (name)            #:prefab) ; a name resolved against the sort row
+;; kind "ValueSetRef"|"CodeSystemRef"|"CodeRef"|"ConceptRef" ; library #f when local
+(struct elm-term-ref     (kind name library) #:prefab)
+(struct elm-code         (code system display) #:prefab) ; Code 'c' from "CS" ; system elm-term-ref
+(struct elm-concept      (codes display)     #:prefab)
+(struct elm-in-valueset  (kind code valueset) #:prefab) ; kind "InValueSet"|"AnyInValueSet"
+(struct elm-precision-op (op precision operands) #:prefab) ; CalculateAgeAt etc. ; precision "Year"…
 (struct elm-expression-ref (name library)    #:prefab) ; library #f when local
 (struct elm-function-ref (name library operands) #:prefab)
 (struct elm-operand-ref  (name)              #:prefab)
@@ -83,6 +114,8 @@
 (struct elm-named-type    (name)    #:prefab) ; name: full qualified type name string
 (struct elm-interval-type (point)   #:prefab)
 (struct elm-list-type     (element) #:prefab)
+(struct elm-choice-type   (types)   #:prefab)
+(struct elm-tuple-type    (elements) #:prefab) ; (listof (cons name-string type-spec))
 
 (define (elm-expr? x)
   (or (elm-literal? x) (elm-null? x) (elm-quantity? x) (elm-ratio? x) (elm-nary? x) (elm-unary? x)
@@ -90,7 +123,9 @@
       (elm-query? x) (elm-instance? x)
       (elm-interval? x) (elm-list? x) (elm-tuple? x) (elm-if? x) (elm-case? x) (elm-property? x)
       (elm-expression-ref? x) (elm-function-ref? x) (elm-operand-ref? x) (elm-parameter-ref? x)
-      (elm-is? x) (elm-as? x) (elm-to? x)))
+      (elm-is? x) (elm-as? x) (elm-to? x) (elm-retrieve? x) (elm-alias-ref? x) (elm-query-let-ref? x)
+      (elm-identifier-ref? x) (elm-term-ref? x) (elm-code? x) (elm-concept? x) (elm-in-valueset? x)
+      (elm-precision-op? x)))
 
 (module+ test
   (require rackunit)

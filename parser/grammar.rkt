@@ -126,7 +126,10 @@ type-op-tail        : @type-op type-specifier
                     | "is" "not" BOOL
 cast-expr           : /"cast" unary-expr /"as" type-specifier
 convert-expr        : /"convert" unary-expr /"to" type-specifier
-unary-expr          : @unary-op unary-expr | "exists" query | interval-prefix | postfix-expr
+;; duration-of / component-from are TERMS (cql.g4), not primaries: as primaries they would take
+;; postfix tails — `duration in hours of Global.F(x)` parsed as `(duration in hours of Global).F(x)`
+unary-expr          : @unary-op unary-expr | "exists" query | interval-prefix | duration-of
+                    | component-from | postfix-expr
 ;; interval/list prefix operators
 interval-prefix     : "start" /"of" unary-expr
                     | "end" /"of" unary-expr
@@ -159,10 +162,8 @@ primary             : literal
                     | code-selector
                     | concept-selector
                     | retrieve
-                    | duration-of
                     | duration-between
                     | difference-between
-                    | component-from
                     | function-call
                     | member
                     | /"(" expr /")"

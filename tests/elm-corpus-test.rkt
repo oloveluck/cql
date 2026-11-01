@@ -4,9 +4,9 @@
 ;;; the CQF Measures eCQM examples, the CQL IG's examples), each with the reference translator's ELM
 ;;; (see elm-corpus-harness.rkt and tests/vendor/elm-corpus/SOURCE.txt).
 ;;;
-;;; RATCHETED BASELINE — floors only rise. Every library PARSES (terminology definitions, retrieves,
-;;; with/without, `sort by`, the interval-phrase grammar); compiling needs the library sections
-;;; (includes, terminology refs, retrieve ELM) and the FHIR model binding — the next stages.
+;;; RATCHETED BASELINE — floors only rise. Every library parses and compiles (includes resolve to the
+;;; libraries in the same package; FHIR types come from the vendored ModelInfo); the ELM-equal count
+;;; measures agreement with the reference translator, definition by definition.
 
 (require rackunit racket/runtime-path racket/list
          "elm-corpus-harness.rkt")
@@ -19,5 +19,5 @@
         (sum lib-result-defs-present) (sum lib-result-defs-total) (sum lib-result-defs-equal))
 (check-equal? (length rs) 32)
 (check-true (>= (count lib-result-parse-ok? rs) 32) "fewer corpus libraries parse than the floor")
-(check-true (>= (count lib-result-compile-ok? rs) 3) "fewer corpus libraries compile than the floor")
-(check-true (>= (sum lib-result-defs-equal) 7) "fewer ELM-equal definitions than the floor")
+(check-true (>= (count lib-result-compile-ok? rs) 32) "fewer corpus libraries compile than the floor")
+(check-true (>= (sum lib-result-defs-equal) 421) "fewer ELM-equal definitions than the floor")

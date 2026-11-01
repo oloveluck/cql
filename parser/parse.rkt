@@ -11,6 +11,7 @@
 (require racket/contract
          (prefix-in g: "grammar.rkt")
          "lexer.rkt"
+         (only-in brag/support srcloc-token? srcloc-token-token srcloc-token-srcloc token-struct? token-struct-type)
          "ast.rkt"
          (only-in "../error.rkt" cql-error)
          (only-in fhir/result/result ok err ok? err?))
@@ -27,7 +28,39 @@
   (hash-ref! lib-cache str
              (lambda ()
                (with-handlers ([exn:fail? (lambda (e) (err (cql-error 'parse (exn-message e))))])
-                 (ok (lower-library (g:parse-to-datum (tokenize (open-input-string str)))))))))
+                 (ok (merge-libraries
+                      (for/list ([chunk (in-list (definition-chunks (open-input-string str)))])
+                        (lower-library (g:parse-to-datum (list->token-thunk chunk))))))))))
+
+;; brag's general CFG parser is superlinear in input length, and FHIRHelpers is ~600 lines: parsing
+;; it whole takes seconds. A library is a sequence of definitions, so we parse DEFINITION BY
+;; DEFINITION: the token stream splits before every definition keyword in column 0 (where every
+;; real-world library starts its definitions; continuation lines are indented). Each chunk is a
+;; valid library on its own; tokens keep their original source locations, so errors still point
+;; into the file. (Same technique as fsh/parser/parse.rkt's rule-by-rule parsing.)
+(define definition-starts
+  '(library using include codesystem valueset code concept parameter context define public private))
+;; definition-chunks : input-port -> (listof (listof token))
+(define (definition-chunks in)
+  (define next (tokenize in))
+  (let loop ([cur '()] [acc '()])
+    (define t (next))
+    (cond
+      [(void? t) (reverse (if (null? cur) acc (cons (reverse cur) acc)))]
+      [(and (pair? cur) (definition-start? t)) (loop (list t) (cons (reverse cur) acc))]
+      [else (loop (cons t cur) acc)])))
+(define (definition-start? t)
+  (and (srcloc-token? t)
+       (eqv? (srcloc-column (srcloc-token-srcloc t)) 0)
+       (let ([tok (srcloc-token-token t)])
+         (and (token-struct? tok) (memq (token-struct-type tok) definition-starts) #t))))
+(define (list->token-thunk toks)
+  (lambda () (if (null? toks) (void) (begin0 (car toks) (set! toks (cdr toks))))))
+;; merge-libraries : (listof cql-library) -> cql-library   the header's id/version, all definitions
+(define (merge-libraries libs)
+  (define head (for/first ([l (in-list libs)] #:when (cql-library-id l)) l))
+  (cql-library (and head (cql-library-id head)) (and head (cql-library-version head))
+               (apply append (map cql-library-defs libs))))
 
 ;; Parse a bare expression by wrapping it in a throwaway define and extracting the body. This keeps
 ;; one grammar (no separate expression start-rule) while letting the harness parse fragments.

@@ -84,7 +84,8 @@
     [(elm-component prec operand) (component-from prec (eval-elm operand env))]
     [(elm-between kind prec a b) (between-op kind prec (eval-elm a env) (eval-elm b env))]
     [(elm-timing op prec a b) (timing-op-eval op prec (eval-elm a env) (eval-elm b env))]
-    [(elm-query sources lets where ret ret-distinct sort agg) (run-query sources lets where ret ret-distinct sort agg env)]
+    [(elm-query sources lets rels where ret ret-distinct sort agg)
+     (run-query sources lets rels where ret ret-distinct sort agg env)]
     [(elm-instance class-type elems) (build-instance class-type (for/list ([te (in-list elems)])
                                                                   (cons (elm-tuple-elem-name te)
                                                                         (eval-elm (elm-tuple-elem-value te) env))))]
@@ -98,7 +99,11 @@
                   (values (elm-tuple-elem-name te) (eval-elm (elm-tuple-elem-value te) env))))]
     [(elm-if c t e) (eval-if c t e env)]
     [(elm-case comparand items els) (eval-case comparand items els env)]
-    [(elm-property src path) (eval-property (eval-elm src env) path)]
+    [(elm-property #f path scope) (eval-property (lookup-operand scope env) path)]
+    [(elm-property src path _scope) (eval-property (eval-elm src env) path)]
+    [(elm-alias-ref name) (lookup-operand name env)]
+    [(elm-query-let-ref name) (lookup-operand name env)]
+    [(elm-identifier-ref name) (eval-property (current-sort-row) name)]
     [(elm-expression-ref name _lib) (force-value (hash-ref (ienv-defs env) name (lambda () (fail (format "unknown reference ~a" name)))))]
     [(elm-operand-ref name) (hash-ref (ienv-operands env) name (lambda () (fail (format "unbound operand ~a" name))))]
     [(elm-function-ref name _lib operands) (eval-function name (map (lambda (o) (eval-elm o env)) operands) env)]
@@ -112,6 +117,11 @@
     [_ (fail (format "cannot evaluate ELM node: ~s" node))]))
 
 (define (fail msg) (raise (cql-error 'interpret msg)))
+;; query aliases and lets live in the operand table (OperandRef, AliasRef and QueryLetRef all read it)
+(define (lookup-operand name env)
+  (hash-ref (ienv-operands env) name (lambda () (fail (format "unbound alias ~a" name)))))
+;; the row a ByExpression/ByColumn sort key is evaluated against (IdentifierRef resolves on it)
+(define current-sort-row (make-parameter #f))
 
 ;; ---- literals --------------------------------------------------------------
 (define (eval-literal vt v)
@@ -298,7 +308,11 @@
           (and (>= lvl 4) (moment-hour m)) (and (>= lvl 5) (moment-minute m)) (and (>= lvl 6) (moment-second m))
           (if (eq? prec 'millisecond) (moment-frac m) #f) (moment-tzmin m) lvl))  ; frac kept only at ms precision
 ;; timing-op-eval : Symbol (Symbol|#f) CqlValue CqlValue -> Boolean|Null
-(define (timing-op-eval op prec a b)
+(define (timing-op-eval op* prec a b)
+  ;; the point-vs-interval ELM forms (In/Contains/ProperIn/ProperContains) evaluate as their interval
+  ;; counterparts — the value shapes decide
+  (define op (case op* [(in) 'included-in] [(contains) 'includes]
+               [(proper-in) 'properly-included-in] [(proper-contains) 'properly-includes] [else op*]))
   (cond
     ;; list inclusion FIRST — a null operand against a list is decidable (in/includes are false-based)
     [(or (list? a) (list? b) (cql-null-list? a) (cql-null-list? b)) (list-timing op a b)]
@@ -406,7 +420,9 @@
 
 ;; build-instance : String (Listof (cons Symbol CqlValue)) -> CqlValue
 ;; the known System class selectors build their carrier; anything else is a structured tuple
-(define (build-instance class-type fields)
+(define (build-instance class-type* fields)
+  ;; the System namespace is optional: "{urn:hl7-org:elm-types:r1}Code" = "System.Code" = "Code"
+  (define class-type (let ([m (regexp-match #rx"^{urn:hl7-org:elm-types:r1}(.*)$" class-type*)]) (if m (cadr m) class-type*)))
   (define (f k) (cond [(assq k fields) => cdr] [else cql-null]))
   (define (fs k) (let ([v (f k)]) (if (string? v) v #f)))
   (case class-type
@@ -1422,7 +1438,7 @@
 ;; ---- query engine ----------------------------------------------------------
 ;; run-query : sources lets where ret ret-distinct sort agg Env -> CqlValue
 ;; sources/lets are (Listof (cons string elm)); agg is (list name distinct? starting-elm body-elm)|#f.
-(define (run-query sources lets where ret ret-distinct sort agg env)
+(define (run-query sources lets rels where ret ret-distinct sort agg env)
   (define srcs (map (lambda (s) (cons (car s) (eval-elm (cdr s) env))) sources))
   (cond
     [(ormap (lambda (s) (cql-null? (cdr s))) srcs) cql-null]
@@ -1432,15 +1448,45 @@
      (define elem-lists (map (lambda (s) (if (list? (cdr s)) (cdr s) (list (cdr s)))) srcs))
      (define rows (query-cartesian aliases elem-lists))
      (define row-envs (map (lambda (row) (apply-lets (row-env env row) lets)) rows))
-     (define kept (if where (filter (lambda (e) (eq? (eval-elm where e) #t)) row-envs) row-envs))
+     (define related (filter (lambda (e) (andmap (lambda (r) (relationship-holds? r e)) rels)) row-envs))
+     (define kept (if where (filter (lambda (e) (eq? (eval-elm where e) #t)) related) related))
      (cond
        [agg (run-aggregate agg aliases kept env)]
        [else
         (define results (map (lambda (e) (row-result ret aliases e)) kept))
         (define r1 (if ret-distinct (dedup results) results))
-        (define r2 (if sort (sort-values r1 sort) r1))
+        (define r2 (if sort (sort-by-items r1 sort env) r1))
         (if scalar-single? (if (pair? r2) (car r2) cql-null) r2)])]))
 
+;; relationship-holds? : elm-relationship Env -> boolean   with: some related row satisfies such-that ;
+;; without: none does
+(define (relationship-holds? r env)
+  (define src (eval-elm (elm-relationship-expression r) env))
+  (define items (cond [(cql-null? src) '()] [(list? src) src] [else (list src)]))
+  (define any? (for/or ([v (in-list items)])
+                 (eq? #t (eval-elm (elm-relationship-such-that r)
+                                   (row-env env (hash (elm-relationship-alias r) v))))))
+  (if (eq? (elm-relationship-kind r) 'with) any? (not any?)))
+;; sort-by-items : (Listof CqlValue) (Listof elm-sort-by) Env -> (Listof CqlValue)
+;; a single ByDirection sorts the values themselves; ByColumn/ByExpression sort by a key per row
+;; (stable, keys compared in order)
+(define (sort-by-items xs items env)
+  (match items
+    [(list (elm-sort-by 'direction dir _)) (sort-values xs (string->symbol dir))]
+    [_
+     (define (key-of b x)
+       (parameterize ([current-sort-row x])
+         (match b
+           [(elm-sort-by 'column _ path) (eval-property x path)]
+           [(elm-sort-by 'expression _ e) (eval-elm e env)]
+           [(elm-sort-by 'direction _ _) x])))
+     (sort xs (lambda (a b)
+                (let loop ([bs items])
+                  (cond [(null? bs) #f]
+                        [else
+                         (define c (total-compare (key-of (car bs) a) (key-of (car bs) b)))
+                         (define c* (if (equal? (elm-sort-by-direction (car bs)) "desc") (- c) c))
+                         (cond [(< c* 0) #t] [(> c* 0) #f] [else (loop (cdr bs))])]))))]))
 (define (query-cartesian aliases lists)
   (if (null? aliases) (list (hash))
       (append-map (lambda (v) (map (lambda (r) (hash-set r (car aliases) v))
