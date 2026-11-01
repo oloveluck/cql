@@ -355,10 +355,14 @@
 (define (lower-let-item li) (match li [(list 'let-item idn e) (cql-let-def (unwrap-id idn) (lower e))]))
 (define (return-mod-distinct? parts)
   (let ([m (findf (tagged? 'return-mod) parts)]) (and m (equal? (cadr m) "distinct"))))
+;; return-mod-of : parts -> #t (distinct) | 'all | #f (unstated)
+(define (return-mod-of parts)
+  (let ([m (findf (tagged? 'return-mod) parts)])
+    (cond [(not m) #f] [(equal? (cadr m) "distinct") #t] [else 'all])))
 (define (lower-roa roa)
   (match roa
     [(list 'return-or-agg (list 'return-clause parts ...))
-     (values (cql-return (return-mod-distinct? parts) (lower (last parts))) #f)]
+     (values (cql-return (return-mod-of parts) (lower (last parts))) #f)]
     [(list 'return-or-agg (list 'aggregate-clause parts ...))
      (define name (unwrap-id (findf (tagged? 'identifier) parts)))
      (define starting (let ([s (findf (tagged? 'starting-clause) parts)]) (and s (match s [(list 'starting-clause e) (lower e)]))))

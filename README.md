@@ -1,6 +1,6 @@
 # cql — Clinical Quality Language for Racket
 
-CQL (cql.hl7.org) compiled to ELM and run by an ELM interpreter: the expression + definition core with System-typed values, ~150 operators, intervals, queries and the cqframework/cql-tests suite at 1820/1823. Libraries over FHIR R4 translate with the reference translator's ModelInfo: retrieves, includes, terminology definitions, implicit FHIRHelpers conversions — 32/32 published libraries compile, 703/803 definitions ELM-identical to the reference translator. Executing retrieves against data is the next slice.
+CQL (cql.hl7.org) compiled to ELM and run by an ELM interpreter: the expression + definition core with System-typed values, ~150 operators, intervals, queries and the cqframework/cql-tests suite at 1820/1823. Libraries over FHIR R4 translate with the reference translator's ModelInfo: retrieves, includes, terminology definitions, implicit FHIRHelpers conversions — 32/32 published libraries compile, 742/803 definitions ELM-identical to the reference translator. Executing retrieves against data is the next slice.
 
 Part of **fhir — FHIR as a family of Racket `#lang`s** ([oloveluck/fhir](https://github.com/oloveluck/fhir)).
 Collection `cql`. `#lang cql` — a `.cql` file is a module; `racket file` prints the compiled JSON.

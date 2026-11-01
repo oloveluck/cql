@@ -19,7 +19,7 @@
          (struct-out elm-sort-by) (struct-out elm-alias-ref) (struct-out elm-query-let-ref)
          (struct-out elm-identifier-ref) (struct-out elm-term-ref) (struct-out elm-code)
          (struct-out elm-concept) (struct-out elm-in-valueset) (struct-out elm-precision-op)
-         (struct-out elm-choice-type) (struct-out elm-tuple-type) (struct-out elm-def) (struct-out elm-function-def)
+         (struct-out elm-choice-type) (struct-out elm-tuple-type) (struct-out elm-minmax) (struct-out elm-def) (struct-out elm-function-def)
          (struct-out elm-operand-def)
          (struct-out elm-literal) (struct-out elm-null) (struct-out elm-quantity) (struct-out elm-ratio)
          (struct-out elm-date) (struct-out elm-time) (struct-out elm-datetime) (struct-out elm-component)
@@ -102,6 +102,9 @@
 (struct elm-concept      (codes display)     #:prefab)
 (struct elm-in-valueset  (kind code valueset) #:prefab) ; kind "InValueSet"|"AnyInValueSet"
 (struct elm-precision-op (op precision operands) #:prefab) ; CalculateAgeAt etc. ; precision "Year"…
+;; minimum/maximum T: which 'min|'max ; value-type the qualified type name ; boundary the value as ELM
+;; (the interpreter evaluates the boundary; JSON writes MinValue/MaxValue)
+(struct elm-minmax       (which value-type boundary) #:prefab)
 (struct elm-expression-ref (name library)    #:prefab) ; library #f when local
 (struct elm-function-ref (name library operands) #:prefab)
 (struct elm-operand-ref  (name)              #:prefab)
@@ -125,7 +128,7 @@
       (elm-expression-ref? x) (elm-function-ref? x) (elm-operand-ref? x) (elm-parameter-ref? x)
       (elm-is? x) (elm-as? x) (elm-to? x) (elm-retrieve? x) (elm-alias-ref? x) (elm-query-let-ref? x)
       (elm-identifier-ref? x) (elm-term-ref? x) (elm-code? x) (elm-concept? x) (elm-in-valueset? x)
-      (elm-precision-op? x)))
+      (elm-precision-op? x) (elm-minmax? x)))
 
 (module+ test
   (require rackunit)

@@ -287,7 +287,9 @@
      (values (elm-code code ((term-ref-of "CodeSystemRef") system) display) "Code")]
     [(cql-concept-selector codes display)
      (values (elm-concept (map (lambda (c) (compile1 c env)) codes) display) "Concept")]
-    [(cql-minmax which type) (values (minmax-elm which (type-simple type)) (or (type-simple type) "Any"))]
+    [(cql-minmax which type)
+     (define t (or (type-simple type) "Any"))
+     (values (elm-minmax which (system-type-name t) (minmax-elm which t)) t)]
     [(cql-instance type elems)
      ;; each element value is coerced to the class's element type (decimal { value: 100 } -> ToDecimal)
      (define t (named->ctype (symbol->string type)))
@@ -399,6 +401,18 @@
 ;; library includes it (FHIRHelpers): inside FHIRHelpers itself, `value.value` is written explicitly.
 ;; to-system : elm CType -> (values elm CType)
 (define (to-system n t)
+  (cond
+    ;; a list of model values converts element-wise: (X in list return all Convert(X))
+    [(and (list-type? t) (string? (vector-ref t 1)) (convertible? (vector-ref t 1)))
+     (define-values (cn ct) (to-system* (elm-alias-ref "X") (vector-ref t 1)))
+     (values (elm-query (list (cons "X" n)) '() '() #f cn 'all #f #f) (vector 'list ct))]
+    [else (to-system* n t)]))
+(define (convertible? t)
+  (define m (lctx-model (L)))
+  (define conv (and m (model-conversion m t)))
+  (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
+  (and fn (include-alias-for (string->symbol (cadr fn))) #t))
+(define (to-system* n t)
   (define m (lctx-model (L)))
   (define conv (and m (string? t) (model-conversion m t)))
   (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
@@ -408,6 +422,19 @@
       (values n t)))
 (define (sys e env) (let-values ([(n t) (compile e env)]) (to-system n t)))
 
+;; sys-terminology : cql cenv -> (values elm CType)   the code side of `x in "ValueSet"`: a choice
+;; is cast to its first member converting to String, Code or Concept (InValueSet's overload order)
+(define (sys-terminology e env)
+  (define-values (n t) (compile e env))
+  (cond
+    [(and (vector? t) (eq? (vector-ref t 0) 'choice))
+     (define member (for*/first ([target (in-list '("String" "Code" "Concept"))]
+                                 [c (in-list (vector-ref t 1))]
+                                 #:when (let ([k (conversion-cost c target)]) (and k (= k 1))))
+                      c))
+     (if member (to-system (elm-as n (ctype->elm-name member) #f) member) (values n t))]
+    [else (to-system n t)]))
+
 ;; sys-against : cql cql cenv -> (values elm CType)   like sys, but a CHOICE operand meeting a
 ;; concretely typed one is first cast to the member that converts to it — `O.value > 5 'mg'` is
 ;; ToQuantity(O.value as FHIR.Quantity) (an implicit As, written with asType)
@@ -416,14 +443,25 @@
   (cond
     [(and (vector? t) (eq? (vector-ref t 0) 'choice))
      (define-values (_on ot) (sys other env))
-     (define member (and (not (vector? ot)) (not (equal? ot "Any"))
-                         (for/first ([c (in-list (vector-ref t 1))]
-                                     #:when (let ([k (conversion-cost c ot)]) (and k (<= k 1))))
-                           c)))
-     (if member
-         (to-system (elm-as n (ctype->elm-name member) #f) member)
-         (values n t))]
+     (define target (cond [(and (string? ot) (not (equal? ot "Any"))) ot]
+                          [(interval-type? ot) ot]
+                          [else #f]))
+     (if target (choice-to n t target) (values n t))]
     [else (to-system n t)]))
+
+;; choice-to : elm CType(choice) CType -> (values elm CType)   the choice members that convert to
+;; `target`: none -> unchanged ; one -> Convert(x as M) ; several -> a Case over `x is M`
+(define (choice-to n t target)
+  (define members (for/list ([c (in-list (vector-ref t 1))]
+                             #:when (let ([k (conversion-cost c target)]) (and k (<= k 1))))
+                    c))
+  (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (ctype->elm-name m) #f) m)]) cn))
+  (match members
+    ['() (values n t)]
+    [(list m) (to-system (elm-as n (ctype->elm-name m) #f) m)]
+    [ms (values (elm-case #f (for/list ([m (in-list ms)]) (elm-case-item (elm-is n (ctype->elm-name m)) (conv m)))
+                          (elm-null #f))
+                target)]))
 
 ;; System implicit promotions, the translator's order: Integer -> Long -> Decimal -> Quantity,
 ;; Date -> DateTime, Code -> Concept. promote : elm CType CType -> elm (no-op when not applicable)
@@ -529,6 +567,7 @@
     [(and chain (> (length chain) 3) (not (regrouped? l)))
      (define g (regroup-union chain))
      (compile-binop 'union (mark-regrouped (cql-binop-lhs g)) (cql-binop-rhs g) env)]
+    [(and (eq? op 'union) (union-of-different-types l r env)) => (lambda (r) (values (car r) (cadr r)))]
     [(memq op generic-binops)
      (define-values (lo lt) (compile l env))
      (define-values (ro rt) (compile r env))
@@ -585,12 +624,15 @@
 ;; membership: `x in ValueSet` -> InValueSet (AnyInValueSet for a list) ; `x in CodeSystem` ->
 ;; InCodeSystem ; otherwise In/Contains over a list or interval, the point promoted to its element type
 (define (compile-membership op l r env)
-  (define-values (lo lt) (sys l env))
-  (define-values (ro rt) (sys r env))
+  (define-values (ro rt) (sys-against r l env))
+  (define-values (lo lt)
+    (if (member rt '("ValueSet" "CodeSystem"))
+        (sys-terminology l env)
+        (sys-against l r env)))
   (cond
     [(and (eq? op 'in) (member rt '("ValueSet" "CodeSystem")))
      (define kind (string-append (if (list-type? lt) "Any" "") (if (equal? rt "ValueSet") "InValueSet" "InCodeSystem")))
-     (values (elm-in-valueset kind lo ro) "Boolean")]
+     (values (elm-in-valueset kind lo ro) "Boolean")]   ; (json: code vs codes by kind)
     [(eq? op 'in)
      (define el (point-of rt))
      (values (elm-nary "In" (list (if el (promote lo lt el) lo) ro) "Boolean") "Boolean")]
@@ -607,6 +649,24 @@
         [ra a] [rb b] [else "Any"]))
 (define (composite-or a b) (cond [(vector? a) a] [(vector? b) b] [else #f]))
 
+;; union-of-different-types : cql cql cenv -> (list elm CType) | #f
+;; List<A> union List<B> of unrelated model types: both cast to List<Choice<A, B>>, as the reference does
+(define (union-of-different-types l r env)
+  (define-values (lo lt) (compile l env))
+  (define-values (ro rt) (compile r env))
+  (define m (lctx-model (L)))
+  (define (el t) (and (list-type? t) (vector-ref t 1)))
+  (define a (el lt)) (define b (el rt))
+  (define (members t) (if (and (vector? t) (eq? (vector-ref t 0) 'choice)) (vector-ref t 1) (list t)))
+  (cond
+    [(and m a b (not (equal? a b)) (or (model-type? a) (vector? a)) (or (model-type? b) (vector? b))
+          (not (and (string? a) (string? b) (or (model-subtype? m a b) (model-subtype? m b a)))))
+     (define ct (vector 'list (vector 'choice (remove-duplicates (append (members a) (members b))))))
+     (define spec (ctype->elm-type ct))
+     (define (cast n t) (if (equal? t ct) n (elm-as n spec #f)))
+     (list (elm-nary "Union" (list (cast lo lt) (cast ro rt)) #f) ct)]
+    [else #f]))
+
 ;; a regrouped chain's left side must not be regrouped again (it is itself a union chain)
 (define regrouped (make-weak-hasheq))
 (define (mark-regrouped e) (hash-set! regrouped e #t) e)
@@ -616,8 +676,8 @@
 ;; compile-timing : op prec cql cql cenv -> (values elm "Boolean")
 ;; point-vs-interval picks the ELM form: `point during I` is In, `I includes point` is Contains
 (define (compile-timing op prec a b env)
-  (define-values (an0 at0) (sys a env))
-  (define-values (bn0 bt0) (sys b env))
+  (define-values (an0 at0) (sys-against a b env))
+  (define-values (bn0 bt0) (sys-against b a env))
   (define-values (an bn _t)
     (if (or (vector? at0) (vector? bt0)) (values an0 bn0 at0) (unify-pair an0 at0 bn0 bt0)))
   (define a-point? (not (interval-type? at0)))
@@ -638,8 +698,8 @@
 ;; an interval A is reduced to its end (before) or start (after); an interval B to its start
 ;; (before) or end (after).
 (define (compile-timing-offset op prec q qual a b env)
-  (define-values (an0 at) (sys a env))
-  (define-values (bn0 bt) (sys b env))
+  (define-values (an0 at) (sys-against a b env))
+  (define-values (bn0 bt) (sys-against b a env))
   (define before? (memq op '(before same-or-before)))
   (define on? (memq op '(same-or-before same-or-after)))
   (define an (if (interval-type? at) (elm-unary (if before? "End" "Start") an0 #f) an0))
@@ -689,7 +749,10 @@
                          (and term (cond [cmp (symbol->string cmp)]
                                          [(member ct '("ValueSet" "CodeSystem")) "in"]
                                          [else "~"]))
-                         (and term (if (member ct '("Code" "Concept")) (elm-unary "ToList" codes #f) codes)))
+                         ;; a single (non-list, non-ValueSet) terminology becomes a list
+                         (and term (if (or (list-type? ct) (member ct '("ValueSet" "CodeSystem")))
+                                       codes
+                                       (elm-unary "ToList" codes #f))))
           (vector 'list qname)))
 (define (retrieve-node qname code-property comparator codes)
   (define m (lctx-model (L)))
@@ -752,18 +815,36 @@
 ;; an untyped `null` branch takes the type of the other branches, as an explicit As (the reference
 ;; translator's form): if x is null then null else Interval[…] -> then: As(Null, Interval<DateTime>)
 (define (typed-null n t result-type)
-  (define spec (and (equal? t "Any") (elm-null? n) (ctype->elm-type result-type)))
+  ;; (a Message over null is as untyped as the null itself)
+  (define null-ish? (or (elm-null? n)
+                        (and (elm-nary? n) (equal? (elm-nary-op n) "Message") (elm-null? (car (elm-nary-operands n))))))
+  (define spec (and (equal? t "Any") null-ish? (ctype->elm-type result-type)))
   (cond [(not spec) n]
         [(elm-named-type? spec) (elm-as n (elm-named-type-name spec) #f)]   ; implicit: asType
         [else (elm-as n spec #f)]))
 (define (known t) (and (not (equal? t "Any")) t))
 
+;; unify-branches : (listof (cons elm CType)) -> (values (listof elm) CType)
+;; branches of different types meet at a System type when the model ones convert to it
+;; (if x is null then E.period else Interval[…] -> then: ToInterval(E.period)); untyped nulls take
+;; the result type
+(define (unify-branches bs)
+  (define sys-t (for/first ([b (in-list bs)] #:when (and (known (cdr b)) (not (model-type? (cdr b))))) (cdr b)))
+  (define converted
+    (for/list ([b (in-list bs)])
+      (if (and sys-t (model-type? (cdr b)))
+          (let-values ([(n t) (to-system (car b) (cdr b))]) (if (equal? t sys-t) (cons n t) b))
+          b)))
+  (define rt (or (for/first ([b (in-list converted)] #:when (known (cdr b))) (cdr b)) "Any"))
+  (values (for/list ([b (in-list converted)]) (typed-null (car b) (cdr b) rt)) rt))
+(define (model-type? t) (and (string? t) (regexp-match? #rx"[.]" t)))
+
 (define (compile-if c t e env)
   (define-values (cn _ct) (sys c env))
   (define-values (tn tt) (compile t env))
   (define-values (en et) (compile e env))
-  (define rt (or (known tt) (known et) "Any"))
-  (values (elm-if cn (typed-null tn tt rt) (typed-null en et rt)) rt))
+  (define-values (ns rt) (unify-branches (list (cons tn tt) (cons en et))))
+  (values (elm-if cn (first ns) (second ns)) rt))
 
 (define (compile-case comparand items els env)
   (define cmp (and comparand (let-values ([(n _t) (compile comparand env)]) n)))
@@ -772,9 +853,10 @@
                  (define-values (tn tt) (compile (cql-case-item-then it) env))
                  (list wn tn tt)))
   (define-values (en et) (if els (compile els env) (values #f "Any")))
-  (define rt (or (for/or ([a (in-list arms)]) (known (third a))) (known et) "Any"))
-  (values (elm-case cmp (for/list ([a (in-list arms)]) (elm-case-item (first a) (typed-null (second a) (third a) rt)))
-                    (and en (typed-null en et rt)))
+  (define-values (ns rt) (unify-branches (append (for/list ([a (in-list arms)]) (cons (second a) (third a)))
+                                                 (if en (list (cons en et)) '()))))
+  (values (elm-case cmp (for/list ([a (in-list arms)] [n (in-list ns)]) (elm-case-item (first a) n))
+                    (and en (last ns)))
           rt))
 
 ;; ---- collections -----------------------------------------------------------
@@ -786,8 +868,12 @@
   (values (elm-list nodes) (vector 'list t)))
 
 (define (compile-interval low high lc hc env)
-  (define-values (ln lt) (sys low env))
-  (define-values (hn _ht) (sys high env))
+  (define-values (ln0 lt0) (sys low env))
+  (define-values (hn0 ht0) (sys high env))
+  (define pt (or (known lt0) (known ht0) "Any"))
+  (define ln (typed-null ln0 lt0 pt))
+  (define hn (typed-null hn0 ht0 pt))
+  (define lt pt)
   (values (elm-interval ln hn lc hc) (vector 'interval lt)))
 
 (define (compile-tuple elems env)
@@ -808,7 +894,19 @@
              (or (property-type t (symbol->string name)) "Any"))]
     [else
      (define-values (tn tt) (compile target env))
-     (values (elm-property tn (symbol->string name) #f) (or (property-type tt (symbol->string name)) "Any"))]))
+     (define pt (or (property-type tt (symbol->string name)) "Any"))
+     (cond
+       ;; a property of a LIST of model values flattens, as the reference translator writes it:
+       ;; ($this in list where $this.p is not null return all $this.p)
+       [(and (list-type? tt) (string? (vector-ref tt 1)) (regexp-match? #rx"[.]" (vector-ref tt 1)))
+        (define p (elm-property (elm-alias-ref "$this") (symbol->string name) #f))
+        (define q (elm-query (list (cons "$this" tn)) '() '()
+                             (elm-unary "Not" (elm-unary "IsNull" p "Boolean") "Boolean") p 'all #f #f))
+        (define el (property-type (vector-ref tt 1) (symbol->string name)))
+        (if (list-type? el)
+            (values (elm-unary "Flatten" q #f) el)
+            (values q pt))]
+       [else (values (elm-property tn (symbol->string name) #f) pt)])]))
 
 ;; property-type : CType string -> CType|#f
 (define system-properties
@@ -1015,13 +1113,17 @@
   (define m (lctx-model (L)))
   (cond
     ;; a value passed to a choice-typed parameter is cast to the whole choice
+    ;; a choice argument only partly inside a choice parameter is cast to the parameter's choice
+    [(and (vector? to) (eq? (vector-ref to 0) 'choice) (vector? from) (eq? (vector-ref from 0) 'choice)
+          (eqv? (conversion-cost from to) 1))
+     (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     ;; (a member type is widened; a choice argument already fits as it is)
     [(and (vector? to) (eq? (vector-ref to 0) 'choice) (string? from) (not (equal? from "Any")) (conversion-cost from to))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     [(eqv? (conversion-cost from to) 0) n]
     [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) (promote n from to)]
     [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to))
-     (elm-as n (elm-named-type (ctype->elm-name to)) #f)]
+     (elm-as n (ctype->elm-name to) #f)]
     [(and (string? from) m (model-conversion m from))
      (define-values (n2 t2) (to-system n from))
      (if (eq? n2 n) n (coerce n2 t2 to))]
@@ -1071,7 +1173,12 @@
     [else
      (define-values (nodes types)
        (for/lists (ns ts) ([a (in-list all-args)])
-         (if (memq name generic-ops) (compile a env) (sys a env))))
+         (cond [(memq name generic-ops) (compile a env)]
+               ;; Boolean tests over a choice pick the member converting to Boolean
+               [(memq name '(IsTrue IsFalse))
+                (let-values ([(n t) (compile a env)])
+                  (if (and (vector? t) (eq? (vector-ref t 0) 'choice)) (choice-to n t "Boolean") (to-system n t)))]
+               [else (sys a env)])))
      (define rt (cdr spec))
      (define t (or rt (derived-result-type name types)))
      (case (car spec)

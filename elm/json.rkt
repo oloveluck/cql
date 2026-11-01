@@ -226,7 +226,10 @@
                           (hasheq 'identifier (car l) 'expression (expr->jsexpr (cdr l)))))
               'where (and (elm-query-where e) (expr->jsexpr (elm-query-where e)))
               'return (and (elm-query-ret e)
-                           (drop-false (hasheq 'distinct (elm-query-ret-distinct e) 'expression (expr->jsexpr (elm-query-ret e)))))
+                           ;; distinct: #t written, 'all = false written, #f (unstated) omitted
+                           (let ([h (hasheq 'expression (expr->jsexpr (elm-query-ret e)))])
+                             (case (elm-query-ret-distinct e)
+                               [(#t) (hash-set h 'distinct #t)] [(all) (hash-set h 'distinct #f)] [else h])))
               'sort (and (elm-query-sort e) (hasheq 'by (map sort-by->jsexpr (elm-query-sort e))))))]
     [(elm-retrieve? e)
      (drop-false (hasheq 'type "Retrieve" 'dataType (elm-retrieve-data-type e)
@@ -244,8 +247,11 @@
     [(elm-concept? e)
      (drop-false (hasheq 'type "Concept" 'code (map expr->jsexpr (elm-concept-codes e)) 'display (elm-concept-display e)))]
     [(elm-in-valueset? e)
-     (hasheq 'type (elm-in-valueset-kind e) 'code (expr->jsexpr (elm-in-valueset-code e))
+     (hasheq 'type (elm-in-valueset-kind e)
+             (if (regexp-match? #rx"^Any" (elm-in-valueset-kind e)) 'codes 'code) (expr->jsexpr (elm-in-valueset-code e))
              'valueset (expr->jsexpr (elm-in-valueset-valueset e)))]
+    [(elm-minmax? e)
+     (hasheq 'type (if (eq? (elm-minmax-which e) 'min) "MinValue" "MaxValue") 'valueType (elm-minmax-value-type e))]
     [(elm-precision-op? e)
      (hasheq 'type (elm-precision-op-op e) 'precision (elm-precision-op-precision e)
              'operand (map expr->jsexpr (elm-precision-op-operands e)))]
@@ -298,8 +304,10 @@
      (drop-false (hasheq 'type "ParameterRef" 'name (elm-parameter-ref-name e)
                          'libraryName (elm-parameter-ref-library e)))]
     [(elm-is? e)
+     ;; an implicit test names its type as a string (isType)
      (hasheq 'type "Is" 'operand (expr->jsexpr (elm-is-operand e))
-             'isTypeSpecifier (type->jsexpr (elm-is-type e)))]
+             (if (string? (elm-is-type e)) 'isType 'isTypeSpecifier)
+             (if (string? (elm-is-type e)) (elm-is-type e) (type->jsexpr (elm-is-type e))))]
     [(elm-as? e)
      ;; an implicit cast names its type as a string (asType); an explicit one as a specifier;
      ;; strict is always written (the reference translator writes false too)

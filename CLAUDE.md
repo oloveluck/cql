@@ -79,7 +79,7 @@ operators, `if`/`case`. Layers:
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **32/32 parse; 32/32 compile; 703/803 definitions ELM-equal** — ratcheted. The
+  metadata dropped). **32/32 parse; 32/32 compile; 742/803 definitions ELM-equal** — ratcheted. The
   grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
   modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
   fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
@@ -115,6 +115,14 @@ operators, `if`/`case`. Layers:
   `null` branch of if/case is cast to the other branches' type; a member value passed to a choice-typed
   parameter is cast to the whole choice; instance element values are coerced to the class's element
   types; `union` chains group as the reference parse does (`((A u B) u (C u D)) u E`).
+- Remaining ELM differences (61 definitions, ratcheted): translator-version noise the normaliser does
+  not cover (a newer translator writes InValueSet's valueset without `type` + `preserve`, older ones omit
+  `codeComparator` on explicit code paths — the two packages disagree, so neither form matches both);
+  a choice operand against a timing phrase whose other side is an interval (the reference converts via
+  the Period member); `Interval[…].low` re-typing in FHIRCommon's age/range intervals; ratio/quantity
+  instance details in FHIRHelpers; EXM108's day-of-procedure phrases (16 defs). `cql/tests/
+  elm-corpus-harness.rkt` + the scratch differs in the session are the tools: group mismatches by
+  first-difference path, then fix the largest class.
 - The corpus harness normalises only translator-VERSION noise, on both sides: empty lists = absent
   (newer translators write `let: []`, `dateFilter: []`), structural element `type` tags
   (InstanceElement, AliasedQuerySource, …), and `strict: false` (the schema default). Includes resolve

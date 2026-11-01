@@ -102,6 +102,7 @@
     [(elm-property #f path scope) (eval-property (lookup-operand scope env) path)]
     [(elm-property src path _scope) (eval-property (eval-elm src env) path)]
     [(elm-alias-ref name) (lookup-operand name env)]
+    [(elm-minmax _which _vt boundary) (eval-elm boundary env)]
     [(elm-query-let-ref name) (lookup-operand name env)]
     [(elm-identifier-ref name) (eval-property (current-sort-row) name)]
     [(elm-expression-ref name _lib) (force-value (hash-ref (ienv-defs env) name (lambda () (fail (format "unknown reference ~a" name)))))]
@@ -1454,7 +1455,7 @@
        [agg (run-aggregate agg aliases kept env)]
        [else
         (define results (map (lambda (e) (row-result ret aliases e)) kept))
-        (define r1 (if ret-distinct (dedup results) results))
+        (define r1 (if (eq? ret-distinct #t) (dedup results) results))
         (define r2 (if sort (sort-by-items r1 sort env) r1))
         (if scalar-single? (if (pair? r2) (car r2) cql-null) r2)])]))
 
@@ -1568,7 +1569,8 @@
   (when (eq? body (quote external)) (fail (format "external function ~a has no implementation" name)))
   (eval-elm body env*))
 
-(define (eval-is v type)
+(define (eval-is v type*)
+  (define type (if (string? type*) (elm-named-type type*) type*))
   (cond [(cql-null? v) #f]
         [(elm-named-type? type) (value-is-type? v (elm-named-type-name type))]
         [else #f]))
