@@ -79,9 +79,16 @@ operators, `if`/`case`. Layers:
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **Baseline: 2/32 parse, 0/803 definitions ELM-equal** — the first failures are
-  `code "x": …` definitions (19 libraries), retrieves (7), FHIR model types / `start of` / `sort by` (4):
-  the deferred slice below, now measured. Ratcheted.
+  metadata dropped). **32/32 parse; 3/32 compile; 7/803 definitions ELM-equal** — ratcheted. The
+  grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
+  modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
+  fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
+  phrase grammar (`starts`/`ends`/`occurs` bounds, `3 days or less on or before day of`, `within … of`;
+  leading/trailing bounds desugar to Start/End at lowering, offsets/within are `cql-timing-offset`/
+  `cql-within`). Keywords are admitted as names after `.`, as tuple keys and as function names
+  (`period.start`, `System.Code`, `define fluent function version`). A query may be the RIGHT operand
+  of a set operator only (on the left it would end a greedy where/aggregate body early — a TCK test
+  caught that). Compile failures now are includes, terminology refs and retrieve ELM (next stage).
 - **Deferred CQL slices**: retrieves (`[Condition: "vs"]`) + a FHIR data-source/retrieve layer (absent —
   `navigate.rkt` assumes in-memory roots), queries (`with`/`where`/`return`/`sort`/`aggregate`),
   terminology-backed membership via the `tx-service`, FHIR model-info from `full-field-specs`, ELM XML

@@ -23,6 +23,10 @@
          (struct-out cql-component) (struct-out cql-between) (struct-out cql-timing)
          (struct-out cql-query) (struct-out cql-source) (struct-out cql-let-def)
          (struct-out cql-return) (struct-out cql-agg) (struct-out cql-minmax) (struct-out cql-instance)
+         (struct-out cql-code-def) (struct-out cql-concept-def) (struct-out cql-retrieve)
+         (struct-out cql-relationship) (struct-out cql-sort-item) (struct-out cql-code-selector)
+         (struct-out cql-concept-selector) (struct-out cql-timing-offset) (struct-out cql-within)
+         (struct-out tuple-type) (struct-out choice-type)
          (struct-out cql-typeop) (struct-out cql-cast) (struct-out cql-convert)
          (struct-out named-type) (struct-out interval-type) (struct-out list-type)
          (struct-out dec-lit) (struct-out long-lit) (struct-out qty-lit) (struct-out ratio-lit)
@@ -36,12 +40,17 @@
 (struct cql-library   (id version defs)                   #:prefab) ; id: symbol|#f ; defs: (listof def)
 (struct cql-using     (model version alias)               #:prefab)
 (struct cql-include   (lib version alias)                 #:prefab)
-(struct cql-parameter (name type default)                 #:prefab) ; type/default may be #f
-(struct cql-codesystem (name id version)                  #:prefab)
-(struct cql-valueset  (name id version)                   #:prefab)
+(struct cql-parameter (name type default access)          #:prefab) ; type/default may be #f
+(struct cql-codesystem (name id version access)           #:prefab)
+(struct cql-valueset  (name id version codesystems access) #:prefab) ; codesystems: (listof term-ref)
+(struct cql-code-def  (name id system display access)     #:prefab) ; system: term-ref ; display string|#f
+(struct cql-concept-def (name codes display access)       #:prefab) ; codes: (listof term-ref)
 (struct cql-context   (name)                              #:prefab)
 (struct cql-def       (name access body)                  #:prefab) ; access: 'public|'private ; body: expr
-(struct cql-func      (name access operands result-type body) #:prefab) ; body: expr | 'external
+(struct cql-func      (name access operands result-type body fluent?) #:prefab) ; body: expr | 'external
+;; A term-ref (a reference to a codesystem/valueset/code/concept definition) is one of:
+;;   (cql-ref name)                       — local
+;;   (cql-property (cql-ref lib) name)    — Library.name
 (struct cql-operand   (name type)                         #:prefab)
 
 ;; expressions
@@ -63,7 +72,16 @@
 (struct cql-between   (kind precision a b) #:prefab) ; kind 'duration|'difference ; precision a symbol
 (struct cql-timing    (op precision a b) #:prefab)  ; op 'before|'after|'same-as|'same-or-before|'same-or-after
 ;; queries
-(struct cql-query   (sources lets where ret sort agg) #:prefab) ; sort 'asc|'desc|#f
+(struct cql-query   (sources lets where ret sort agg rels) #:prefab) ; sort 'asc|'desc|(listof cql-sort-item)|#f
+(struct cql-relationship (kind source such-that) #:prefab) ; kind 'with|'without ; source a cql-source
+(struct cql-sort-item (expr direction) #:prefab)           ; direction 'asc|'desc
+;; [context -> Type: code-path comparator terminology] ; all but type may be #f
+(struct cql-retrieve (context type code-path comparator terminology) #:prefab) ; type symbol ; code-path symbol
+(struct cql-code-selector (code system display) #:prefab)   ; Code 'c' from "CS" display 'd'
+(struct cql-concept-selector (codes display) #:prefab)      ; Concept { Code … , … } display 'd'
+;; A 3 days or less before B ; rel a timing op symbol ; qual 'or-more|'or-less|'less-than|'more-than|#f
+(struct cql-timing-offset (op precision quantity qual a b) #:prefab)
+(struct cql-within (properly? quantity a b) #:prefab)       ; A within 3 days of B
 (struct cql-source  (alias expr)   #:prefab)
 (struct cql-let-def (name expr)    #:prefab)
 (struct cql-return  (distinct? expr) #:prefab)
@@ -78,6 +96,8 @@
 (struct named-type    (name)          #:prefab) ; name symbol (qualified via ".")
 (struct interval-type (element)       #:prefab)
 (struct list-type     (element)       #:prefab)
+(struct tuple-type    (elements)      #:prefab) ; (listof (cons symbol type-spec))
+(struct choice-type   (types)         #:prefab)
 
 ;; literal tags (dec/qty/date/datetime/time shared in spirit with FHIRPath; defined here for CQL)
 (struct dec-lit      (lexeme)        #:prefab)
@@ -96,6 +116,7 @@
 (define (unwrap-id x)
   (match x
     [(list 'identifier a) (id->sym a)]
+    [(list 'kw-id a) (id->sym a)]
     [(? symbol? s) s]
     [(? string? s) (string->symbol s)]
     [_ x]))
@@ -132,18 +153,47 @@
     [(list 'definition inner) (lower-definition inner)]
     [(list 'using-def qid rest ...) (cql-using (lower-qualified qid) (find-version rest) (find-alias rest))]
     [(list 'include-def qid rest ...) (cql-include (lower-qualified qid) (find-version rest) (find-alias rest))]
-    [(list 'parameter-def idn rest ...)
-     (cql-parameter (unwrap-id idn)
+    [(list 'parameter-def parts ...)
+     (define rest (drop-access parts))
+     (cql-parameter (unwrap-id (car rest))
                     (let ([t (findf (tagged? 'type-specifier) rest)]) (and t (lower-type t)))
                     (let ([d (findf (tagged? 'param-default) rest)])
-                      (and d (match d [(list 'param-default e) (lower e)]))))]
-    [(list 'codesystem-def idn cid rest ...) (cql-codesystem (unwrap-id idn) cid (find-version rest))]
-    [(list 'valueset-def idn vid rest ...) (cql-valueset (unwrap-id idn) vid (find-version rest))]
+                      (and d (match d [(list 'param-default e) (lower e)])))
+                    (access-of parts))]
+    [(list 'codesystem-def parts ...)
+     (match (drop-access parts)
+       [(list idn cid rest ...) (cql-codesystem (unwrap-id idn) cid (find-version rest) (access-of parts))])]
+    [(list 'valueset-def parts ...)
+     (match (drop-access parts)
+       [(list idn vid rest ...)
+        (cql-valueset (unwrap-id idn) vid (find-version rest)
+                      (let ([c (findf (tagged? 'codesystems-spec) rest)]) (if c (map lower-term-ref (cdr c)) '()))
+                      (access-of parts))])]
+    [(list 'code-def parts ...)
+     (match (drop-access parts)
+       [(list idn cid tr rest ...)
+        (cql-code-def (unwrap-id idn) cid (lower-term-ref tr) (find-display rest) (access-of parts))])]
+    [(list 'concept-def parts ...)
+     (match (drop-access parts)
+       [(list idn rest ...)
+        (cql-concept-def (unwrap-id idn) (map lower-term-ref (filter (tagged? 'term-ref) rest))
+                         (find-display rest) (access-of parts))])]
     [(list 'context-def idn) (cql-context (unwrap-id idn))]
+    [(list 'context-def _model idn) (cql-context (unwrap-id idn))]
     [(list 'statement-def inner) (lower-definition inner)]
     [(list 'expression-def parts ...) (lower-expression-def parts)]
     [(list 'function-def parts ...) (lower-function-def parts)]
     [_ (error 'cql-lower "unexpected definition: ~s" d)]))
+
+(define (drop-access parts) (filter (lambda (p) (not ((tagged? 'access-modifier) p))) parts))
+(define (find-display parts)
+  (define d (findf (tagged? 'display-clause) parts))
+  (and d (cadr d)))
+;; lower-term-ref : datum -> term-ref
+(define (lower-term-ref t)
+  (match t
+    [(list 'term-ref idn) (cql-ref (unwrap-id idn))]
+    [(list 'term-ref lib idn) (cql-property (cql-ref (unwrap-id lib)) (unwrap-id idn))]))
 
 (define (access-of parts)
   (define a (findf (tagged? 'access-modifier) parts))
@@ -156,7 +206,7 @@
   (cql-def name (access-of parts) body))
 
 (define (lower-function-def parts)
-  (define name (unwrap-id (findf (tagged? 'identifier) parts)))
+  (define name (unwrap-id (findf (lambda (p) (or ((tagged? 'identifier) p) ((tagged? 'kw-id) p))) parts)))
   (define ops (let ([ol (findf (tagged? 'operand-list) parts)])
                 (if ol (lower-operand-list ol) '())))
   (define rt (let ([r (findf (tagged? 'returns-spec) parts)])
@@ -166,7 +216,7 @@
                    [(list 'func-body "external") 'external]
                    [(list 'func-body e) (lower e)]
                    [_ 'external])))
-  (cql-func name (access-of parts) ops rt body))
+  (cql-func name (access-of parts) ops rt body (and (findf (tagged? 'fluent) parts) #t)))
 
 (define (lower-operand-list ol)
   (match ol
@@ -219,6 +269,7 @@
     [(list 'typed-tuple-selector parts ...)
      (cql-tuple (tuple-elems parts))]
     [(list 'braced) (cql-list '())]
+    [(list 'braced ":") (cql-tuple '())]
     [(list 'braced (list 'braced-body inner)) (lower-braced-body inner)]
 
     ;; calls / refs
@@ -227,6 +278,13 @@
     [(list 'member idn) (cql-ref (unwrap-id idn))]
     [(list 'component-from idn operand) (cql-component (unwrap-id idn) (lower operand))]
     [(list 'minmax which ts) (cql-minmax (if (equal? which "minimum") 'min 'max) (lower-type ts))]
+    [(list 'retrieve parts ...) (lower-retrieve parts)]
+    [(list 'code-selector code tr rest ...) (cql-code-selector code (lower-term-ref tr) (find-display rest))]
+    [(list 'concept-selector parts ...)
+     (cql-concept-selector (map lower (filter (tagged? 'code-selector) parts)) (find-display parts))]
+    [(list 'qualified-source first more ...)
+     (for/fold ([acc (cql-ref (unwrap-id first))]) ([m (in-list more)]) (cql-property acc (unwrap-id m)))]
+    [(list 'query-source e) (lower e)]
     [(list 'instance-selector head parts ...)
      (cql-instance (if (string? head) (string->symbol head) (lower-qualified head))
                    (let ([b (findf (tagged? 'tuple-body) parts)])
@@ -236,6 +294,7 @@
      (let ([x (lower operand)])
        (cql-between 'duration (unwrap-id units)
                     (cql-call #f 'Start (list x)) (cql-call #f 'End (list x))))]
+    [(list 'duration-between units a b) (cql-between 'duration (unwrap-id units) (lower a) (lower b))]
     [(list 'difference-between units a b) (cql-between 'difference (unwrap-id units) (lower a) (lower b))]
 
     ;; leaves
@@ -253,9 +312,34 @@
   (define sources (for/list ([p (in-list parts)] #:when (tagged?* 'source-clause p)) (lower-source p)))
   (define tail (findf (tagged? 'query-tail) parts))
   (define-values (lets where ret sort agg) (lower-tail tail))
-  (cql-query sources lets where ret sort agg))
+  (define rels (map lower-relationship (filter (tagged? 'inclusion-clause) (if tail (cdr tail) '()))))
+  (cql-query sources lets where ret sort agg rels))
 (define (lower-source p)
   (match p [(list 'source-clause e (list 'alias idn)) (cql-source (unwrap-id idn) (lower e))]))
+
+;; lower-retrieve : (listof datum) -> cql-retrieve
+(define (lower-retrieve parts)
+  (define ctx (let ([c (findf (tagged? 'retrieve-context) parts)]) (and c (lower (cadr c)))))
+  (define type (match (findf (tagged? 'named-type) parts) [(list 'named-type q) (lower-named q)]))
+  (define filt (findf (tagged? 'retrieve-filter) parts))
+  (match filt
+    [#f (cql-retrieve ctx type #f #f #f)]
+    [(list 'retrieve-filter (list 'terminology t)) (cql-retrieve ctx type #f #f (lower t))]
+    [(list 'retrieve-filter (list 'code-path ids ...) (list 'code-comparator cmp) (list 'terminology t))
+     (cql-retrieve ctx type
+                   (string->symbol (apply string-append (add-between (map (compose1 symbol->string unwrap-id) ids) ".")))
+                   (string->symbol cmp) (lower t))]))
+(define (compose1 f g) (lambda (x) (f (g x))))
+
+(define (lower-relationship r)
+  (match r
+    [(list 'inclusion-clause (list (and kind (or 'with-clause 'without-clause)) src e))
+     (cql-relationship (if (eq? kind 'with-clause) 'with 'without) (lower-source src) (lower e))]))
+(define (lower-sort-item it)
+  (match it
+    [(list 'sort-item e) (cql-sort-item (lower e) 'asc)]
+    [(list 'sort-item e (list 'sort-dir d)) (cql-sort-item (lower e) (dir->sym d))]))
+(define (dir->sym d) (if (member d '("desc" "descending")) 'desc 'asc))
 (define (lower-tail tail)
   (define parts (if tail (cdr tail) '()))
   (define lets (append-map (lambda (lc) (match lc [(list 'let-clause items ...) (map lower-let-item items)] [_ '()]))
@@ -264,7 +348,9 @@
   (define roa (findf (tagged? 'return-or-agg) parts))
   (define-values (ret agg) (if roa (lower-roa roa) (values #f #f)))
   (define sort (let ([s (findf (tagged? 'sort-clause) parts)])
-                 (and s (match s [(list 'sort-clause (list 'sort-dir d)) (if (member d '("desc" "descending")) 'desc 'asc)]))))
+                 (and s (match s
+                          [(list 'sort-clause (list 'sort-dir d)) (dir->sym d)]
+                          [(list 'sort-clause items ...) (map lower-sort-item items)]))))
   (values lets where ret sort agg))
 (define (lower-let-item li) (match li [(list 'let-item idn e) (cql-let-def (unwrap-id idn) (lower e))]))
 (define (return-mod-distinct? parts)
@@ -292,8 +378,7 @@
   (for/fold ([acc acc]) ([t (in-list tails)])
     (match t
       [(list 'comp-tail (? string? op) operand) (cql-binop (op->sym op) acc (lower operand))]
-      [(list 'comp-tail (list 'timing-rel top operand))
-       (let-values ([(op prec) (parse-timing-op top)]) (cql-timing op prec acc (lower operand)))]
+      [(list 'comp-tail (list 'timing-rel top operand)) (lower-timing top acc (lower operand))]
       [(list 'comp-tail (list 'between-tail a b))
        (if (and (cql-ref? acc) (memq (cql-ref-name acc) between-units))
            (cql-between 'duration (cql-ref-name acc) (lower a) (lower b))
@@ -327,7 +412,34 @@
         '("starts") 'starts '("ends") 'ends
         '("includes") 'includes '("properly" "includes") 'properly-includes
         '("included") 'included-in '("properly" "included") 'properly-included-in
-        '("during") 'included-in '("properly" "during") 'properly-included-in))
+        '("during") 'included-in '("properly" "during") 'properly-included-in
+        '("within") 'within '("properly" "within") 'within
+        '("before" "on") 'same-or-before '("after" "on") 'same-or-after))
+;; lower-timing : timing-op-datum cql-expr cql-expr -> cql-expr
+;; `starts`/`ends` before the phrase take Start/End of the left operand, `start`/`end` after it of the
+;; right one (as the reference translator does); a quantity offset or `within` makes a richer node.
+(define (lower-timing top a b)
+  (define parts (cdr top))
+  (define (bound tag x)
+    (match (findf (tagged? tag) parts)
+      [(list _ "starts") (cql-call #f 'Start (list x))] [(list _ "start") (cql-call #f 'Start (list x))]
+      [(list _ "ends") (cql-call #f 'End (list x))] [(list _ "end") (cql-call #f 'End (list x))]
+      [_ x]))
+  (define a* (bound 'timing-lead a))
+  (define b* (bound 'timing-trail b))
+  (define-values (op prec) (parse-timing-op top))
+  (define offset (findf (tagged? 'quantity-offset) parts))
+  (define within-q (findf (tagged? 'quantity) parts))
+  (cond
+    [(eq? op 'within) (cql-within (and (member "properly" parts) #t) (lower-quantity (cdr within-q)) a* b*)]
+    [offset
+     (match offset
+       [(list 'quantity-offset (list 'quantity q ...)) (cql-timing-offset op prec (lower-quantity q) #f a* b*)]
+       [(list 'quantity-offset (list 'quantity q ...) (list 'offset-qual s))
+        (cql-timing-offset op prec (lower-quantity q) (if (equal? s "or more") 'or-more 'or-less) a* b*)]
+       [(list 'quantity-offset (list 'excl-qual s) (list 'quantity q ...))
+        (cql-timing-offset op prec (lower-quantity q) (if (equal? s "less than") 'less-than 'more-than) a* b*)])]
+    [else (cql-timing op prec a* b*)]))
 (define (parse-timing-op t)
   (match t
     [(list 'timing-op parts ...)
@@ -335,7 +447,11 @@
        (cond [(findf (tagged? 'prec-of) parts) => po->prec]
              [(findf (tagged? 'prec) parts) => (lambda (p) (unwrap-id (cadr p)))]
              [else #f]))
-     (define kws (filter string? parts))
+     (define kws (apply append (for/list ([p (in-list parts)])
+                            (match p
+                              [(? string? s) (list s)]
+                              [(list 'same-tail s ...) s]
+                              [_ '()]))))
      (values (hash-ref timing-keys kws (lambda () (error 'cql-lower "unknown timing op ~s" kws))) prec)]))
 (define (po->prec po) (match po [(list 'prec-of (list 'prec p)) (unwrap-id p)]))
 
@@ -344,15 +460,17 @@
     (match t
       [(list 'type-op-tail "is" "null") (cql-call #f 'IsNull (list acc))]
       [(list 'type-op-tail "is" "not" "null") (cql-unop 'not (cql-call #f 'IsNull (list acc)))]
+      [(list 'type-op-tail "is" (? boolean? b)) (cql-call #f (if b 'IsTrue 'IsFalse) (list acc))]
+      [(list 'type-op-tail "is" "not" (? boolean? b)) (cql-unop 'not (cql-call #f (if b 'IsTrue 'IsFalse) (list acc)))]
       [(list 'type-op-tail op ts) (cql-typeop (op->sym op) acc (lower-type ts))])))
 
 (define (apply-tail target tail)
   (match tail
     [(list 'postfix-tail (list 'invocation inner))
      (match inner
-       [(list 'member idn) (cql-property target (unwrap-id idn))]
-       [(list 'function-call name) (cql-call target (unwrap-id name) '())]
-       [(list 'function-call name (list 'arg-list args ...)) (cql-call target (unwrap-id name) (map lower args))])]
+       [(list (or 'member 'dot-member) idn) (cql-property target (unwrap-id idn))]
+       [(list (or 'function-call 'dot-call) name) (cql-call target (unwrap-id name) '())]
+       [(list (or 'function-call 'dot-call) name (list 'arg-list args ...)) (cql-call target (unwrap-id name) (map lower args))])]
     [(list 'postfix-tail (list 'indexer idx)) (cql-index target (lower idx))]))
 
 ;; case: children are an optional comparand expr, one+ case-item, an optional case-else
@@ -384,11 +502,15 @@
 (define (lower-type ts)
   (match ts
     [(list 'type-specifier inner) (lower-type inner)]
-    [(list 'named-type qid) (named-type (lower-qualified qid))]
+    [(list 'named-type qid) (named-type (lower-named qid))]
+    [(list 'tuple-type elts ...)
+     (tuple-type (for/list ([e (in-list elts)]) (match e [(list 'tuple-type-elt n t) (cons (unwrap-id n) (lower-type t))])))]
+    [(list 'choice-type ts ...) (choice-type (map lower-type ts))]
     [(list 'interval-type inner) (interval-type (lower-type inner))]
     [(list 'list-type inner) (list-type (lower-type inner))]
     [_ (error 'cql-lower "unexpected type-specifier: ~s" ts)]))
 
+(define (lower-named q) (if (string? q) (string->symbol q) (lower-qualified q)))
 (define (lower-qualified qid)
   (match qid
     [(list 'qualified-id ids ...)

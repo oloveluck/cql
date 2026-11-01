@@ -109,7 +109,7 @@
     [(cql-timing op prec a b)
      (let-values ([(an _a) (compile a env)] [(bn _b) (compile b env)])
        (values (elm-timing op (and prec (units->prec prec)) an bn) "Boolean"))]
-    [(cql-query _s _l _w _r _sort _agg) (compile-query ast env)]
+    [(? cql-query?) (compile-query ast env)]
     [(cql-minmax which type) (values (minmax-elm which (type-simple type)) (or (type-simple type) "Any"))]
     [(cql-instance type elems)
      (values (elm-instance (symbol->string type)

@@ -53,7 +53,7 @@
 
    ;; temporal literals — precise so a trailing "." stays a navigation dot
    [(:: "@" "T" timeformat) (token 'TIME (time-lit (substring lexeme 2)))]
-   [(:: "@" dateformat "T" (:? (:: timeformat (:? tz)))) (token 'DATETIME (datetime-lit (substring lexeme 1)))]
+   [(:: "@" dateformat "T" (:? timeformat) (:? tz)) (token 'DATETIME (datetime-lit (substring lexeme 1)))]
    [(:: "@" dateformat) (token 'DATE (date-lit (substring lexeme 1)))]
 
    ;; Long literal (integer with an L suffix) before NUMBER — tagged so it's distinct from STRING
@@ -67,6 +67,12 @@
    ;; reserved keywords (as literal-string token types) before identifiers. Maximal munch means a
    ;; longer identifier like `defined` outmatches the keyword `define`; equal-length ties go to this
    ;; rule because it precedes the identifier rule.
+   ;; multi-word keywords lexed as one token (cql.g4 spells them with a space)
+   [(:: "such" (:+ whitespace) "that") (token "such that" "such that")]
+   [(:: "or" (:+ whitespace) "less") (token "or less" "or less")]
+   [(:: "or" (:+ whitespace) "more") (token "or more" "or more")]
+   [(:: "less" (:+ whitespace) "than") (token "less than" "less than")]
+   [(:: "more" (:+ whitespace) "than") (token "more than" "more than")]
    [(:or "library" "version" "using" "called" "include" "public" "private" "parameter" "default"
          "codesystem" "valueset" "codesystems" "code" "concept" "from" "define" "context"
          "function" "returns" "external"
@@ -79,6 +85,7 @@
          ;; query
          "return" "where" "sort" "let" "aggregate" "starting" "all" "asc" "desc" "ascending" "descending"
          "minimum" "maximum" "predecessor" "successor"
+         "with" "without" "by" "display" "occurs" "fluent" "Choice"
          "Interval" "List" "Tuple" "Code" "Concept")
     (token lexeme lexeme)]
 
@@ -88,7 +95,7 @@
     (token 'IDENTIFIER (string->symbol (unescape (trim-ends lexeme))))]
 
    ;; multi-char operators before single-char
-   [(:or "<=" ">=" "!=" "!~") (token lexeme lexeme)]
+   [(:or "<=" ">=" "!=" "!~" "->") (token lexeme lexeme)]
    [(:or "." "[" "]" "(" ")" "," ";" ":" "{" "}" "|" "&" "+" "-" "*" "/" "^" "=" "<" ">" "~")
     (token lexeme lexeme)]))
 

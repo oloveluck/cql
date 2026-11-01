@@ -4,9 +4,9 @@
 ;;; the CQF Measures eCQM examples, the CQL IG's examples), each with the reference translator's ELM
 ;;; (see elm-corpus-harness.rkt and tests/vendor/elm-corpus/SOURCE.txt).
 ;;;
-;;; RATCHETED BASELINE — floors only rise. Today almost nothing parses: the corpus is real-world CQL
-;;; and needs exactly the deferred slice (code/concept definitions, retrieves `[Encounter: "vs"]`,
-;;; `sort by`, FHIR model types, library includes). It exists so that slice is measured from day one.
+;;; RATCHETED BASELINE — floors only rise. Every library PARSES (terminology definitions, retrieves,
+;;; with/without, `sort by`, the interval-phrase grammar); compiling needs the library sections
+;;; (includes, terminology refs, retrieve ELM) and the FHIR model binding — the next stages.
 
 (require rackunit racket/runtime-path racket/list
          "elm-corpus-harness.rkt")
@@ -18,6 +18,6 @@
         (length rs) (count lib-result-parse-ok? rs) (count lib-result-compile-ok? rs)
         (sum lib-result-defs-present) (sum lib-result-defs-total) (sum lib-result-defs-equal))
 (check-equal? (length rs) 32)
-(check-true (>= (count lib-result-parse-ok? rs) 2) "fewer corpus libraries parse than the floor")
-(check-true (>= (count lib-result-compile-ok? rs) 2) "fewer corpus libraries compile than the floor")
-(check-true (>= (sum lib-result-defs-equal) 0))
+(check-true (>= (count lib-result-parse-ok? rs) 32) "fewer corpus libraries parse than the floor")
+(check-true (>= (count lib-result-compile-ok? rs) 3) "fewer corpus libraries compile than the floor")
+(check-true (>= (sum lib-result-defs-equal) 7) "fewer ELM-equal definitions than the floor")

@@ -6,8 +6,8 @@
 ;; lowest-binding (implies) at the entry, highest (postfix/index) at the leaves. Punctuation is
 ;; hidden with `/`; operator-keyword wrappers are spliced with `@` so the operator surfaces inline
 ;; for lowering. Keyword tokens ("define", "and", "Interval", …) and named tokens (NUMBER, STRING,
-;; IDENTIFIER, DATE, …, LONGNUMBER) come from lexer.rkt. Query/retrieve/timing productions are
-;; deferred to a later slice.
+;; IDENTIFIER, DATE, …, LONGNUMBER) come from lexer.rkt. Terminology definitions, retrieves,
+;; with/without, `sort by` and the full interval-operator phrase grammar follow cql.g4 (Appendix L).
 
 ;; ---- library structure ----------------------------------------------------------------------
 cql-library    : library-header? definition*
@@ -17,19 +17,26 @@ version-spec   : /"version" STRING
 called-spec    : /"called" identifier
 
 definition     : using-def | include-def | parameter-def | codesystem-def | valueset-def
-               | context-def | statement-def
+               | code-def | concept-def | context-def | statement-def
 
 using-def      : /"using" qualified-id version-spec? called-spec?
 include-def    : /"include" qualified-id version-spec? called-spec?
-parameter-def  : /"parameter" identifier type-specifier? param-default?
+parameter-def  : access-modifier? /"parameter" identifier type-specifier? param-default?
 param-default  : /"default" expr
-codesystem-def : /"codesystem" identifier /":" STRING version-spec?
-valueset-def   : /"valueset" identifier /":" STRING version-spec?
-context-def    : /"context" identifier
+codesystem-def : access-modifier? /"codesystem" identifier /":" STRING version-spec?
+valueset-def   : access-modifier? /"valueset" identifier /":" STRING version-spec? codesystems-spec?
+codesystems-spec : /"codesystems" /"{" term-ref (/"," term-ref)* /"}"
+code-def       : access-modifier? /"code" identifier /":" STRING /"from" term-ref display-clause?
+concept-def    : access-modifier? /"concept" identifier /":" /"{" term-ref (/"," term-ref)* /"}" display-clause?
+display-clause : /"display" STRING
+;; a terminology reference: a local name or Library.name
+term-ref       : identifier | identifier /"." identifier
+context-def    : /"context" identifier | /"context" identifier /"." identifier
 statement-def  : expression-def | function-def
 expression-def : /"define" access-modifier? identifier /":" expr
-function-def   : /"define" access-modifier? /"function" identifier /"(" operand-list? /")" returns-spec? /":" func-body
+function-def   : /"define" access-modifier? fluent? /"function" @ref-id /"(" operand-list? /")" returns-spec? /":" func-body
 access-modifier : "public" | "private"
+fluent         : "fluent"
 returns-spec   : /"returns" type-specifier
 operand-list   : operand (/"," operand)*
 operand        : identifier type-specifier
@@ -41,9 +48,21 @@ expr                : query | implies-expr
 ;; ---- queries (over lists / singletons; no FHIR retrieve in this slice) ----------------------
 query               : source-clause query-tail
                     | /"from" source-clause (/"," source-clause)* query-tail
-source-clause       : /"(" expr /")" alias | member alias
+source-clause       : query-source alias
+query-source        : /"(" expr /")" | retrieve | member | qualified-source
+;; [Type], [Type: "VS"], [Type: path in "VS"], [Ctx -> Type: …]
+retrieve            : /"[" retrieve-context? named-type (/":" retrieve-filter)? /"]"
+retrieve-context    : postfix-expr /"->"
+retrieve-filter     : code-path code-comparator terminology | terminology
+code-path           : @ref-id (/"." @ref-id)*
+code-comparator     : "in" | "=" | "~"
+terminology         : postfix-expr
+qualified-source    : identifier (/"." @ref-id)+
 alias               : identifier
-query-tail          : let-clause* where-clause? return-or-agg? sort-clause?
+query-tail          : let-clause* inclusion-clause* where-clause? return-or-agg? sort-clause?
+inclusion-clause    : with-clause | without-clause
+with-clause         : /"with" source-clause /"such that" expr
+without-clause      : /"without" source-clause /"such that" expr
 let-clause          : /"let" let-item (/"," let-item)*
 let-item            : identifier /":" expr
 where-clause        : /"where" expr
@@ -52,7 +71,8 @@ return-clause       : /"return" return-mod? expr
 return-mod          : "all" | "distinct"
 aggregate-clause    : /"aggregate" return-mod? identifier starting-clause? /":" expr
 starting-clause     : /"starting" expr
-sort-clause         : /"sort" sort-dir
+sort-clause         : /"sort" sort-dir | /"sort" /"by" sort-item (/"," sort-item)*
+sort-item           : unary-expr sort-dir?
 sort-dir            : "asc" | "ascending" | "desc" | "descending"
 implies-expr        : or-expr           (@implies-op or-expr)*
 or-expr             : and-expr          (@or-op and-expr)*
@@ -64,13 +84,12 @@ comp-tail           : @comparison-op setop-expr | timing-rel | between-tail
 ;; X between A and B  ==  X >= A and X <= B (operands additive so `and` stays the delimiter)
 between-tail        : /"between" additive-expr /"and" additive-expr
 timing-rel          : timing-op setop-expr
-timing-op           : "before" prec-of?
-                    | "after" prec-of?
-                    | "same" prec? /"as"
-                    | "same" prec? /"or" "before"
-                    | "same" prec? /"or" "after"
-                    | "on" /"or" "before" prec-of?
-                    | "on" /"or" "after" prec-of?
+timing-op           : timing-lead? "same" prec? same-tail timing-trail?
+                    | "properly"? "includes" prec-of? timing-trail?
+                    | timing-lead? "properly"? "during" prec-of?
+                    | timing-lead? "properly"? "included" /"in" prec-of?
+                    | timing-lead? quantity-offset? temporal-rel prec-of? timing-trail?
+                    | timing-lead? "properly"? "within" quantity /"of" timing-trail?
                     | "meets" prec-of?
                     | "meets" "before" prec-of?
                     | "meets" "after" prec-of?
@@ -79,15 +98,20 @@ timing-op           : "before" prec-of?
                     | "overlaps" "after" prec-of?
                     | "starts" prec-of?
                     | "ends" prec-of?
-                    | "includes" prec-of?
-                    | "properly" "includes" prec-of?
-                    | "included" /"in" prec-of?
-                    | "properly" "included" /"in" prec-of?
-                    | "during" prec-of?
-                    | "properly" "during" prec-of?
+same-tail           : /"as" | /"or" "before" | /"or" "after"
+timing-lead         : "starts" | "ends" | "occurs"
+timing-trail        : "start" | "end"
+@temporal-rel       : "on" /"or" "before" | "on" /"or" "after" | "before" | "after"
+                    | "before" /"or" "on" | "after" /"or" "on"
+quantity-offset     : quantity offset-qual? | excl-qual quantity
+offset-qual         : "or more" | "or less"
+excl-qual           : "less than" | "more than"
 prec-of             : prec /"of"
 prec                : identifier
-setop-expr          : additive-expr     (@setop-op additive-expr)*
+setop-expr          : additive-expr     (@setop-op setop-rhs)*
+;; a query may be the RIGHT operand of a set operator: (…) union [B] Y where … (cql.g4 puts query in
+;; expression). Only the right: a query on the left would end its greedy where/aggregate body early.
+@setop-rhs          : additive-expr | query
 additive-expr       : multiplicative-expr (@additive-op multiplicative-expr)*
 multiplicative-expr : power-expr        (@multiplicative-op power-expr)*
 power-expr          : type-expr         (@power-op type-expr)*
@@ -98,9 +122,11 @@ type-expr           : unary-expr
 type-op-tail        : @type-op type-specifier
                     | "is" "null"
                     | "is" "not" "null"
+                    | "is" BOOL
+                    | "is" "not" BOOL
 cast-expr           : /"cast" unary-expr /"as" type-specifier
 convert-expr        : /"convert" unary-expr /"to" type-specifier
-unary-expr          : @unary-op unary-expr | interval-prefix | postfix-expr
+unary-expr          : @unary-op unary-expr | "exists" query | interval-prefix | postfix-expr
 ;; interval/list prefix operators
 interval-prefix     : "start" /"of" unary-expr
                     | "end" /"of" unary-expr
@@ -116,7 +142,9 @@ interval-prefix     : "start" /"of" unary-expr
 
 postfix-expr        : primary postfix-tail*
 postfix-tail        : invocation | indexer
-invocation          : /"." (function-call | member)
+invocation          : /"." (dot-call | dot-member)
+dot-call            : @ref-id /"(" arg-list? /")"
+dot-member          : @ref-id
 indexer             : /"[" expr /"]"
 
 primary             : literal
@@ -128,7 +156,11 @@ primary             : literal
                     | braced
                     | minmax
                     | instance-selector
+                    | code-selector
+                    | concept-selector
+                    | retrieve
                     | duration-of
+                    | duration-between
                     | difference-between
                     | component-from
                     | function-call
@@ -140,12 +172,15 @@ primary             : literal
 minmax              : "minimum" type-specifier | "maximum" type-specifier
 
 ;; instance selectors: Code { code: '…' } / Concept {…} / Quantity {…} / System.ValueSet {…}
+code-selector       : /"Code" STRING /"from" term-ref display-clause?
+concept-selector    : /"Concept" /"{" code-selector (/"," code-selector)* /"}" display-clause?
 instance-selector   : "Code" /"{" tuple-body? /"}"
                     | "Concept" /"{" tuple-body? /"}"
                     | qualified-id /"{" tuple-body? /"}"
 
 ;; duration in <units> of X == <units> between start of X and end of X
 duration-of         : /"duration" /"in" identifier /"of" unary-expr
+duration-between    : /"duration" /"in" identifier /"between" additive-expr /"and" additive-expr
 ;; NOTE: `<units> between A and B` (duration) is NOT a separate production — it parses as
 ;; `<identifier> between-tail` at the comparison level and the AST lowering recognises the unit word
 ;; (mirroring the reference grammar's context-sensitive durationBetween).
@@ -167,11 +202,11 @@ interval-close      : "]" | ")"
 
 typed-list-selector : /"List" type-arg? /"{" list-body? /"}"
 typed-tuple-selector : /"Tuple" /"{" tuple-body? /"}"
-braced              : /"{" braced-body? /"}"
+braced              : /"{" braced-body? /"}" | /"{" ":" /"}"
 braced-body         : tuple-body | list-body
 list-body           : expr (/"," expr)*
 tuple-body          : tuple-element (/"," tuple-element)*
-tuple-element       : identifier /":" expr
+tuple-element       : @ref-id /":" expr
 type-arg            : /"<" type-specifier /">"
 
 function-call       : identifier /"(" arg-list? /")"
@@ -179,13 +214,24 @@ arg-list            : expr (/"," expr)*
 member              : identifier
 
 ;; ---- type specifiers ------------------------------------------------------------------------
-type-specifier      : interval-type | list-type | named-type
-named-type          : qualified-id
+type-specifier      : interval-type | list-type | named-type | tuple-type | choice-type
+named-type          : qualified-id | "Code" | "Concept"
+tuple-type          : /"Tuple" /"{" tuple-type-elt (/"," tuple-type-elt)* /"}"
+tuple-type-elt      : @ref-id type-specifier
+choice-type         : /"Choice" /"<" type-specifier (/"," type-specifier)* /">"
 interval-type       : /"Interval" /"<" type-specifier /">"
 list-type           : /"List" /"<" type-specifier /">"
 
 ;; ---- leaves ---------------------------------------------------------------------------------
-qualified-id        : identifier (/"." identifier)*
+qualified-id        : identifier (/"." @ref-id)*
+;; names after "." (members, qualified names, tuple keys) may be keywords: period.start, System.Code
+@ref-id             : identifier | kw-id
+kw-id               : "start" | "end" | "display" | "version" | "by" | "Code" | "Concept" | "sort"
+                    | "context" | "default" | "occurs" | "starts" | "ends" | "expand" | "width" | "point"
+                    | "fluent" | "library" | "parameter" | "valueset" | "codesystem" | "codesystems"
+                    | "called" | "asc" | "desc" | "ascending" | "descending" | "convert" | "private"
+                    | "public" | "singleton" | "collapse" | "distinct" | "flatten" | "all" | "Choice"
+                    | "with" | "without" | "where" | "return" | "exists" | "minimum" | "maximum" | "predecessor" | "successor"
 ;; `code`/`concept`/… double as identifiers in many positions
 identifier          : IDENTIFIER | "as" | "is" | "in" | "contains" | "code" | "concept"
 
