@@ -1,0 +1,12 @@
+# Racket compiled artifacts
+compiled/
+*.zo
+*.dep
+
+# Editor backups / scratch
+*~
+*.bak
+Untitled.rkt
+
+# macOS
+.DS_Store

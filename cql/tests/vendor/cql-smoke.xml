@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Expression conformance tests in the cqframework/cql-tests format: each <test> has a CQL
+     <expression> and an expected <output> (also CQL). The harness compiles the expression to ELM,
+     runs the ELM, and compares to the interpreted output. See SOURCE.txt. -->
+<tests name="CqlExpressionSmoke">
+  <group name="Arithmetic">
+    <test name="Add"><expression>1 + 2</expression><output>3</output></test>
+    <test name="Precedence"><expression>1 + 2 * 3</expression><output>7</output></test>
+    <test name="Subtract"><expression>10 - 4 - 2</expression><output>4</output></test>
+    <test name="Multiply"><expression>6 * 7</expression><output>42</output></test>
+    <test name="Divide"><expression>3.0 / 4</expression><output>0.75</output></test>
+    <test name="IntegerDivideProducesDecimal"><expression>5 / 2</expression><output>2.5</output></test>
+    <test name="TruncatedDivide"><expression>7 div 2</expression><output>3</output></test>
+    <test name="Modulo"><expression>7 mod 3</expression><output>1</output></test>
+    <test name="Power"><expression>2 ^ 10</expression><output>1024</output></test>
+    <test name="Negate"><expression>-(3 + 4)</expression><output>-7</output></test>
+    <test name="DecimalAdd"><expression>3.0 + 0.14</expression><output>3.14</output></test>
+    <test name="Abs"><expression>Abs(-9)</expression><output>9</output></test>
+    <test name="Ceiling"><expression>Ceiling(4.1)</expression><output>5</output></test>
+    <test name="Floor"><expression>Floor(4.9)</expression><output>4</output></test>
+    <test name="Truncate"><expression>Truncate(4.9)</expression><output>4</output></test>
+    <test name="Round"><expression>Round(3.14159, 2)</expression><output>3.14</output></test>
+  </group>
+
+  <group name="Comparison">
+    <test name="EqualTrue"><expression>1 = 1</expression><output>true</output></test>
+    <test name="EqualFalse"><expression>1 = 2</expression><output>false</output></test>
+    <test name="NotEqual"><expression>1 != 2</expression><output>true</output></test>
+    <test name="Less"><expression>1 &lt; 2</expression><output>true</output></test>
+    <test name="Greater"><expression>3 &gt; 2</expression><output>true</output></test>
+    <test name="LessOrEqual"><expression>2 &lt;= 2</expression><output>true</output></test>
+    <test name="GreaterOrEqual"><expression>2 &gt;= 3</expression><output>false</output></test>
+    <test name="StringLess"><expression>'abc' &lt; 'abd'</expression><output>true</output></test>
+    <test name="EqualNullPropagates"><expression>1 = null</expression><output>null</output></test>
+  </group>
+
+  <group name="Logical">
+    <test name="AndTrue"><expression>true and true</expression><output>true</output></test>
+    <test name="AndFalse"><expression>true and false</expression><output>false</output></test>
+    <test name="AndNull"><expression>true and null</expression><output>null</output></test>
+    <test name="AndFalseNull"><expression>false and null</expression><output>false</output></test>
+    <test name="OrTrueNull"><expression>true or null</expression><output>true</output></test>
+    <test name="OrFalseFalse"><expression>false or false</expression><output>false</output></test>
+    <test name="Xor"><expression>true xor false</expression><output>true</output></test>
+    <test name="Not"><expression>not false</expression><output>true</output></test>
+    <test name="Implies"><expression>false implies false</expression><output>true</output></test>
+    <test name="Precedence"><expression>true or false and false</expression><output>true</output></test>
+  </group>
+
+  <group name="String">
+    <test name="Concat"><expression>'Hello, ' + 'World'</expression><output>'Hello, World'</output></test>
+    <test name="ConcatNull"><expression>'a' + null</expression><output>null</output></test>
+    <test name="AmpNull"><expression>'a' &amp; null</expression><output>'a'</output></test>
+    <test name="Upper"><expression>Upper('abc')</expression><output>'ABC'</output></test>
+    <test name="Lower"><expression>Lower('ABC')</expression><output>'abc'</output></test>
+    <test name="Length"><expression>Length('hello')</expression><output>5</output></test>
+    <test name="Substring"><expression>Substring('hello', 1, 3)</expression><output>'ell'</output></test>
+    <test name="StartsWith"><expression>StartsWith('hello', 'he')</expression><output>true</output></test>
+    <test name="EndsWith"><expression>EndsWith('hello', 'lo')</expression><output>true</output></test>
+    <test name="PositionOf"><expression>PositionOf('llo', 'hello')</expression><output>2</output></test>
+    <test name="Combine"><expression>Combine({'a', 'b', 'c'}, ',')</expression><output>'a,b,c'</output></test>
+  </group>
+
+  <group name="Conditional">
+    <test name="IfTrue"><expression>if 1 &lt; 2 then 'yes' else 'no'</expression><output>'yes'</output></test>
+    <test name="IfFalse"><expression>if 1 &gt; 2 then 'yes' else 'no'</expression><output>'no'</output></test>
+    <test name="CaseStandard"><expression>case when false then 1 when true then 2 else 3 end</expression><output>2</output></test>
+    <test name="CaseElse"><expression>case when false then 1 else 9 end</expression><output>9</output></test>
+    <test name="CaseSelected"><expression>case 2 when 1 then 'a' when 2 then 'b' else 'c' end</expression><output>'b'</output></test>
+  </group>
+
+  <group name="List">
+    <test name="ListLiteral"><expression>{1, 2, 3}</expression><output>{1, 2, 3}</output></test>
+    <test name="Count"><expression>Count({1, 2, 3, 4})</expression><output>4</output></test>
+    <test name="First"><expression>First({7, 8, 9})</expression><output>7</output></test>
+    <test name="Last"><expression>Last({7, 8, 9})</expression><output>9</output></test>
+    <test name="Exists"><expression>exists {1}</expression><output>true</output></test>
+    <test name="ExistsEmpty"><expression>exists {}</expression><output>false</output></test>
+    <test name="Sum"><expression>Sum({1, 2, 3, 4})</expression><output>10</output></test>
+    <test name="Min"><expression>Min({3, 1, 2})</expression><output>1</output></test>
+    <test name="Max"><expression>Max({3, 1, 2})</expression><output>3</output></test>
+    <test name="Distinct"><expression>Distinct({1, 1, 2, 2, 3})</expression><output>{1, 2, 3}</output></test>
+    <test name="Indexer"><expression>{10, 20, 30}[1]</expression><output>20</output></test>
+    <test name="InList"><expression>2 in {1, 2, 3}</expression><output>true</output></test>
+    <test name="Union"><expression>{1, 2} union {2, 3}</expression><output>{1, 2, 3}</output></test>
+    <test name="Intersect"><expression>{1, 2, 3} intersect {2, 3, 4}</expression><output>{2, 3}</output></test>
+    <test name="Except"><expression>{1, 2, 3} except {2}</expression><output>{1, 3}</output></test>
+  </group>
+
+  <group name="Interval">
+    <test name="InClosed"><expression>5 in Interval[1, 10]</expression><output>true</output></test>
+    <test name="InOpenHigh"><expression>10 in Interval[1, 10)</expression><output>false</output></test>
+    <test name="InOpenLow"><expression>1 in Interval(1, 10]</expression><output>false</output></test>
+    <test name="Below"><expression>0 in Interval[1, 10]</expression><output>false</output></test>
+  </group>
+
+  <group name="Nullological">
+    <test name="Coalesce"><expression>Coalesce(null, null, 5)</expression><output>5</output></test>
+    <test name="IsNullTrue"><expression>IsNull(null)</expression><output>true</output></test>
+    <test name="IsNullFalse"><expression>IsNull(3)</expression><output>false</output></test>
+  </group>
+
+  <group name="Conversion">
+    <test name="ToString"><expression>ToString(42)</expression><output>'42'</output></test>
+    <test name="ToInteger"><expression>ToInteger('15')</expression><output>15</output></test>
+    <test name="ToDecimal"><expression>ToDecimal('1.5')</expression><output>1.5</output></test>
+    <test name="ToBoolean"><expression>ToBoolean('true')</expression><output>true</output></test>
+    <test name="ConvertToString"><expression>convert 7 to String</expression><output>'7'</output></test>
+    <test name="IsInteger"><expression>5 is Integer</expression><output>true</output></test>
+    <test name="IsNotString"><expression>5 is String</expression><output>false</output></test>
+  </group>
+</tests>

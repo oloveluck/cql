@@ -1,0 +1,21 @@
+Official CQL test suite (vendored)
+==================================
+
+These XML files are the official HL7 CQL engine conformance suites, vendored verbatim from:
+
+  repo:    https://github.com/cqframework/cql-tests
+  path:    tests/cql/
+  commit:  36a47eb2bd3871f8a04da6da093b7d23196b4f86  (tests/cql latest as of 2026-08-23)
+  schema:  tests/testSchema.xsd  (namespace http://hl7.org/fhirpath/tests)
+  fetched: 2026-08-23
+
+Format: <tests><group><test><expression [invalid="true|semantic|syntax"]/><output [type=…]/>
+</test></group></tests>. The harness (../../harness.rkt) compiles each <expression> to ELM, RUNS the
+ELM, and compares the result to the interpreted <output> (a literal CQL representation). Tests using
+<library> instead of <expression> are skipped (the expression harness's scope). `raco fhir cql-tck`
+runs every suite here.
+
+These are the spec's own tests, so they exercise the FULL language — including the slices this
+implementation defers (DateTime/Time operators, Interval timing, Aggregates, Queries, quantity/UCUM
+arithmetic, and many system operators). Those groups are expected to have failures until those slices
+land; the per-suite breakdown printed by the runner shows exactly where.

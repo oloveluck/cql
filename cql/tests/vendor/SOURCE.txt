@@ -1,0 +1,11 @@
+CQL conformance corpora
+=======================
+
+cql-tests/    — the OFFICIAL HL7 CQL engine conformance suites, vendored verbatim from
+                cqframework/cql-tests (see cql-tests/SOURCE.txt for repo + commit). This is the real
+                conformance signal, run by `raco fhir cql-tck` (../run.rkt globs cql-tests/*.xml).
+
+cql-smoke.xml — a small hand-authored suite in the same format, used ONLY as the harness's own
+                self-test (../harness.rkt's `module+ test`). It is NOT part of the conformance number.
+                Kept because it is all-green by construction, so it verifies the compile→run→compare
+                loop independently of how much of the official suite currently passes.
