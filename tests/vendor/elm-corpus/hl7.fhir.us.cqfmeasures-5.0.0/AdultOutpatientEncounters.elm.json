@@ -1,0 +1,629 @@
+{
+   "library" : {
+      "annotation" : [ {
+         "translatorOptions" : "EnableAnnotations,EnableLocators,DisableListDemotion,DisableListPromotion",
+         "type" : "CqlToElmInfo"
+      }, {
+         "type" : "Annotation",
+         "t" : [ {
+            "name" : "update",
+            "value" : "BTR 2020-03-31 ->\nIncremented version to 2.0.000\nUpdated FHIR version to 4.0.1"
+         } ],
+         "s" : {
+            "r" : "34",
+            "s" : [ {
+               "value" : [ "/*\nThis example is a work in progress and should not be considered a final specification\nor recommendation for guidance. This example will help guide and direct the process\nof finding conventions and usage patterns that meet the needs of the various stakeholders\nin the measure development community.\n\n@update: BTR 2020-03-31 ->\nIncremented version to 2.0.000\nUpdated FHIR version to 4.0.1\n*/","library AdultOutpatientEncounters version '2.0.000'" ]
+            } ]
+         }
+      } ],
+      "identifier" : {
+         "id" : "AdultOutpatientEncounters",
+         "system" : "http://somewhere.org/fhir/uv/mycontentig",
+         "version" : "2.0.000"
+      },
+      "schemaIdentifier" : {
+         "id" : "urn:hl7-org:elm",
+         "version" : "r1"
+      },
+      "usings" : {
+         "def" : [ {
+            "localIdentifier" : "System",
+            "uri" : "urn:hl7-org:elm-types:r1"
+         }, {
+            "localId" : "1",
+            "locator" : "13:1-13:26",
+            "localIdentifier" : "FHIR",
+            "uri" : "http://hl7.org/fhir",
+            "version" : "4.0.1",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "1",
+                  "s" : [ {
+                     "value" : [ "","using " ]
+                  }, {
+                     "s" : [ {
+                        "value" : [ "FHIR" ]
+                     } ]
+                  }, {
+                     "value" : [ " version ","'4.0.1'" ]
+                  } ]
+               }
+            } ]
+         } ]
+      },
+      "includes" : {
+         "def" : [ {
+            "localId" : "2",
+            "locator" : "15:1-15:54",
+            "localIdentifier" : "FHIRHelpers",
+            "path" : "http://fhir.org/guides/cqf/common/FHIRHelpers",
+            "version" : "4.0.1",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "2",
+                  "s" : [ {
+                     "value" : [ "","include " ]
+                  }, {
+                     "s" : [ {
+                        "value" : [ "FHIRHelpers" ]
+                     } ]
+                  }, {
+                     "value" : [ " version ","'4.0.1'"," called ","FHIRHelpers" ]
+                  } ]
+               }
+            } ]
+         } ]
+      },
+      "parameters" : {
+         "def" : [ {
+            "localId" : "13",
+            "locator" : "23:1-24:66",
+            "name" : "Measurement Period",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "13",
+                  "s" : [ {
+                     "value" : [ "","parameter ","\"Measurement Period\""," " ]
+                  }, {
+                     "r" : "12",
+                     "s" : [ {
+                        "value" : [ "Interval<" ]
+                     }, {
+                        "r" : "11",
+                        "s" : [ {
+                           "value" : [ "DateTime" ]
+                        } ]
+                     }, {
+                        "value" : [ ">" ]
+                     } ]
+                  }, {
+                     "value" : [ "\n  default " ]
+                  }, {
+                     "r" : "10",
+                     "s" : [ {
+                        "r" : "8",
+                        "value" : [ "Interval[","@2019-01-01T00:00:00.0",", ","@2020-01-01T00:00:00.0",")" ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "default" : {
+               "localId" : "10",
+               "locator" : "24:11-24:66",
+               "lowClosed" : true,
+               "highClosed" : false,
+               "type" : "Interval",
+               "low" : {
+                  "localId" : "8",
+                  "locator" : "24:20-24:41",
+                  "type" : "DateTime",
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2019",
+                     "type" : "Literal"
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal"
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal"
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  },
+                  "millisecond" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  }
+               },
+               "high" : {
+                  "localId" : "9",
+                  "locator" : "24:44-24:65",
+                  "type" : "DateTime",
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal"
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal"
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal"
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  },
+                  "millisecond" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal"
+                  }
+               }
+            },
+            "parameterTypeSpecifier" : {
+               "localId" : "12",
+               "locator" : "23:32-23:49",
+               "type" : "IntervalTypeSpecifier",
+               "pointType" : {
+                  "localId" : "11",
+                  "locator" : "23:41-23:48",
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier"
+               }
+            }
+         } ]
+      },
+      "valueSets" : {
+         "def" : [ {
+            "localId" : "3",
+            "locator" : "17:1-17:104",
+            "name" : "Office Visit",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "3",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Office Visit\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "4",
+            "locator" : "18:1-18:103",
+            "name" : "Annual Wellness Visit",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1240",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "4",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Annual Wellness Visit\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1240'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "5",
+            "locator" : "19:1-19:154",
+            "name" : "Preventive Care Services - Established Office Visit, 18 and Up",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1025",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "5",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Preventive Care Services - Established Office Visit, 18 and Up\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1025'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "6",
+            "locator" : "20:1-20:148",
+            "name" : "Preventive Care Services-Initial Office Visit, 18 and Up",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "6",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Preventive Care Services-Initial Office Visit, 18 and Up\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "7",
+            "locator" : "21:1-21:116",
+            "name" : "Home Healthcare Services",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1016",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "7",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Home Healthcare Services\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1016'" ]
+                  } ]
+               }
+            } ]
+         } ]
+      },
+      "contexts" : {
+         "def" : [ {
+            "locator" : "26:1-26:15",
+            "name" : "Patient"
+         } ]
+      },
+      "statements" : {
+         "def" : [ {
+            "locator" : "26:1-26:15",
+            "name" : "Patient",
+            "context" : "Patient",
+            "expression" : {
+               "type" : "SingletonFrom",
+               "operand" : {
+                  "locator" : "26:1-26:15",
+                  "dataType" : "{http://hl7.org/fhir}Patient",
+                  "templateId" : "http://hl7.org/fhir/StructureDefinition/Patient",
+                  "type" : "Retrieve"
+               }
+            }
+         }, {
+            "localId" : "34",
+            "locator" : "28:1-37:43",
+            "name" : "Qualifying Encounters",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "34",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Qualifying Encounters\"",":\n\t" ]
+                  }, {
+                     "r" : "33",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "23",
+                           "s" : [ {
+                              "r" : "22",
+                              "s" : [ {
+                                 "value" : [ "(\n    " ]
+                              }, {
+                                 "r" : "22",
+                                 "s" : [ {
+                                    "r" : "20",
+                                    "s" : [ {
+                                       "r" : "18",
+                                       "s" : [ {
+                                          "r" : "16",
+                                          "s" : [ {
+                                             "r" : "14",
+                                             "s" : [ {
+                                                "value" : [ "[","Encounter",": " ]
+                                             }, {
+                                                "s" : [ {
+                                                   "value" : [ "\"Office Visit\"" ]
+                                                } ]
+                                             }, {
+                                                "value" : [ "]" ]
+                                             } ]
+                                          }, {
+                                             "value" : [ "\n  \t\tunion " ]
+                                          }, {
+                                             "r" : "15",
+                                             "s" : [ {
+                                                "value" : [ "[","Encounter",": " ]
+                                             }, {
+                                                "s" : [ {
+                                                   "value" : [ "\"Annual Wellness Visit\"" ]
+                                                } ]
+                                             }, {
+                                                "value" : [ "]" ]
+                                             } ]
+                                          } ]
+                                       }, {
+                                          "value" : [ "\n  \t\tunion " ]
+                                       }, {
+                                          "r" : "17",
+                                          "s" : [ {
+                                             "value" : [ "[","Encounter",": " ]
+                                          }, {
+                                             "s" : [ {
+                                                "value" : [ "\"Preventive Care Services - Established Office Visit, 18 and Up\"" ]
+                                             } ]
+                                          }, {
+                                             "value" : [ "]" ]
+                                          } ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "\n  \t\tunion " ]
+                                    }, {
+                                       "r" : "19",
+                                       "s" : [ {
+                                          "value" : [ "[","Encounter",": " ]
+                                       }, {
+                                          "s" : [ {
+                                             "value" : [ "\"Preventive Care Services-Initial Office Visit, 18 and Up\"" ]
+                                          } ]
+                                       }, {
+                                          "value" : [ "]" ]
+                                       } ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "\n  \t\tunion " ]
+                                 }, {
+                                    "r" : "21",
+                                    "s" : [ {
+                                       "value" : [ "[","Encounter",": " ]
+                                    }, {
+                                       "s" : [ {
+                                          "value" : [ "\"Home Healthcare Services\"" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "]" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ "\n  )" ]
+                              } ]
+                           }, {
+                              "value" : [ " ","ValidEncounter" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n\t\t" ]
+                     }, {
+                        "r" : "32",
+                        "s" : [ {
+                           "value" : [ "where " ]
+                        }, {
+                           "r" : "32",
+                           "s" : [ {
+                              "r" : "27",
+                              "s" : [ {
+                                 "r" : "25",
+                                 "s" : [ {
+                                    "r" : "24",
+                                    "s" : [ {
+                                       "value" : [ "ValidEncounter" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "25",
+                                    "s" : [ {
+                                       "value" : [ "period" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "r" : "27",
+                                 "value" : [ " ","during"," " ]
+                              }, {
+                                 "r" : "26",
+                                 "s" : [ {
+                                    "value" : [ "\"Measurement Period\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ "\n  \t\tand " ]
+                           }, {
+                              "r" : "31",
+                              "s" : [ {
+                                 "r" : "29",
+                                 "s" : [ {
+                                    "r" : "28",
+                                    "s" : [ {
+                                       "value" : [ "ValidEncounter" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "29",
+                                    "s" : [ {
+                                       "value" : [ "status" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ "  ","="," " ]
+                              }, {
+                                 "r" : "30",
+                                 "s" : [ {
+                                    "value" : [ "'finished'" ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "33",
+               "locator" : "29:2-37:43",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "23",
+                  "locator" : "29:2-35:18",
+                  "alias" : "ValidEncounter",
+                  "expression" : {
+                     "localId" : "22",
+                     "locator" : "29:2-35:3",
+                     "type" : "Union",
+                     "operand" : [ {
+                        "localId" : "20",
+                        "locator" : "30:5-33:81",
+                        "type" : "Union",
+                        "operand" : [ {
+                           "localId" : "16",
+                           "locator" : "30:5-31:46",
+                           "type" : "Union",
+                           "operand" : [ {
+                              "localId" : "14",
+                              "locator" : "30:5-30:31",
+                              "dataType" : "{http://hl7.org/fhir}Encounter",
+                              "templateId" : "http://hl7.org/fhir/StructureDefinition/Encounter",
+                              "codeProperty" : "type",
+                              "codeComparator" : "in",
+                              "type" : "Retrieve",
+                              "codes" : {
+                                 "locator" : "30:17-30:30",
+                                 "name" : "Office Visit",
+                                 "type" : "ValueSetRef"
+                              }
+                           }, {
+                              "localId" : "15",
+                              "locator" : "31:11-31:46",
+                              "dataType" : "{http://hl7.org/fhir}Encounter",
+                              "templateId" : "http://hl7.org/fhir/StructureDefinition/Encounter",
+                              "codeProperty" : "type",
+                              "codeComparator" : "in",
+                              "type" : "Retrieve",
+                              "codes" : {
+                                 "locator" : "31:23-31:45",
+                                 "name" : "Annual Wellness Visit",
+                                 "type" : "ValueSetRef"
+                              }
+                           } ]
+                        }, {
+                           "type" : "Union",
+                           "operand" : [ {
+                              "localId" : "17",
+                              "locator" : "32:11-32:87",
+                              "dataType" : "{http://hl7.org/fhir}Encounter",
+                              "templateId" : "http://hl7.org/fhir/StructureDefinition/Encounter",
+                              "codeProperty" : "type",
+                              "codeComparator" : "in",
+                              "type" : "Retrieve",
+                              "codes" : {
+                                 "locator" : "32:23-32:86",
+                                 "name" : "Preventive Care Services - Established Office Visit, 18 and Up",
+                                 "type" : "ValueSetRef"
+                              }
+                           }, {
+                              "localId" : "19",
+                              "locator" : "33:11-33:81",
+                              "dataType" : "{http://hl7.org/fhir}Encounter",
+                              "templateId" : "http://hl7.org/fhir/StructureDefinition/Encounter",
+                              "codeProperty" : "type",
+                              "codeComparator" : "in",
+                              "type" : "Retrieve",
+                              "codes" : {
+                                 "locator" : "33:23-33:80",
+                                 "name" : "Preventive Care Services-Initial Office Visit, 18 and Up",
+                                 "type" : "ValueSetRef"
+                              }
+                           } ]
+                        } ]
+                     }, {
+                        "localId" : "21",
+                        "locator" : "34:11-34:49",
+                        "dataType" : "{http://hl7.org/fhir}Encounter",
+                        "templateId" : "http://hl7.org/fhir/StructureDefinition/Encounter",
+                        "codeProperty" : "type",
+                        "codeComparator" : "in",
+                        "type" : "Retrieve",
+                        "codes" : {
+                           "locator" : "34:23-34:48",
+                           "name" : "Home Healthcare Services",
+                           "type" : "ValueSetRef"
+                        }
+                     } ]
+                  }
+               } ],
+               "relationship" : [ ],
+               "where" : {
+                  "localId" : "32",
+                  "locator" : "36:3-37:43",
+                  "type" : "And",
+                  "operand" : [ {
+                     "localId" : "27",
+                     "locator" : "36:9-36:57",
+                     "type" : "IncludedIn",
+                     "operand" : [ {
+                        "name" : "ToInterval",
+                        "libraryName" : "FHIRHelpers",
+                        "type" : "FunctionRef",
+                        "operand" : [ {
+                           "localId" : "25",
+                           "locator" : "36:9-36:29",
+                           "path" : "period",
+                           "scope" : "ValidEncounter",
+                           "type" : "Property"
+                        } ]
+                     }, {
+                        "localId" : "26",
+                        "locator" : "36:38-36:57",
+                        "name" : "Measurement Period",
+                        "type" : "ParameterRef"
+                     } ]
+                  }, {
+                     "localId" : "31",
+                     "locator" : "37:9-37:43",
+                     "type" : "Equal",
+                     "operand" : [ {
+                        "name" : "ToString",
+                        "libraryName" : "FHIRHelpers",
+                        "type" : "FunctionRef",
+                        "operand" : [ {
+                           "localId" : "29",
+                           "locator" : "37:9-37:29",
+                           "path" : "status",
+                           "scope" : "ValidEncounter",
+                           "type" : "Property"
+                        } ]
+                     }, {
+                        "localId" : "30",
+                        "locator" : "37:34-37:43",
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "finished",
+                        "type" : "Literal"
+                     } ]
+                  } ]
+               }
+            }
+         } ]
+      }
+   }
+}

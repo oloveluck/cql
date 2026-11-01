@@ -1,0 +1,10 @@
+ELM corpus — CQL libraries with the reference translator's ELM, from published FHIR packages.
+Each <package>/<Library>.cql is the Library's text/cql content; <Library>.elm.json its
+application/elm+json content (produced by the cqframework cql-to-elm translator when the IG was
+published). Extracted verbatim (base64-decoded) on 2026-11-01 from packages.fhir.org:
+
+  fhir.cqf.common-4.0.1: 4 libraries; package license Apache-2.0; https://packages.fhir.org/fhir.cqf.common/4.0.1
+  hl7.fhir.us.cqfmeasures-5.0.0: 19 libraries; package license CC0-1.0; https://packages.fhir.org/hl7.fhir.us.cqfmeasures/5.0.0
+  hl7.fhir.uv.cql-2.0.0: 9 libraries; package license CC0-1.0; https://packages.fhir.org/hl7.fhir.uv.cql/2.0.0
+
+The CQL text and ELM are reproduced under each package's license (above). Nothing is modified.

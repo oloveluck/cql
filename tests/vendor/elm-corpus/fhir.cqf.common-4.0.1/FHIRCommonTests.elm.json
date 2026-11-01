@@ -1,0 +1,75 @@
+{
+  "library" : {
+    "type" : "Library",
+    "identifier" : {
+      "type" : "VersionedIdentifier",
+      "id" : "FHIRCommonTests",
+      "system" : "http://fhir.org/guides/cqf/common"
+    },
+    "schemaIdentifier" : {
+      "type" : "VersionedIdentifier",
+      "id" : "urn:hl7-org:elm",
+      "version" : "r1"
+    },
+    "usings" : {
+      "type" : "Library$Usings",
+      "def" : [ {
+        "type" : "UsingDef",
+        "localIdentifier" : "System",
+        "uri" : "urn:hl7-org:elm-types:r1"
+      }, {
+        "type" : "UsingDef",
+        "locator" : "3:1-3:26",
+        "localIdentifier" : "FHIR",
+        "uri" : "http://hl7.org/fhir",
+        "version" : "4.0.1"
+      } ]
+    },
+    "includes" : {
+      "type" : "Library$Includes",
+      "def" : [ {
+        "type" : "IncludeDef",
+        "locator" : "5:1-5:35",
+        "localIdentifier" : "FHIRHelpers",
+        "path" : "http://fhir.org/guides/cqf/common/FHIRHelpers",
+        "version" : "4.0.1"
+      }, {
+        "type" : "IncludeDef",
+        "locator" : "6:1-6:34",
+        "localIdentifier" : "FHIRCommon",
+        "path" : "http://fhir.org/guides/cqf/common/FHIRCommon",
+        "version" : "4.0.1"
+      } ]
+    },
+    "contexts" : {
+      "type" : "Library$Contexts",
+      "def" : [ {
+        "type" : "ContextDef",
+        "locator" : "8:1-8:15",
+        "name" : "Patient"
+      } ]
+    },
+    "statements" : {
+      "type" : "Library$Statements",
+      "def" : [ {
+        "type" : "ExpressionDef",
+        "expression" : {
+          "type" : "SingletonFrom",
+          "operand" : {
+            "type" : "Retrieve",
+            "locator" : "8:1-8:15",
+            "dataType" : "{http://hl7.org/fhir}Patient",
+            "templateId" : "http://hl7.org/fhir/StructureDefinition/Patient"
+          }
+        },
+        "locator" : "8:1-8:15",
+        "name" : "Patient",
+        "context" : "Patient"
+      } ]
+    },
+    "annotation" : [ {
+      "translatorVersion" : "1.3",
+      "translatorOptions" : "EnableLocators,DisableListDemotion,DisableListPromotion"
+    } ]
+  }
+}

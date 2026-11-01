@@ -1,0 +1,512 @@
+{
+   "library" : {
+      "annotation" : [ {
+         "translatorOptions" : "",
+         "signatureLevel" : "Overloads",
+         "type" : "CqlToElmInfo"
+      }, {
+         "message" : "An operand identifier [domainResource] is hiding another identifier of the same name.",
+         "errorType" : "semantic",
+         "errorSeverity" : "warning",
+         "type" : "CqlToElmError"
+      }, {
+         "message" : "An operand identifier [id] is hiding another identifier of the same name.",
+         "errorType" : "semantic",
+         "errorSeverity" : "warning",
+         "type" : "CqlToElmError"
+      } ],
+      "identifier" : {
+         "id" : "ANCCohort",
+         "system" : "http://hl7.org/fhir/uv/cql"
+      },
+      "schemaIdentifier" : {
+         "id" : "urn:hl7-org:elm",
+         "version" : "r1"
+      },
+      "usings" : {
+         "def" : [ {
+            "localIdentifier" : "System",
+            "uri" : "urn:hl7-org:elm-types:r1",
+            "annotation" : [ ]
+         }, {
+            "localIdentifier" : "FHIR",
+            "uri" : "http://hl7.org/fhir",
+            "version" : "4.0.1",
+            "annotation" : [ ]
+         } ]
+      },
+      "includes" : {
+         "def" : [ {
+            "localIdentifier" : "FHIRHelpers",
+            "path" : "http://hl7.org/fhir/uv/cql/FHIRHelpers",
+            "version" : "4.0.1",
+            "annotation" : [ ]
+         } ]
+      },
+      "codeSystems" : {
+         "def" : [ {
+            "name" : "ANCM Concept Codes",
+            "id" : "http://hl7.org/fhir/uv/cql/CodeSystem/example",
+            "accessLevel" : "Public",
+            "annotation" : [ ]
+         } ]
+      },
+      "codes" : {
+         "def" : [ {
+            "name" : "Pregnancy Confirmed",
+            "id" : "ANC.B4.DE1",
+            "display" : "Pregnancy Confirmed",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "codeSystem" : {
+               "name" : "ANCM Concept Codes",
+               "annotation" : [ ]
+            }
+         } ]
+      },
+      "statements" : {
+         "def" : [ {
+            "name" : "Final",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "type" : "FunctionDef",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Query",
+               "annotation" : [ ],
+               "source" : [ {
+                  "alias" : "O",
+                  "annotation" : [ ],
+                  "expression" : {
+                     "name" : "observations",
+                     "type" : "OperandRef",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "let" : [ ],
+               "relationship" : [ ],
+               "where" : {
+                  "type" : "And",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "type" : "And",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : [ {
+                        "type" : "In",
+                        "annotation" : [ ],
+                        "signature" : [ ],
+                        "operand" : [ {
+                           "name" : "ToString",
+                           "libraryName" : "FHIRHelpers",
+                           "type" : "FunctionRef",
+                           "annotation" : [ ],
+                           "signature" : [ {
+                              "name" : "{http://hl7.org/fhir}ObservationStatus",
+                              "type" : "NamedTypeSpecifier",
+                              "annotation" : [ ]
+                           } ],
+                           "operand" : [ {
+                              "path" : "status",
+                              "scope" : "O",
+                              "type" : "Property",
+                              "annotation" : [ ]
+                           } ]
+                        }, {
+                           "type" : "List",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                              "value" : "final",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }, {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                              "value" : "amended",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }, {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                              "value" : "corrected",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           } ]
+                        } ]
+                     }, {
+                        "type" : "IsFalse",
+                        "annotation" : [ ],
+                        "signature" : [ ],
+                        "operand" : {
+                           "type" : "Coalesce",
+                           "annotation" : [ ],
+                           "signature" : [ ],
+                           "operand" : [ {
+                              "name" : "ToBoolean",
+                              "libraryName" : "FHIRHelpers",
+                              "type" : "FunctionRef",
+                              "annotation" : [ ],
+                              "signature" : [ ],
+                              "operand" : [ {
+                                 "asType" : "{http://hl7.org/fhir}boolean",
+                                 "type" : "As",
+                                 "annotation" : [ ],
+                                 "signature" : [ ],
+                                 "operand" : {
+                                    "path" : "value",
+                                    "type" : "Property",
+                                    "annotation" : [ ],
+                                    "source" : {
+                                       "name" : "ModifierExtension",
+                                       "type" : "FunctionRef",
+                                       "annotation" : [ ],
+                                       "signature" : [ ],
+                                       "operand" : [ {
+                                          "name" : "O",
+                                          "type" : "AliasRef",
+                                          "annotation" : [ ]
+                                       }, {
+                                          "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                          "value" : "who-notDone",
+                                          "type" : "Literal",
+                                          "annotation" : [ ]
+                                       } ]
+                                    }
+                                 }
+                              } ]
+                           }, {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Boolean",
+                              "value" : "false",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           } ]
+                        }
+                     } ]
+                  }, {
+                     "type" : "Not",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : {
+                        "type" : "IsNull",
+                        "annotation" : [ ],
+                        "signature" : [ ],
+                        "operand" : {
+                           "path" : "value",
+                           "scope" : "O",
+                           "type" : "Property",
+                           "annotation" : [ ]
+                        }
+                     }
+                  } ]
+               }
+            },
+            "operand" : [ {
+               "name" : "observations",
+               "annotation" : [ ],
+               "operandTypeSpecifier" : {
+                  "type" : "ListTypeSpecifier",
+                  "annotation" : [ ],
+                  "elementType" : {
+                     "name" : "{http://hl7.org/fhir}Observation",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }
+            } ]
+         }, {
+            "name" : "ModifierExtension",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "type" : "FunctionDef",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "t" : [ {
+                  "name" : "description",
+                  "value" : "Returns the single WHO core modifier extension (if present) on the given resource with the specified id."
+               }, {
+                  "name" : "comment",
+                  "value" : "This function uses singleton from to ensure that a run-time exception is thrown if there\nis more than one extension on the given resource with the specified url."
+               } ]
+            } ],
+            "expression" : {
+               "type" : "SingletonFrom",
+               "annotation" : [ ],
+               "signature" : [ ],
+               "operand" : {
+                  "name" : "ModifierExtensions",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "domainResource",
+                     "type" : "OperandRef",
+                     "annotation" : [ ]
+                  }, {
+                     "name" : "id",
+                     "type" : "OperandRef",
+                     "annotation" : [ ]
+                  } ]
+               }
+            },
+            "operand" : [ {
+               "name" : "domainResource",
+               "annotation" : [ ],
+               "operandTypeSpecifier" : {
+                  "name" : "{http://hl7.org/fhir}DomainResource",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }
+            }, {
+               "name" : "id",
+               "annotation" : [ ],
+               "operandTypeSpecifier" : {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }
+            } ]
+         }, {
+            "name" : "ModifierExtensions",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "type" : "FunctionDef",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "t" : [ {
+                  "name" : "description",
+                  "value" : "Returns any WHO core modifier extensions defined on the given resource with the specified id."
+               }, {
+                  "name" : "comment",
+                  "value" : "NOTE: Extensions are not the preferred approach, but are used as a way to access\ncontent that is defined by extensions but not yet surfaced in the\nCQL model info."
+               } ]
+            } ],
+            "expression" : {
+               "type" : "Query",
+               "annotation" : [ ],
+               "source" : [ {
+                  "alias" : "E",
+                  "annotation" : [ ],
+                  "expression" : {
+                     "path" : "modifierExtension",
+                     "type" : "Property",
+                     "annotation" : [ ],
+                     "source" : {
+                        "name" : "domainResource",
+                        "type" : "OperandRef",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ],
+               "let" : [ ],
+               "relationship" : [ ],
+               "where" : {
+                  "type" : "Equal",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{urn:hl7-org:elm-types:r1}String",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }, {
+                     "name" : "{urn:hl7-org:elm-types:r1}String",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "ToString",
+                     "libraryName" : "FHIRHelpers",
+                     "type" : "FunctionRef",
+                     "annotation" : [ ],
+                     "signature" : [ {
+                        "name" : "{http://hl7.org/fhir}uri",
+                        "type" : "NamedTypeSpecifier",
+                        "annotation" : [ ]
+                     } ],
+                     "operand" : [ {
+                        "path" : "url",
+                        "scope" : "E",
+                        "type" : "Property",
+                        "annotation" : [ ]
+                     } ]
+                  }, {
+                     "type" : "Concatenate",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : [ {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "http://fhir.org/guides/who/core/StructureDefinition/",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }, {
+                        "name" : "id",
+                        "type" : "OperandRef",
+                        "annotation" : [ ]
+                     } ]
+                  } ]
+               },
+               "return" : {
+                  "annotation" : [ ],
+                  "expression" : {
+                     "name" : "E",
+                     "type" : "AliasRef",
+                     "annotation" : [ ]
+                  }
+               }
+            },
+            "operand" : [ {
+               "name" : "domainResource",
+               "annotation" : [ ],
+               "operandTypeSpecifier" : {
+                  "name" : "{http://hl7.org/fhir}DomainResource",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }
+            }, {
+               "name" : "id",
+               "annotation" : [ ],
+               "operandTypeSpecifier" : {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }
+            } ]
+         }, {
+            "name" : "MostRecent",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "type" : "FunctionDef",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Last",
+               "annotation" : [ ],
+               "signature" : [ ],
+               "source" : {
+                  "type" : "Query",
+                  "annotation" : [ ],
+                  "source" : [ {
+                     "alias" : "O",
+                     "annotation" : [ ],
+                     "expression" : {
+                        "name" : "observations",
+                        "type" : "OperandRef",
+                        "annotation" : [ ]
+                     }
+                  } ],
+                  "let" : [ ],
+                  "relationship" : [ ],
+                  "sort" : {
+                     "annotation" : [ ],
+                     "by" : [ {
+                        "direction" : "asc",
+                        "path" : "issued",
+                        "type" : "ByColumn",
+                        "annotation" : [ ]
+                     } ]
+                  }
+               }
+            },
+            "operand" : [ {
+               "name" : "observations",
+               "annotation" : [ ],
+               "operandTypeSpecifier" : {
+                  "type" : "ListTypeSpecifier",
+                  "annotation" : [ ],
+                  "elementType" : {
+                     "name" : "{http://hl7.org/fhir}Observation",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }
+            } ]
+         }, {
+            "name" : "Is Pregnancy Confirmed",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "t" : [ {
+                  "name" : "dataElement",
+                  "value" : "ANC.B4.DE1 Pregnancy Confirmed"
+               }, {
+                  "name" : "activity",
+                  "value" : "ANC.B4 Confirm pregnancy"
+               }, {
+                  "name" : "description",
+                  "value" : "Pregnancy has been confirmed"
+               } ]
+            } ],
+            "expression" : {
+               "strict" : false,
+               "type" : "As",
+               "annotation" : [ ],
+               "signature" : [ ],
+               "operand" : {
+                  "path" : "value",
+                  "type" : "Property",
+                  "annotation" : [ ],
+                  "source" : {
+                     "name" : "MostRecent",
+                     "type" : "FunctionRef",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : [ {
+                        "name" : "Final",
+                        "type" : "FunctionRef",
+                        "annotation" : [ ],
+                        "signature" : [ ],
+                        "operand" : [ {
+                           "dataType" : "{http://hl7.org/fhir}Observation",
+                           "templateId" : "http://hl7.org/fhir/StructureDefinition/Observation",
+                           "codeProperty" : "code",
+                           "codeComparator" : "~",
+                           "type" : "Retrieve",
+                           "annotation" : [ ],
+                           "codes" : {
+                              "type" : "ToList",
+                              "annotation" : [ ],
+                              "signature" : [ ],
+                              "operand" : {
+                                 "name" : "Pregnancy Confirmed",
+                                 "type" : "CodeRef",
+                                 "annotation" : [ ]
+                              }
+                           },
+                           "include" : [ ],
+                           "codeFilter" : [ ],
+                           "dateFilter" : [ ],
+                           "otherFilter" : [ ]
+                        } ]
+                     } ]
+                  }
+               },
+               "asTypeSpecifier" : {
+                  "name" : "{http://hl7.org/fhir}boolean",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }
+            }
+         }, {
+            "name" : "Is Antenatal Care Applicable",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "IsTrue",
+               "annotation" : [ ],
+               "signature" : [ ],
+               "operand" : {
+                  "name" : "ToBoolean",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "Is Pregnancy Confirmed",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }
+            }
+         } ]
+      }
+   }
+}

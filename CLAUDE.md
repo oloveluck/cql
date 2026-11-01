@@ -53,7 +53,7 @@ operators, `if`/`case`. Layers:
   FHIRPath-TCK philosophy: it evaluates the `<output>` literal as CQL and compares values, treating an
   `invalid` expression as expected-to-fail and a `<library>` test as skipped). The **official HL7 suites
   are vendored verbatim** in `cql/tests/vendor/cql-tests/` (from `cqframework/cql-tests`, commit
-  `36a47eb…`, see its SOURCE.txt); `raco fhir cql-tck` (→ `cql/tests/run.rkt`, floor-ratcheted) runs
+  `36a47eb…`, see its SOURCE.txt); `raco cql --tck` (→ `cql/tests/run.rkt`, floor-ratcheted) runs
   them: **1819/1823 (99.8%)** — 11 of 16 suites at 100% (incl. Interval 410/411, DateTime 314/317,
   Arithmetic 234/236, List/Comparison/String/Types near-full). Notable semantics implemented:
   **uncertainty as Interval[min,max]** (operands filled to their full MILLISECOND low/high boundaries,
@@ -74,10 +74,17 @@ operators, `if`/`case`. Layers:
   (`[16,44]`-derived, 1); and the `starts 1 day or less on or after day of` timing-phrase family
   (a whole grammar for 1 test). `cql/tests/coverage.rkt` reports the live per-suite/failure-bucket
   breakdown each iteration; `cql/tests/vendor/cql-smoke.xml` is the harness's own self-test (not part of
-  the conformance number). `raco fhir cql <file.cql>` prints ELM JSON.
+  the conformance number). `raco cql <file.cql>` prints ELM JSON.
+- **Real-library corpus** (`tests/elm-corpus-test.rkt`, `tests/elm-corpus-harness.rkt`): 32 CQL
+  libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
+  hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
+  translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
+  metadata dropped). **Baseline: 2/32 parse, 0/803 definitions ELM-equal** — the first failures are
+  `code "x": …` definitions (19 libraries), retrieves (7), FHIR model types / `start of` / `sort by` (4):
+  the deferred slice below, now measured. Ratcheted.
 - **Deferred CQL slices**: retrieves (`[Condition: "vs"]`) + a FHIR data-source/retrieve layer (absent —
   `navigate.rkt` assumes in-memory roots), queries (`with`/`where`/`return`/`sort`/`aggregate`),
   terminology-backed membership via the `tx-service`, FHIR model-info from `full-field-specs`, ELM XML
   output, temporal literals as canonical ELM Date/DateTime/Time constructor nodes (slice-1 emits them as
-  a Literal carrying the lexeme — round-trips through our interpreter), and a reference-ELM structural
-  differential vs the Java `cql-to-elm` translator.
+  a Literal carrying the lexeme — round-trips through our interpreter), and full agreement with the reference
+  translator's ELM (the corpus above measures it).

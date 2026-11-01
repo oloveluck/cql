@@ -1,0 +1,4918 @@
+{
+   "library" : {
+      "annotation" : [ {
+         "translatorOptions" : "",
+         "signatureLevel" : "Overloads",
+         "type" : "CqlToElmInfo"
+      } ],
+      "identifier" : {
+         "id" : "FHIRHelpersTests",
+         "system" : "http://hl7.org/fhir/uv/cql"
+      },
+      "schemaIdentifier" : {
+         "id" : "urn:hl7-org:elm",
+         "version" : "r1"
+      },
+      "usings" : {
+         "def" : [ {
+            "localIdentifier" : "System",
+            "uri" : "urn:hl7-org:elm-types:r1",
+            "annotation" : [ ]
+         }, {
+            "localIdentifier" : "FHIR",
+            "uri" : "http://hl7.org/fhir",
+            "version" : "4.0.1",
+            "annotation" : [ ]
+         } ]
+      },
+      "includes" : {
+         "def" : [ {
+            "localIdentifier" : "FHIRHelpers",
+            "path" : "http://hl7.org/fhir/uv/cql/FHIRHelpers",
+            "version" : "4.0.1",
+            "annotation" : [ ]
+         } ]
+      },
+      "statements" : {
+         "def" : [ {
+            "name" : "TestInstant",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}instant",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "millisecond" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestInstantConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}instant",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestInstant",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "millisecond" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}time",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Time",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "millisecond" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Time",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "millisecond" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestHour",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}time",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Time",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestHourConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestHour",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Time",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMinute",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}time",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Time",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMinuteConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestMinute",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Time",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestSecond",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}time",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Time",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestSecondConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Time",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestSecond",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Time",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDate",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}date",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Date",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDateConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Date",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Date",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDate",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestDate",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Date",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestYear",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}date",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Date",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestYearConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Date",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Date",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDate",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestYear",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Date",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMonth",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}date",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "Date",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMonthConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Date",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Date",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDate",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestMonth",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Date",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "millisecond" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "millisecond" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestYearDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestYearDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestYearDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMonthDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMonthDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestMonthDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDayDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDayDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestDayDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestHourDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestHourDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestHourDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMinuteDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMinuteDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestMinuteDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestSecondDateTime",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}dateTime",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestSecondDateTimeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDateTime",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestSecondDateTime",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "DateTime",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "year" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2020",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "month" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "day" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "3",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "hour" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "10",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "minute" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  },
+                  "second" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestBase64Binary",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}base64Binary",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "Rm9vYmFy",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestBase64BinaryConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}base64Binary",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestBase64Binary",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "Rm9vYmFy",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestDecimal",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}decimal",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                     "value" : "10.0",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDecimalConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Decimal",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Decimal",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToDecimal",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestDecimal",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                  "value" : "10.0",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestBoolean",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}boolean",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Boolean",
+                     "value" : "true",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestBooleanConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Boolean",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Boolean",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToBoolean",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestBoolean",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Boolean",
+                  "value" : "true",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUri",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}uri",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "http://hl7.org/fhir",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestUriConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestUri",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "http://hl7.org/fhir",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUrl",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}url",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "http://hl7.org/fhir",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestUrlConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestUrl",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "http://hl7.org/fhir",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUrlSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestUrl",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "http://hl7.org/fhir",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestCanonical",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}canonical",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestCanonicalConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestCanonical",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestCanonicalSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestCanonical",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUuid",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}uuid",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "urn:uuid:c757873d-ec9a-4326-a141-556f43239520",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestUuidConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestUuid",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "urn:uuid:c757873d-ec9a-4326-a141-556f43239520",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUuidSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestUuid",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "urn:uuid:c757873d-ec9a-4326-a141-556f43239520",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestOid",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}oid",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "urn:oid:1.2.3.4.5",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestOidConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestOid",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "urn:oid:1.2.3.4.5",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestOidSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}uri",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestOid",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "urn:oid:1.2.3.4.5",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestInteger",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}integer",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestIntegerConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToInteger",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestInteger",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "value" : "1",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestIntegerSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToInteger",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestInteger",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "value" : "1",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUnsignedInt",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}unsignedInt",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestUnsignedIntConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToInteger",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestUnsignedInt",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "value" : "1",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestUnsignedIntSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToInteger",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestUnsignedInt",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "value" : "1",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestPositiveInt",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}positiveInt",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "1",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestPositiveIntConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToInteger",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestPositiveInt",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "value" : "1",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestPositiveIntSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToInteger",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestPositiveInt",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                  "value" : "1",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestString",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}string",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "Foobar",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestStringConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestString",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "Foobar",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestCode",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}code",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "year",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestCodeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestCode",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "year",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestCodeSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestCode",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "year",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestMarkdown",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}markdown",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "#Markdown Content",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestMarkdownConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestMarkdown",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "#Markdown Content",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestMarkdownSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestMarkdown",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "#Markdown Content",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestId",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}id",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                     "value" : "calendar-units",
+                     "type" : "Literal",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestIdConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestId",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "calendar-units",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestIdSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}String",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToString",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}string",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestId",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                  "value" : "calendar-units",
+                  "type" : "Literal",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestRatio",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Ratio",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "numerator",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}decimal",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                                 "value" : "10.0",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     }, {
+                        "name" : "unit",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}string",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "mg",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "denominator",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}decimal",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                                 "value" : "100.0",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     }, {
+                        "name" : "unit",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}string",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "mg",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestRatioConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Ratio",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Ratio",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToRatio",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestRatio",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "type" : "Ratio",
+                  "annotation" : [ ],
+                  "numerator" : {
+                     "value" : 10.0,
+                     "unit" : "mg",
+                     "annotation" : [ ]
+                  },
+                  "denominator" : {
+                     "value" : 100.0,
+                     "unit" : "mg",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestPeriod",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Period",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "start",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "type" : "DateTime",
+                           "annotation" : [ ],
+                           "signature" : [ ],
+                           "year" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "2020",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "month" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "10",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "day" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "3",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "hour" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "10",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "minute" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "0",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "second" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "0",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "end",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}dateTime",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "type" : "DateTime",
+                           "annotation" : [ ],
+                           "signature" : [ ],
+                           "year" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "2020",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "month" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "10",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "day" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "3",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "hour" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "10",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "minute" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "0",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           },
+                           "second" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "0",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestPeriodConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Period",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestPeriod",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : true,
+                  "highClosed" : true,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  },
+                  "high" : {
+                     "type" : "DateTime",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "year" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "2020",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "month" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "day" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "3",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "hour" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "10",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "minute" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     },
+                     "second" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                        "value" : "0",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestRange",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Range",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "low",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}SimpleQuantity",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}decimal",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                                 "value" : "10.0",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     }, {
+                        "name" : "unit",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}string",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "mg",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "high",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}SimpleQuantity",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}decimal",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                                 "value" : "100.0",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     }, {
+                        "name" : "unit",
+                        "value" : {
+                           "classType" : "{http://hl7.org/fhir}string",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "value",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "mg",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestRangeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Range",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestRange",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : true,
+                  "highClosed" : true,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "value" : 10.0,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  },
+                  "high" : {
+                     "value" : 100.0,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestCoding",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Coding",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "system",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}uri",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "code",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}code",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "year",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "display",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "year",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestCodingConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Code",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Code",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToCode",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestCoding",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "classType" : "{urn:hl7-org:elm-types:r1}Code",
+                  "type" : "Instance",
+                  "annotation" : [ ],
+                  "element" : [ {
+                     "name" : "code",
+                     "value" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "year",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }, {
+                     "name" : "system",
+                     "value" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  }, {
+                     "name" : "display",
+                     "value" : {
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "year",
+                        "type" : "Literal",
+                        "annotation" : [ ]
+                     }
+                  } ]
+               } ]
+            }
+         }, {
+            "name" : "TestCodeableConcept",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}CodeableConcept",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "coding",
+                  "value" : {
+                     "type" : "List",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "classType" : "{http://hl7.org/fhir}Coding",
+                        "type" : "Instance",
+                        "annotation" : [ ],
+                        "element" : [ {
+                           "name" : "system",
+                           "value" : {
+                              "classType" : "{http://hl7.org/fhir}uri",
+                              "type" : "Instance",
+                              "annotation" : [ ],
+                              "element" : [ {
+                                 "name" : "value",
+                                 "value" : {
+                                    "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                    "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                                    "type" : "Literal",
+                                    "annotation" : [ ]
+                                 }
+                              } ]
+                           }
+                        }, {
+                           "name" : "code",
+                           "value" : {
+                              "classType" : "{http://hl7.org/fhir}code",
+                              "type" : "Instance",
+                              "annotation" : [ ],
+                              "element" : [ {
+                                 "name" : "value",
+                                 "value" : {
+                                    "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                    "value" : "year",
+                                    "type" : "Literal",
+                                    "annotation" : [ ]
+                                 }
+                              } ]
+                           }
+                        }, {
+                           "name" : "display",
+                           "value" : {
+                              "classType" : "{http://hl7.org/fhir}string",
+                              "type" : "Instance",
+                              "annotation" : [ ],
+                              "element" : [ {
+                                 "name" : "value",
+                                 "value" : {
+                                    "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                    "value" : "year",
+                                    "type" : "Literal",
+                                    "annotation" : [ ]
+                                 }
+                              } ]
+                           }
+                        } ]
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestCodeableConceptConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Concept",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Concept",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToConcept",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestCodeableConcept",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "classType" : "{urn:hl7-org:elm-types:r1}Concept",
+                  "type" : "Instance",
+                  "annotation" : [ ],
+                  "element" : [ {
+                     "name" : "codes",
+                     "value" : {
+                        "type" : "List",
+                        "annotation" : [ ],
+                        "element" : [ {
+                           "classType" : "{urn:hl7-org:elm-types:r1}Code",
+                           "type" : "Instance",
+                           "annotation" : [ ],
+                           "element" : [ {
+                              "name" : "code",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "year",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           }, {
+                              "name" : "system",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "http://hl7.org/fhir/CodeSystem/calendar-units",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           }, {
+                              "name" : "display",
+                              "value" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                                 "value" : "year",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           } ]
+                        } ]
+                     }
+                  } ]
+               } ]
+            }
+         }, {
+            "name" : "TestQuantity",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Quantity",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "10.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "mg",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestQuantity",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 10.0,
+                  "unit" : "mg",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestAge",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Age",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "12.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "a",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "system",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}uri",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "http://unitsofmeasure.org",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "code",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}code",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "a",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestAgeConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestAge",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 12,
+                  "unit" : "years",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestAgeSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestAge",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 12,
+                  "unit" : "years",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestDistance",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Distance",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "type" : "ToDecimal",
+                           "annotation" : [ ],
+                           "signature" : [ {
+                              "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "type" : "NamedTypeSpecifier",
+                              "annotation" : [ ]
+                           } ],
+                           "operand" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "100",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "km",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "system",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}uri",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "http://unitsofmeasure.org",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "code",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}code",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "km",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDistanceConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestDistance",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 100,
+                  "unit" : "km",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestDistanceSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestDistance",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 100,
+                  "unit" : "km",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestDuration",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Duration",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "type" : "ToDecimal",
+                           "annotation" : [ ],
+                           "signature" : [ {
+                              "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "type" : "NamedTypeSpecifier",
+                              "annotation" : [ ]
+                           } ],
+                           "operand" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "100",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "s",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "system",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}uri",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "http://unitsofmeasure.org",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "code",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}code",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "s",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestDurationConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestDuration",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 100,
+                  "unit" : "seconds",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestDurationSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestDuration",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 100,
+                  "unit" : "seconds",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestCount",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Count",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "type" : "ToDecimal",
+                           "annotation" : [ ],
+                           "signature" : [ {
+                              "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "type" : "NamedTypeSpecifier",
+                              "annotation" : [ ]
+                           } ],
+                           "operand" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                              "value" : "100",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "1",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "system",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}uri",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "http://unitsofmeasure.org",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "code",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}code",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "1",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestCountConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestCount",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 100,
+                  "unit" : "1",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestCountSpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestCount",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 100,
+                  "unit" : "1",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestSimpleQuantity",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "strict" : false,
+               "type" : "As",
+               "annotation" : [ ],
+               "signature" : [ ],
+               "operand" : {
+                  "classType" : "{http://hl7.org/fhir}SimpleQuantity",
+                  "type" : "Instance",
+                  "annotation" : [ ],
+                  "element" : [ {
+                     "name" : "value",
+                     "value" : {
+                        "classType" : "{http://hl7.org/fhir}decimal",
+                        "type" : "Instance",
+                        "annotation" : [ ],
+                        "element" : [ {
+                           "name" : "value",
+                           "value" : {
+                              "type" : "ToDecimal",
+                              "annotation" : [ ],
+                              "signature" : [ {
+                                 "name" : "{urn:hl7-org:elm-types:r1}Integer",
+                                 "type" : "NamedTypeSpecifier",
+                                 "annotation" : [ ]
+                              } ],
+                              "operand" : {
+                                 "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                                 "value" : "10",
+                                 "type" : "Literal",
+                                 "annotation" : [ ]
+                              }
+                           }
+                        } ]
+                     }
+                  }, {
+                     "name" : "unit",
+                     "value" : {
+                        "classType" : "{http://hl7.org/fhir}string",
+                        "type" : "Instance",
+                        "annotation" : [ ],
+                        "element" : [ {
+                           "name" : "value",
+                           "value" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                              "value" : "g",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        } ]
+                     }
+                  }, {
+                     "name" : "system",
+                     "value" : {
+                        "classType" : "{http://hl7.org/fhir}uri",
+                        "type" : "Instance",
+                        "annotation" : [ ],
+                        "element" : [ {
+                           "name" : "value",
+                           "value" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                              "value" : "http://unitsofmeasure.org",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        } ]
+                     }
+                  }, {
+                     "name" : "code",
+                     "value" : {
+                        "classType" : "{http://hl7.org/fhir}code",
+                        "type" : "Instance",
+                        "annotation" : [ ],
+                        "element" : [ {
+                           "name" : "value",
+                           "value" : {
+                              "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                              "value" : "g",
+                              "type" : "Literal",
+                              "annotation" : [ ]
+                           }
+                        } ]
+                     }
+                  } ]
+               },
+               "asTypeSpecifier" : {
+                  "name" : "{http://hl7.org/fhir}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }
+            }
+         }, {
+            "name" : "TestSimpleQuantityConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestSimpleQuantity",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 10,
+                  "unit" : "g",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestSimpleQuantitySpecificallyConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               }, {
+                  "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                  "type" : "NamedTypeSpecifier",
+                  "annotation" : [ ]
+               } ],
+               "operand" : [ {
+                  "name" : "ToQuantity",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ ],
+                  "operand" : [ {
+                     "name" : "TestSimpleQuantity",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "value" : 10,
+                  "unit" : "g",
+                  "type" : "Quantity",
+                  "annotation" : [ ]
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithoutComparator",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Quantity",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "10.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "mg",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithoutComparatorConverts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestQuantityWithoutComparator",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : true,
+                  "highClosed" : true,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "value" : 10.0,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  },
+                  "high" : {
+                     "value" : 10.0,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator1",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Quantity",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "10.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "mg",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "comparator",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}QuantityComparator",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "<",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator1Converts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestQuantityWithComparator1",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : true,
+                  "highClosed" : false,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "asType" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "As",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : {
+                        "type" : "Null",
+                        "annotation" : [ ]
+                     }
+                  },
+                  "high" : {
+                     "value" : 10,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator2",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Quantity",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "10.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "mg",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "comparator",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}QuantityComparator",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "<=",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator2Converts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestQuantityWithComparator2",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : true,
+                  "highClosed" : true,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "asType" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "As",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : {
+                        "type" : "Null",
+                        "annotation" : [ ]
+                     }
+                  },
+                  "high" : {
+                     "value" : 10,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator3",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Quantity",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "10.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "mg",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "comparator",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}QuantityComparator",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : ">=",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator3Converts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestQuantityWithComparator3",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : true,
+                  "highClosed" : true,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "value" : 10,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  },
+                  "high" : {
+                     "asType" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "As",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : {
+                        "type" : "Null",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator4",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "classType" : "{http://hl7.org/fhir}Quantity",
+               "type" : "Instance",
+               "annotation" : [ ],
+               "element" : [ {
+                  "name" : "value",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}decimal",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}Decimal",
+                           "value" : "10.0",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "unit",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}string",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "mg",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               }, {
+                  "name" : "comparator",
+                  "value" : {
+                     "classType" : "{http://hl7.org/fhir}QuantityComparator",
+                     "type" : "Instance",
+                     "annotation" : [ ],
+                     "element" : [ {
+                        "name" : "value",
+                        "value" : {
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : ">",
+                           "type" : "Literal",
+                           "annotation" : [ ]
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "name" : "TestQuantityWithComparator4Converts",
+            "context" : "Unfiltered",
+            "accessLevel" : "Public",
+            "annotation" : [ ],
+            "expression" : {
+               "type" : "Equal",
+               "annotation" : [ ],
+               "signature" : [ {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               }, {
+                  "type" : "IntervalTypeSpecifier",
+                  "annotation" : [ ],
+                  "pointType" : {
+                     "name" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  }
+               } ],
+               "operand" : [ {
+                  "name" : "ToInterval",
+                  "libraryName" : "FHIRHelpers",
+                  "type" : "FunctionRef",
+                  "annotation" : [ ],
+                  "signature" : [ {
+                     "name" : "{http://hl7.org/fhir}Quantity",
+                     "type" : "NamedTypeSpecifier",
+                     "annotation" : [ ]
+                  } ],
+                  "operand" : [ {
+                     "name" : "TestQuantityWithComparator4",
+                     "type" : "ExpressionRef",
+                     "annotation" : [ ]
+                  } ]
+               }, {
+                  "lowClosed" : false,
+                  "highClosed" : true,
+                  "type" : "Interval",
+                  "annotation" : [ ],
+                  "low" : {
+                     "value" : 10,
+                     "unit" : "mg",
+                     "type" : "Quantity",
+                     "annotation" : [ ]
+                  },
+                  "high" : {
+                     "asType" : "{urn:hl7-org:elm-types:r1}Quantity",
+                     "type" : "As",
+                     "annotation" : [ ],
+                     "signature" : [ ],
+                     "operand" : {
+                        "type" : "Null",
+                        "annotation" : [ ]
+                     }
+                  }
+               } ]
+            }
+         } ]
+      }
+   }
+}

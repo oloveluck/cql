@@ -1,0 +1,2133 @@
+{
+   "library" : {
+      "annotation" : [ {
+         "translatorOptions" : "EnableAnnotations,EnableLocators,DisableListDemotion,DisableListPromotion",
+         "type" : "CqlToElmInfo"
+      }, {
+         "type" : "Annotation",
+         "s" : {
+            "r" : "150",
+            "s" : [ {
+               "value" : [ "/*\nThis example is a work in progress and should not be considered a final specification\nor recommendation for guidance. This example will help guide and direct the process\nof finding conventions and usage patterns that meet the needs of the various stakeholders\nin the measure development community.\n*/","library EXM146 version '4.0.0'" ]
+            } ]
+         }
+      } ],
+      "identifier" : {
+         "id" : "EXM146",
+         "system" : "http://somewhere.org/fhir/uv/mycontentig",
+         "version" : "4.0.0"
+      },
+      "schemaIdentifier" : {
+         "id" : "urn:hl7-org:elm",
+         "version" : "r1"
+      },
+      "usings" : {
+         "def" : [ {
+            "localIdentifier" : "System",
+            "uri" : "urn:hl7-org:elm-types:r1"
+         }, {
+            "localId" : "1",
+            "locator" : "9:1-9:26",
+            "localIdentifier" : "FHIR",
+            "uri" : "http://hl7.org/fhir",
+            "version" : "4.0.1",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "1",
+                  "s" : [ {
+                     "value" : [ "","using " ]
+                  }, {
+                     "s" : [ {
+                        "value" : [ "FHIR" ]
+                     } ]
+                  }, {
+                     "value" : [ " version ","'4.0.1'" ]
+                  } ]
+               }
+            } ]
+         } ]
+      },
+      "includes" : {
+         "def" : [ {
+            "localId" : "2",
+            "locator" : "11:1-11:54",
+            "localIdentifier" : "FHIRHelpers",
+            "path" : "http://fhir.org/guides/cqf/common/FHIRHelpers",
+            "version" : "4.0.1",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "2",
+                  "s" : [ {
+                     "value" : [ "","include " ]
+                  }, {
+                     "s" : [ {
+                        "value" : [ "FHIRHelpers" ]
+                     } ]
+                  }, {
+                     "value" : [ " version ","'4.0.1'"," called ","FHIRHelpers" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "3",
+            "locator" : "12:1-12:44",
+            "localIdentifier" : "Common",
+            "path" : "http://somewhere.org/fhir/uv/mycontentig/Common",
+            "version" : "2.0.0",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "3",
+                  "s" : [ {
+                     "value" : [ "","include " ]
+                  }, {
+                     "s" : [ {
+                        "value" : [ "Common" ]
+                     } ]
+                  }, {
+                     "value" : [ " version ","'2.0.0'"," called ","Common" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "4",
+            "locator" : "13:1-13:64",
+            "localIdentifier" : "Global",
+            "path" : "http://somewhere.org/fhir/uv/mycontentig/MATGlobalCommonFunctions",
+            "version" : "5.0.000",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "4",
+                  "s" : [ {
+                     "value" : [ "","include " ]
+                  }, {
+                     "s" : [ {
+                        "value" : [ "MATGlobalCommonFunctions" ]
+                     } ]
+                  }, {
+                     "value" : [ " version ","'5.0.000'"," called ","Global" ]
+                  } ]
+               }
+            } ]
+         } ]
+      },
+      "parameters" : {
+         "def" : [ {
+            "localId" : "12",
+            "locator" : "21:1-21:49",
+            "name" : "Measurement Period",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "12",
+                  "s" : [ {
+                     "value" : [ "","parameter ","\"Measurement Period\""," " ]
+                  }, {
+                     "r" : "11",
+                     "s" : [ {
+                        "value" : [ "Interval<" ]
+                     }, {
+                        "r" : "10",
+                        "s" : [ {
+                           "value" : [ "DateTime" ]
+                        } ]
+                     }, {
+                        "value" : [ ">" ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "parameterTypeSpecifier" : {
+               "localId" : "11",
+               "locator" : "21:32-21:49",
+               "type" : "IntervalTypeSpecifier",
+               "pointType" : {
+                  "localId" : "10",
+                  "locator" : "21:41-21:48",
+                  "name" : "{urn:hl7-org:elm-types:r1}DateTime",
+                  "type" : "NamedTypeSpecifier"
+               }
+            }
+         } ]
+      },
+      "valueSets" : {
+         "def" : [ {
+            "localId" : "5",
+            "locator" : "15:1-15:109",
+            "name" : "Acute Pharyngitis",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.102.12.1011",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "5",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Acute Pharyngitis\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.102.12.1011'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "6",
+            "locator" : "16:1-16:109",
+            "name" : "Acute Tonsillitis",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.102.12.1012",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "6",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Acute Tonsillitis\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.102.12.1012'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "7",
+            "locator" : "17:1-17:111",
+            "name" : "Ambulatory/ED Visit",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1061",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "7",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Ambulatory/ED Visit\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1061'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "8",
+            "locator" : "18:1-18:114",
+            "name" : "Antibiotic Medications",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.196.12.1001",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "8",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Antibiotic Medications\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.196.12.1001'" ]
+                  } ]
+               }
+            } ]
+         }, {
+            "localId" : "9",
+            "locator" : "19:1-19:118",
+            "name" : "Group A Streptococcus Test",
+            "id" : "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1012",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "9",
+                  "s" : [ {
+                     "value" : [ "","valueset ","\"Group A Streptococcus Test\"",": ","'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1012'" ]
+                  } ]
+               }
+            } ]
+         } ]
+      },
+      "contexts" : {
+         "def" : [ {
+            "locator" : "23:1-23:15",
+            "name" : "Patient"
+         } ]
+      },
+      "statements" : {
+         "def" : [ {
+            "locator" : "23:1-23:15",
+            "name" : "Patient",
+            "context" : "Patient",
+            "expression" : {
+               "type" : "SingletonFrom",
+               "operand" : {
+                  "locator" : "23:1-23:15",
+                  "dataType" : "{http://hl7.org/fhir}Patient",
+                  "templateId" : "http://hl7.org/fhir/StructureDefinition/Patient",
+                  "type" : "Retrieve"
+               }
+            }
+         }, {
+            "localId" : "24",
+            "locator" : "27:1-29:59",
+            "name" : "Is Between 2 and 17 Years of Age at Start of Measurement Period",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "24",
+                  "s" : [ {
+                     "value" : [ "// Region: Initial Population","define ","\"Is Between 2 and 17 Years of Age at Start of Measurement Period\"",":\n   " ]
+                  }, {
+                     "r" : "23",
+                     "s" : [ {
+                        "r" : "17",
+                        "s" : [ {
+                           "r" : "15",
+                           "s" : [ {
+                              "value" : [ "AgeInYearsAt","(" ]
+                           }, {
+                              "r" : "14",
+                              "s" : [ {
+                                 "value" : [ "start of " ]
+                              }, {
+                                 "r" : "13",
+                                 "s" : [ {
+                                    "value" : [ "\"Measurement Period\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ ")" ]
+                           } ]
+                        }, {
+                           "r" : "16",
+                           "value" : [ " ",">="," ","2" ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      and " ]
+                     }, {
+                        "r" : "22",
+                        "s" : [ {
+                           "r" : "20",
+                           "s" : [ {
+                              "value" : [ "AgeInYearsAt","(" ]
+                           }, {
+                              "r" : "19",
+                              "s" : [ {
+                                 "value" : [ "start of " ]
+                              }, {
+                                 "r" : "18",
+                                 "s" : [ {
+                                    "value" : [ "\"Measurement Period\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ ")" ]
+                           } ]
+                        }, {
+                           "r" : "21",
+                           "value" : [ " ","<="," ","17" ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "23",
+               "locator" : "28:4-29:59",
+               "type" : "And",
+               "operand" : [ {
+                  "localId" : "17",
+                  "locator" : "28:4-28:51",
+                  "type" : "GreaterOrEqual",
+                  "operand" : [ {
+                     "localId" : "15",
+                     "locator" : "28:4-28:46",
+                     "precision" : "Year",
+                     "type" : "CalculateAgeAt",
+                     "operand" : [ {
+                        "type" : "ToDateTime",
+                        "operand" : {
+                           "path" : "birthDate.value",
+                           "type" : "Property",
+                           "source" : {
+                              "name" : "Patient",
+                              "type" : "ExpressionRef"
+                           }
+                        }
+                     }, {
+                        "localId" : "14",
+                        "locator" : "28:17-28:45",
+                        "type" : "Start",
+                        "operand" : {
+                           "localId" : "13",
+                           "locator" : "28:26-28:45",
+                           "name" : "Measurement Period",
+                           "type" : "ParameterRef"
+                        }
+                     } ]
+                  }, {
+                     "localId" : "16",
+                     "locator" : "28:51",
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "2",
+                     "type" : "Literal"
+                  } ]
+               }, {
+                  "localId" : "22",
+                  "locator" : "29:11-29:59",
+                  "type" : "LessOrEqual",
+                  "operand" : [ {
+                     "localId" : "20",
+                     "locator" : "29:11-29:53",
+                     "precision" : "Year",
+                     "type" : "CalculateAgeAt",
+                     "operand" : [ {
+                        "type" : "ToDateTime",
+                        "operand" : {
+                           "path" : "birthDate.value",
+                           "type" : "Property",
+                           "source" : {
+                              "name" : "Patient",
+                              "type" : "ExpressionRef"
+                           }
+                        }
+                     }, {
+                        "localId" : "19",
+                        "locator" : "29:24-29:52",
+                        "type" : "Start",
+                        "operand" : {
+                           "localId" : "18",
+                           "locator" : "29:33-29:52",
+                           "name" : "Measurement Period",
+                           "type" : "ParameterRef"
+                        }
+                     } ]
+                  }, {
+                     "localId" : "21",
+                     "locator" : "29:58-29:59",
+                     "valueType" : "{urn:hl7-org:elm-types:r1}Integer",
+                     "value" : "17",
+                     "type" : "Literal"
+                  } ]
+               } ]
+            }
+         }, {
+            "localId" : "37",
+            "locator" : "31:1-34:40",
+            "name" : "Antibiotics",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "37",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Antibiotics\"",":\n   " ]
+                  }, {
+                     "r" : "36",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "26",
+                           "s" : [ {
+                              "r" : "25",
+                              "s" : [ {
+                                 "r" : "25",
+                                 "s" : [ {
+                                    "value" : [ "[","MedicationRequest",": " ]
+                                 }, {
+                                    "s" : [ {
+                                       "value" : [ "medication" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ " ","in"," " ]
+                                 }, {
+                                    "s" : [ {
+                                       "value" : [ "\"Antibiotic Medications\"" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "]" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Prescription" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n     " ]
+                     }, {
+                        "r" : "35",
+                        "s" : [ {
+                           "value" : [ "where " ]
+                        }, {
+                           "r" : "35",
+                           "s" : [ {
+                              "r" : "30",
+                              "s" : [ {
+                                 "r" : "28",
+                                 "s" : [ {
+                                    "r" : "27",
+                                    "s" : [ {
+                                       "value" : [ "Prescription" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "28",
+                                    "s" : [ {
+                                       "value" : [ "status" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ " ","="," " ]
+                              }, {
+                                 "r" : "29",
+                                 "s" : [ {
+                                    "value" : [ "'active'" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ "\n       and " ]
+                           }, {
+                              "r" : "34",
+                              "s" : [ {
+                                 "r" : "32",
+                                 "s" : [ {
+                                    "r" : "31",
+                                    "s" : [ {
+                                       "value" : [ "Prescription" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "32",
+                                    "s" : [ {
+                                       "value" : [ "intent" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ " ","="," " ]
+                              }, {
+                                 "r" : "33",
+                                 "s" : [ {
+                                    "value" : [ "'order'" ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "36",
+               "locator" : "32:4-34:40",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "26",
+                  "locator" : "32:4-32:75",
+                  "alias" : "Prescription",
+                  "expression" : {
+                     "localId" : "25",
+                     "locator" : "32:4-32:62",
+                     "dataType" : "{http://hl7.org/fhir}MedicationRequest",
+                     "templateId" : "http://hl7.org/fhir/StructureDefinition/MedicationRequest",
+                     "codeProperty" : "medication",
+                     "codeComparator" : "in",
+                     "type" : "Retrieve",
+                     "codes" : {
+                        "locator" : "32:38-32:61",
+                        "name" : "Antibiotic Medications",
+                        "type" : "ValueSetRef"
+                     }
+                  }
+               } ],
+               "relationship" : [ ],
+               "where" : {
+                  "localId" : "35",
+                  "locator" : "33:6-34:40",
+                  "type" : "And",
+                  "operand" : [ {
+                     "localId" : "30",
+                     "locator" : "33:12-33:41",
+                     "type" : "Equal",
+                     "operand" : [ {
+                        "name" : "ToString",
+                        "libraryName" : "FHIRHelpers",
+                        "type" : "FunctionRef",
+                        "operand" : [ {
+                           "localId" : "28",
+                           "locator" : "33:12-33:30",
+                           "path" : "status",
+                           "scope" : "Prescription",
+                           "type" : "Property"
+                        } ]
+                     }, {
+                        "localId" : "29",
+                        "locator" : "33:34-33:41",
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "active",
+                        "type" : "Literal"
+                     } ]
+                  }, {
+                     "localId" : "34",
+                     "locator" : "34:12-34:40",
+                     "type" : "Equal",
+                     "operand" : [ {
+                        "name" : "ToString",
+                        "libraryName" : "FHIRHelpers",
+                        "type" : "FunctionRef",
+                        "operand" : [ {
+                           "localId" : "32",
+                           "locator" : "34:12-34:30",
+                           "path" : "intent",
+                           "scope" : "Prescription",
+                           "type" : "Property"
+                        } ]
+                     }, {
+                        "localId" : "33",
+                        "locator" : "34:34-34:40",
+                        "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                        "value" : "order",
+                        "type" : "Literal"
+                     } ]
+                  } ]
+               }
+            }
+         }, {
+            "localId" : "54",
+            "locator" : "36:1-40:60",
+            "name" : "Pharyngitis",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "54",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Pharyngitis\"",":\n   " ]
+                  }, {
+                     "r" : "53",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "41",
+                           "s" : [ {
+                              "r" : "40",
+                              "s" : [ {
+                                 "value" : [ "(" ]
+                              }, {
+                                 "r" : "40",
+                                 "s" : [ {
+                                    "r" : "38",
+                                    "s" : [ {
+                                       "value" : [ "[","Condition",": " ]
+                                    }, {
+                                       "s" : [ {
+                                          "value" : [ "code" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ " ","in"," " ]
+                                    }, {
+                                       "s" : [ {
+                                          "value" : [ "\"Acute Pharyngitis\"" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "]" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "\n     union " ]
+                                 }, {
+                                    "r" : "39",
+                                    "s" : [ {
+                                       "value" : [ "[","Condition",": " ]
+                                    }, {
+                                       "s" : [ {
+                                          "value" : [ "code" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ " ","in"," " ]
+                                    }, {
+                                       "s" : [ {
+                                          "value" : [ "\"Acute Tonsillitis\"" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "]" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ ")" ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Pharyngitis" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n     " ]
+                     }, {
+                        "r" : "52",
+                        "s" : [ {
+                           "value" : [ "where " ]
+                        }, {
+                           "r" : "52",
+                           "s" : [ {
+                              "r" : "46",
+                              "s" : [ {
+                                 "r" : "43",
+                                 "s" : [ {
+                                    "r" : "42",
+                                    "s" : [ {
+                                       "value" : [ "Pharyngitis" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "43",
+                                    "s" : [ {
+                                       "value" : [ "clinicalStatus" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ " ","~"," " ]
+                              }, {
+                                 "r" : "45",
+                                 "s" : [ {
+                                    "r" : "44",
+                                    "s" : [ {
+                                       "value" : [ "Global" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "45",
+                                    "s" : [ {
+                                       "value" : [ "active" ]
+                                    } ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ "\n       and " ]
+                           }, {
+                              "r" : "51",
+                              "s" : [ {
+                                 "r" : "48",
+                                 "s" : [ {
+                                    "r" : "47",
+                                    "s" : [ {
+                                       "value" : [ "Pharyngitis" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "48",
+                                    "s" : [ {
+                                       "value" : [ "verificationStatus" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ " ","~"," " ]
+                              }, {
+                                 "r" : "50",
+                                 "s" : [ {
+                                    "r" : "49",
+                                    "s" : [ {
+                                       "value" : [ "Global" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "50",
+                                    "s" : [ {
+                                       "value" : [ "confirmed" ]
+                                    } ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "53",
+               "locator" : "37:4-40:60",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "41",
+                  "locator" : "37:4-38:64",
+                  "alias" : "Pharyngitis",
+                  "expression" : {
+                     "localId" : "40",
+                     "locator" : "37:4-38:52",
+                     "type" : "Union",
+                     "operand" : [ {
+                        "localId" : "38",
+                        "locator" : "37:5-37:44",
+                        "dataType" : "{http://hl7.org/fhir}Condition",
+                        "templateId" : "http://hl7.org/fhir/StructureDefinition/Condition",
+                        "codeProperty" : "code",
+                        "codeComparator" : "in",
+                        "type" : "Retrieve",
+                        "codes" : {
+                           "locator" : "37:25-37:43",
+                           "name" : "Acute Pharyngitis",
+                           "type" : "ValueSetRef"
+                        }
+                     }, {
+                        "localId" : "39",
+                        "locator" : "38:12-38:51",
+                        "dataType" : "{http://hl7.org/fhir}Condition",
+                        "templateId" : "http://hl7.org/fhir/StructureDefinition/Condition",
+                        "codeProperty" : "code",
+                        "codeComparator" : "in",
+                        "type" : "Retrieve",
+                        "codes" : {
+                           "locator" : "38:32-38:50",
+                           "name" : "Acute Tonsillitis",
+                           "type" : "ValueSetRef"
+                        }
+                     } ]
+                  }
+               } ],
+               "relationship" : [ ],
+               "where" : {
+                  "localId" : "52",
+                  "locator" : "39:6-40:60",
+                  "type" : "And",
+                  "operand" : [ {
+                     "localId" : "46",
+                     "locator" : "39:12-39:53",
+                     "type" : "Equivalent",
+                     "operand" : [ {
+                        "name" : "ToConcept",
+                        "libraryName" : "FHIRHelpers",
+                        "type" : "FunctionRef",
+                        "operand" : [ {
+                           "localId" : "43",
+                           "locator" : "39:12-39:37",
+                           "path" : "clinicalStatus",
+                           "scope" : "Pharyngitis",
+                           "type" : "Property"
+                        } ]
+                     }, {
+                        "type" : "ToConcept",
+                        "operand" : {
+                           "localId" : "45",
+                           "locator" : "39:41-39:53",
+                           "name" : "active",
+                           "libraryName" : "Global",
+                           "type" : "CodeRef"
+                        }
+                     } ]
+                  }, {
+                     "localId" : "51",
+                     "locator" : "40:12-40:60",
+                     "type" : "Equivalent",
+                     "operand" : [ {
+                        "name" : "ToConcept",
+                        "libraryName" : "FHIRHelpers",
+                        "type" : "FunctionRef",
+                        "operand" : [ {
+                           "localId" : "48",
+                           "locator" : "40:12-40:41",
+                           "path" : "verificationStatus",
+                           "scope" : "Pharyngitis",
+                           "type" : "Property"
+                        } ]
+                     }, {
+                        "type" : "ToConcept",
+                        "operand" : {
+                           "localId" : "50",
+                           "locator" : "40:45-40:60",
+                           "name" : "confirmed",
+                           "libraryName" : "Global",
+                           "type" : "CodeRef"
+                        }
+                     } ]
+                  } ]
+               }
+            }
+         }, {
+            "localId" : "69",
+            "locator" : "42:1-46:77",
+            "name" : "Measurement Period Encounters",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "69",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Measurement Period Encounters\"",":\n   " ]
+                  }, {
+                     "r" : "68",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "56",
+                           "s" : [ {
+                              "r" : "55",
+                              "s" : [ {
+                                 "r" : "55",
+                                 "s" : [ {
+                                    "value" : [ "[","Encounter",": " ]
+                                 }, {
+                                    "s" : [ {
+                                       "value" : [ "\"Ambulatory/ED Visit\"" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "]" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Encounter" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      " ]
+                     }, {
+                        "r" : "67",
+                        "s" : [ {
+                           "value" : [ "where " ]
+                        }, {
+                           "r" : "67",
+                           "s" : [ {
+                              "r" : "65",
+                              "s" : [ {
+                                 "r" : "60",
+                                 "s" : [ {
+                                    "r" : "58",
+                                    "s" : [ {
+                                       "r" : "57",
+                                       "s" : [ {
+                                          "value" : [ "Encounter" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "." ]
+                                    }, {
+                                       "r" : "58",
+                                       "s" : [ {
+                                          "value" : [ "period" ]
+                                       } ]
+                                    } ]
+                                 }, {
+                                    "r" : "60",
+                                    "value" : [ " ","during"," " ]
+                                 }, {
+                                    "r" : "59",
+                                    "s" : [ {
+                                       "value" : [ "\"Measurement Period\"" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ "\n        and " ]
+                              }, {
+                                 "r" : "64",
+                                 "s" : [ {
+                                    "r" : "62",
+                                    "s" : [ {
+                                       "r" : "61",
+                                       "s" : [ {
+                                          "value" : [ "Encounter" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "." ]
+                                    }, {
+                                       "r" : "62",
+                                       "s" : [ {
+                                          "value" : [ "status" ]
+                                       } ]
+                                    } ]
+                                 }, {
+                                    "value" : [ " ","="," " ]
+                                 }, {
+                                    "r" : "63",
+                                    "s" : [ {
+                                       "value" : [ "'finished'" ]
+                                    } ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ "\n        and " ]
+                           }, {
+                              "r" : "66",
+                              "s" : [ {
+                                 "value" : [ "\"Is Between 2 and 17 Years of Age at Start of Measurement Period\"" ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "68",
+               "locator" : "43:4-46:77",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "56",
+                  "locator" : "43:4-43:47",
+                  "alias" : "Encounter",
+                  "expression" : {
+                     "localId" : "55",
+                     "locator" : "43:4-43:37",
+                     "dataType" : "{http://hl7.org/fhir}Encounter",
+                     "templateId" : "http://hl7.org/fhir/StructureDefinition/Encounter",
+                     "codeProperty" : "type",
+                     "codeComparator" : "in",
+                     "type" : "Retrieve",
+                     "codes" : {
+                        "locator" : "43:16-43:36",
+                        "name" : "Ambulatory/ED Visit",
+                        "type" : "ValueSetRef"
+                     }
+                  }
+               } ],
+               "relationship" : [ ],
+               "where" : {
+                  "localId" : "67",
+                  "locator" : "44:7-46:77",
+                  "type" : "And",
+                  "operand" : [ {
+                     "localId" : "65",
+                     "locator" : "44:13-45:41",
+                     "type" : "And",
+                     "operand" : [ {
+                        "localId" : "60",
+                        "locator" : "44:13-44:56",
+                        "type" : "IncludedIn",
+                        "operand" : [ {
+                           "name" : "ToInterval",
+                           "libraryName" : "FHIRHelpers",
+                           "type" : "FunctionRef",
+                           "operand" : [ {
+                              "localId" : "58",
+                              "locator" : "44:13-44:28",
+                              "path" : "period",
+                              "scope" : "Encounter",
+                              "type" : "Property"
+                           } ]
+                        }, {
+                           "localId" : "59",
+                           "locator" : "44:37-44:56",
+                           "name" : "Measurement Period",
+                           "type" : "ParameterRef"
+                        } ]
+                     }, {
+                        "localId" : "64",
+                        "locator" : "45:13-45:41",
+                        "type" : "Equal",
+                        "operand" : [ {
+                           "name" : "ToString",
+                           "libraryName" : "FHIRHelpers",
+                           "type" : "FunctionRef",
+                           "operand" : [ {
+                              "localId" : "62",
+                              "locator" : "45:13-45:28",
+                              "path" : "status",
+                              "scope" : "Encounter",
+                              "type" : "Property"
+                           } ]
+                        }, {
+                           "localId" : "63",
+                           "locator" : "45:32-45:41",
+                           "valueType" : "{urn:hl7-org:elm-types:r1}String",
+                           "value" : "finished",
+                           "type" : "Literal"
+                        } ]
+                     } ]
+                  }, {
+                     "localId" : "66",
+                     "locator" : "46:13-46:77",
+                     "name" : "Is Between 2 and 17 Years of Age at Start of Measurement Period",
+                     "type" : "ExpressionRef"
+                  } ]
+               }
+            }
+         }, {
+            "localId" : "91",
+            "locator" : "48:1-53:71",
+            "name" : "Pharyngitis Encounters With Antibiotics",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "91",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Pharyngitis Encounters With Antibiotics\"",":\n   " ]
+                  }, {
+                     "r" : "90",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "71",
+                           "s" : [ {
+                              "r" : "70",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Measurement Period Encounters\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Encounters" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      " ]
+                     }, {
+                        "r" : "78",
+                        "s" : [ {
+                           "value" : [ "with " ]
+                        }, {
+                           "r" : "73",
+                           "s" : [ {
+                              "r" : "72",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Pharyngitis\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Pharyngitis" ]
+                           } ]
+                        }, {
+                           "value" : [ " such that\n         " ]
+                        }, {
+                           "r" : "77",
+                           "s" : [ {
+                              "r" : "74",
+                              "s" : [ {
+                                 "value" : [ "Common" ]
+                              } ]
+                           }, {
+                              "value" : [ "." ]
+                           }, {
+                              "r" : "77",
+                              "s" : [ {
+                                 "value" : [ "\"Includes Or Starts During\"","(" ]
+                              }, {
+                                 "r" : "75",
+                                 "s" : [ {
+                                    "value" : [ "Pharyngitis" ]
+                                 } ]
+                              }, {
+                                 "value" : [ ", " ]
+                              }, {
+                                 "r" : "76",
+                                 "s" : [ {
+                                    "value" : [ "Encounters" ]
+                                 } ]
+                              }, {
+                                 "value" : [ ")" ]
+                              } ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      " ]
+                     }, {
+                        "r" : "89",
+                        "s" : [ {
+                           "value" : [ "with " ]
+                        }, {
+                           "r" : "80",
+                           "s" : [ {
+                              "r" : "79",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Antibiotics\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Antibiotics" ]
+                           } ]
+                        }, {
+                           "value" : [ " such that " ]
+                        }, {
+                           "r" : "88",
+                           "s" : [ {
+                              "r" : "82",
+                              "s" : [ {
+                                 "r" : "81",
+                                 "s" : [ {
+                                    "value" : [ "Antibiotics" ]
+                                 } ]
+                              }, {
+                                 "value" : [ "." ]
+                              }, {
+                                 "r" : "82",
+                                 "s" : [ {
+                                    "value" : [ "authoredOn" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ "\n         " ]
+                           }, {
+                              "r" : "88",
+                              "s" : [ {
+                                 "r" : "87",
+                                 "s" : [ {
+                                    "value" : [ "3 ","days" ]
+                                 } ]
+                              }, {
+                                 "value" : [ " or less after" ]
+                              } ]
+                           }, {
+                              "value" : [ " " ]
+                           }, {
+                              "r" : "86",
+                              "s" : [ {
+                                 "r" : "83",
+                                 "s" : [ {
+                                    "value" : [ "FHIRHelpers" ]
+                                 } ]
+                              }, {
+                                 "value" : [ "." ]
+                              }, {
+                                 "r" : "86",
+                                 "s" : [ {
+                                    "value" : [ "ToInterval","(" ]
+                                 }, {
+                                    "r" : "85",
+                                    "s" : [ {
+                                       "r" : "84",
+                                       "s" : [ {
+                                          "value" : [ "Encounters" ]
+                                       } ]
+                                    }, {
+                                       "value" : [ "." ]
+                                    }, {
+                                       "r" : "85",
+                                       "s" : [ {
+                                          "value" : [ "period" ]
+                                       } ]
+                                    } ]
+                                 }, {
+                                    "value" : [ ")" ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "90",
+               "locator" : "49:4-53:71",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "71",
+                  "locator" : "49:4-49:45",
+                  "alias" : "Encounters",
+                  "expression" : {
+                     "localId" : "70",
+                     "locator" : "49:4-49:34",
+                     "name" : "Measurement Period Encounters",
+                     "type" : "ExpressionRef"
+                  }
+               } ],
+               "relationship" : [ {
+                  "localId" : "78",
+                  "locator" : "50:7-51:68",
+                  "alias" : "Pharyngitis",
+                  "type" : "With",
+                  "expression" : {
+                     "localId" : "72",
+                     "locator" : "50:12-50:24",
+                     "name" : "Pharyngitis",
+                     "type" : "ExpressionRef"
+                  },
+                  "suchThat" : {
+                     "localId" : "77",
+                     "locator" : "51:10-51:68",
+                     "name" : "Includes Or Starts During",
+                     "libraryName" : "Common",
+                     "type" : "FunctionRef",
+                     "operand" : [ {
+                        "localId" : "75",
+                        "locator" : "51:45-51:55",
+                        "name" : "Pharyngitis",
+                        "type" : "AliasRef"
+                     }, {
+                        "localId" : "76",
+                        "locator" : "51:58-51:67",
+                        "name" : "Encounters",
+                        "type" : "AliasRef"
+                     } ]
+                  }
+               }, {
+                  "localId" : "89",
+                  "locator" : "52:7-53:71",
+                  "alias" : "Antibiotics",
+                  "type" : "With",
+                  "expression" : {
+                     "localId" : "79",
+                     "locator" : "52:12-52:24",
+                     "name" : "Antibiotics",
+                     "type" : "ExpressionRef"
+                  },
+                  "suchThat" : {
+                     "localId" : "88",
+                     "locator" : "52:48-53:71",
+                     "type" : "And",
+                     "operand" : [ {
+                        "locator" : "53:10-53:23",
+                        "type" : "In",
+                        "operand" : [ {
+                           "name" : "ToDateTime",
+                           "libraryName" : "FHIRHelpers",
+                           "type" : "FunctionRef",
+                           "operand" : [ {
+                              "localId" : "82",
+                              "locator" : "52:48-52:69",
+                              "path" : "authoredOn",
+                              "scope" : "Antibiotics",
+                              "type" : "Property"
+                           } ]
+                        }, {
+                           "locator" : "53:10-53:23",
+                           "lowClosed" : false,
+                           "highClosed" : true,
+                           "type" : "Interval",
+                           "low" : {
+                              "locator" : "53:43-53:71",
+                              "type" : "End",
+                              "operand" : {
+                                 "localId" : "86",
+                                 "locator" : "53:31-53:71",
+                                 "name" : "ToInterval",
+                                 "libraryName" : "FHIRHelpers",
+                                 "type" : "FunctionRef",
+                                 "operand" : [ {
+                                    "localId" : "85",
+                                    "locator" : "53:54-53:70",
+                                    "path" : "period",
+                                    "scope" : "Encounters",
+                                    "type" : "Property"
+                                 } ]
+                              }
+                           },
+                           "high" : {
+                              "locator" : "53:43-53:71",
+                              "type" : "Add",
+                              "operand" : [ {
+                                 "locator" : "53:43-53:71",
+                                 "type" : "End",
+                                 "operand" : {
+                                    "localId" : "86",
+                                    "locator" : "53:31-53:71",
+                                    "name" : "ToInterval",
+                                    "libraryName" : "FHIRHelpers",
+                                    "type" : "FunctionRef",
+                                    "operand" : [ {
+                                       "localId" : "85",
+                                       "locator" : "53:54-53:70",
+                                       "path" : "period",
+                                       "scope" : "Encounters",
+                                       "type" : "Property"
+                                    } ]
+                                 }
+                              }, {
+                                 "localId" : "87",
+                                 "locator" : "53:10-53:15",
+                                 "value" : 3,
+                                 "unit" : "days",
+                                 "type" : "Quantity"
+                              } ]
+                           }
+                        } ]
+                     }, {
+                        "locator" : "53:10-53:23",
+                        "type" : "Not",
+                        "operand" : {
+                           "locator" : "53:10-53:23",
+                           "type" : "IsNull",
+                           "operand" : {
+                              "locator" : "53:43-53:71",
+                              "type" : "End",
+                              "operand" : {
+                                 "localId" : "86",
+                                 "locator" : "53:31-53:71",
+                                 "name" : "ToInterval",
+                                 "libraryName" : "FHIRHelpers",
+                                 "type" : "FunctionRef",
+                                 "operand" : [ {
+                                    "localId" : "85",
+                                    "locator" : "53:54-53:70",
+                                    "path" : "period",
+                                    "scope" : "Encounters",
+                                    "type" : "Property"
+                                 } ]
+                              }
+                           }
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "localId" : "93",
+            "locator" : "55:1-56:44",
+            "name" : "Initial Population",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "93",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Initial Population\"",":\n   " ]
+                  }, {
+                     "r" : "92",
+                     "s" : [ {
+                        "value" : [ "\"Pharyngitis Encounters With Antibiotics\"" ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "92",
+               "locator" : "56:4-56:44",
+               "name" : "Pharyngitis Encounters With Antibiotics",
+               "type" : "ExpressionRef"
+            }
+         }, {
+            "localId" : "106",
+            "locator" : "68:1-71:72",
+            "name" : "Pharyngitis With Prior Antibiotics",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "106",
+                  "s" : [ {
+                     "value" : [ "// EndRegion: Initial Population\n\n// Region: Denominator\n\n// None\n\n// EndRegion: Denominator\n\n// Region: Denominator Exclusions","define ","\"Pharyngitis With Prior Antibiotics\"",":\n   " ]
+                  }, {
+                     "r" : "105",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "95",
+                           "s" : [ {
+                              "r" : "94",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Pharyngitis\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Pharyngitis" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      " ]
+                     }, {
+                        "r" : "104",
+                        "s" : [ {
+                           "value" : [ "with " ]
+                        }, {
+                           "r" : "97",
+                           "s" : [ {
+                              "r" : "96",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Antibiotics\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Antibiotics" ]
+                           } ]
+                        }, {
+                           "value" : [ " such that\n         " ]
+                        }, {
+                           "r" : "103",
+                           "s" : [ {
+                              "r" : "99",
+                              "s" : [ {
+                                 "r" : "98",
+                                 "s" : [ {
+                                    "value" : [ "Antibiotics" ]
+                                 } ]
+                              }, {
+                                 "value" : [ "." ]
+                              }, {
+                                 "r" : "99",
+                                 "s" : [ {
+                                    "value" : [ "authoredOn" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " " ]
+                           }, {
+                              "r" : "103",
+                              "s" : [ {
+                                 "r" : "102",
+                                 "s" : [ {
+                                    "value" : [ "30 ","days" ]
+                                 } ]
+                              }, {
+                                 "value" : [ " or less before" ]
+                              } ]
+                           }, {
+                              "value" : [ " " ]
+                           }, {
+                              "r" : "101",
+                              "s" : [ {
+                                 "r" : "100",
+                                 "s" : [ {
+                                    "value" : [ "Pharyngitis" ]
+                                 } ]
+                              }, {
+                                 "value" : [ "." ]
+                              }, {
+                                 "r" : "101",
+                                 "s" : [ {
+                                    "value" : [ "onset" ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "105",
+               "locator" : "69:4-71:72",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "95",
+                  "locator" : "69:4-69:28",
+                  "alias" : "Pharyngitis",
+                  "expression" : {
+                     "localId" : "94",
+                     "locator" : "69:4-69:16",
+                     "name" : "Pharyngitis",
+                     "type" : "ExpressionRef"
+                  }
+               } ],
+               "relationship" : [ {
+                  "localId" : "104",
+                  "locator" : "70:7-71:72",
+                  "alias" : "Antibiotics",
+                  "type" : "With",
+                  "expression" : {
+                     "localId" : "96",
+                     "locator" : "70:12-70:24",
+                     "name" : "Antibiotics",
+                     "type" : "ExpressionRef"
+                  },
+                  "suchThat" : {
+                     "localId" : "103",
+                     "locator" : "71:10-71:72",
+                     "type" : "And",
+                     "operand" : [ {
+                        "locator" : "71:33-71:47",
+                        "type" : "In",
+                        "operand" : [ {
+                           "name" : "ToDateTime",
+                           "libraryName" : "FHIRHelpers",
+                           "type" : "FunctionRef",
+                           "operand" : [ {
+                              "localId" : "99",
+                              "locator" : "71:10-71:31",
+                              "path" : "authoredOn",
+                              "scope" : "Antibiotics",
+                              "type" : "Property"
+                           } ]
+                        }, {
+                           "locator" : "71:33-71:47",
+                           "lowClosed" : true,
+                           "highClosed" : false,
+                           "type" : "Interval",
+                           "low" : {
+                              "locator" : "71:68-71:72",
+                              "type" : "Subtract",
+                              "operand" : [ {
+                                 "name" : "ToDateTime",
+                                 "libraryName" : "FHIRHelpers",
+                                 "type" : "FunctionRef",
+                                 "operand" : [ {
+                                    "asType" : "{http://hl7.org/fhir}dateTime",
+                                    "type" : "As",
+                                    "operand" : {
+                                       "localId" : "101",
+                                       "locator" : "71:56-71:72",
+                                       "path" : "onset",
+                                       "scope" : "Pharyngitis",
+                                       "type" : "Property"
+                                    }
+                                 } ]
+                              }, {
+                                 "localId" : "102",
+                                 "locator" : "71:33-71:39",
+                                 "value" : 30,
+                                 "unit" : "days",
+                                 "type" : "Quantity"
+                              } ]
+                           },
+                           "high" : {
+                              "name" : "ToDateTime",
+                              "libraryName" : "FHIRHelpers",
+                              "type" : "FunctionRef",
+                              "operand" : [ {
+                                 "asType" : "{http://hl7.org/fhir}dateTime",
+                                 "type" : "As",
+                                 "operand" : {
+                                    "localId" : "101",
+                                    "locator" : "71:56-71:72",
+                                    "path" : "onset",
+                                    "scope" : "Pharyngitis",
+                                    "type" : "Property"
+                                 }
+                              } ]
+                           }
+                        } ]
+                     }, {
+                        "locator" : "71:33-71:47",
+                        "type" : "Not",
+                        "operand" : {
+                           "locator" : "71:33-71:47",
+                           "type" : "IsNull",
+                           "operand" : {
+                              "localId" : "101",
+                              "locator" : "71:56-71:72",
+                              "path" : "onset",
+                              "scope" : "Pharyngitis",
+                              "type" : "Property"
+                           }
+                        }
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "localId" : "117",
+            "locator" : "73:1-76:68",
+            "name" : "Excluded Encounters",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "117",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Excluded Encounters\"",":\n   " ]
+                  }, {
+                     "r" : "116",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "108",
+                           "s" : [ {
+                              "r" : "107",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Pharyngitis Encounters With Antibiotics\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Encounters" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      " ]
+                     }, {
+                        "r" : "115",
+                        "s" : [ {
+                           "value" : [ "with " ]
+                        }, {
+                           "r" : "110",
+                           "s" : [ {
+                              "r" : "109",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Pharyngitis With Prior Antibiotics\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Pharyngitis" ]
+                           } ]
+                        }, {
+                           "value" : [ " such that\n         " ]
+                        }, {
+                           "r" : "114",
+                           "s" : [ {
+                              "r" : "111",
+                              "s" : [ {
+                                 "value" : [ "Common" ]
+                              } ]
+                           }, {
+                              "value" : [ "." ]
+                           }, {
+                              "r" : "114",
+                              "s" : [ {
+                                 "value" : [ "\"Includes Or Starts During\"","(" ]
+                              }, {
+                                 "r" : "112",
+                                 "s" : [ {
+                                    "value" : [ "Pharyngitis" ]
+                                 } ]
+                              }, {
+                                 "value" : [ ", " ]
+                              }, {
+                                 "r" : "113",
+                                 "s" : [ {
+                                    "value" : [ "Encounters" ]
+                                 } ]
+                              }, {
+                                 "value" : [ ")" ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "116",
+               "locator" : "74:4-76:68",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "108",
+                  "locator" : "74:4-74:55",
+                  "alias" : "Encounters",
+                  "expression" : {
+                     "localId" : "107",
+                     "locator" : "74:4-74:44",
+                     "name" : "Pharyngitis Encounters With Antibiotics",
+                     "type" : "ExpressionRef"
+                  }
+               } ],
+               "relationship" : [ {
+                  "localId" : "115",
+                  "locator" : "75:7-76:68",
+                  "alias" : "Pharyngitis",
+                  "type" : "With",
+                  "expression" : {
+                     "localId" : "109",
+                     "locator" : "75:12-75:47",
+                     "name" : "Pharyngitis With Prior Antibiotics",
+                     "type" : "ExpressionRef"
+                  },
+                  "suchThat" : {
+                     "localId" : "114",
+                     "locator" : "76:10-76:68",
+                     "name" : "Includes Or Starts During",
+                     "libraryName" : "Common",
+                     "type" : "FunctionRef",
+                     "operand" : [ {
+                        "localId" : "112",
+                        "locator" : "76:45-76:55",
+                        "name" : "Pharyngitis",
+                        "type" : "AliasRef"
+                     }, {
+                        "localId" : "113",
+                        "locator" : "76:58-76:67",
+                        "name" : "Encounters",
+                        "type" : "AliasRef"
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "localId" : "119",
+            "locator" : "78:1-79:23",
+            "name" : "Denominator Exclusions",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "119",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Denominator Exclusions\"",":\n  " ]
+                  }, {
+                     "r" : "118",
+                     "s" : [ {
+                        "value" : [ "\"Excluded Encounters\"" ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "118",
+               "locator" : "79:3-79:23",
+               "name" : "Excluded Encounters",
+               "type" : "ExpressionRef"
+            }
+         }, {
+            "localId" : "148",
+            "locator" : "91:1-97:75",
+            "name" : "Strep Test Encounters",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "148",
+                  "s" : [ {
+                     "value" : [ "// EndRegion: Denominator Exclusions\n\n// Region: Denominator Exceptions\n\n// None\n\n// EndRegion: Denominator Exceptions\n\n// Region: Numerator","define ","\"Strep Test Encounters\"",":\n   " ]
+                  }, {
+                     "r" : "147",
+                     "s" : [ {
+                        "s" : [ {
+                           "r" : "121",
+                           "s" : [ {
+                              "r" : "120",
+                              "s" : [ {
+                                 "s" : [ {
+                                    "value" : [ "\"Pharyngitis Encounters With Antibiotics\"" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Encounters" ]
+                           } ]
+                        } ]
+                     }, {
+                        "value" : [ "\n      " ]
+                     }, {
+                        "r" : "146",
+                        "s" : [ {
+                           "value" : [ "with " ]
+                        }, {
+                           "r" : "123",
+                           "s" : [ {
+                              "r" : "122",
+                              "s" : [ {
+                                 "r" : "122",
+                                 "s" : [ {
+                                    "value" : [ "[","Observation",": " ]
+                                 }, {
+                                    "s" : [ {
+                                       "value" : [ "code" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ " ","in"," " ]
+                                 }, {
+                                    "s" : [ {
+                                       "value" : [ "\"Group A Streptococcus Test\"" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "]" ]
+                                 } ]
+                              } ]
+                           }, {
+                              "value" : [ " ","Tests" ]
+                           } ]
+                        }, {
+                           "value" : [ "\n         such that " ]
+                        }, {
+                           "r" : "145",
+                           "s" : [ {
+                              "r" : "126",
+                              "s" : [ {
+                                 "r" : "125",
+                                 "s" : [ {
+                                    "r" : "124",
+                                    "s" : [ {
+                                       "value" : [ "Tests" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "125",
+                                    "s" : [ {
+                                       "value" : [ "value" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "value" : [ " is not null" ]
+                              } ]
+                           }, {
+                              "value" : [ "\n            and " ]
+                           }, {
+                              "r" : "144",
+                              "s" : [ {
+                                 "r" : "128",
+                                 "s" : [ {
+                                    "r" : "127",
+                                    "s" : [ {
+                                       "value" : [ "Tests" ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "." ]
+                                 }, {
+                                    "r" : "128",
+                                    "s" : [ {
+                                       "value" : [ "effective" ]
+                                    } ]
+                                 } ]
+                              }, {
+                                 "r" : "144",
+                                 "value" : [ " ","starts during","\n               " ]
+                              }, {
+                                 "r" : "143",
+                                 "s" : [ {
+                                    "value" : [ "Interval[" ]
+                                 }, {
+                                    "r" : "135",
+                                    "s" : [ {
+                                       "r" : "133",
+                                       "s" : [ {
+                                          "value" : [ "start of " ]
+                                       }, {
+                                          "r" : "132",
+                                          "s" : [ {
+                                             "r" : "129",
+                                             "s" : [ {
+                                                "value" : [ "FHIRHelpers" ]
+                                             } ]
+                                          }, {
+                                             "value" : [ "." ]
+                                          }, {
+                                             "r" : "132",
+                                             "s" : [ {
+                                                "value" : [ "ToInterval","(" ]
+                                             }, {
+                                                "r" : "131",
+                                                "s" : [ {
+                                                   "r" : "130",
+                                                   "s" : [ {
+                                                      "value" : [ "Encounters" ]
+                                                   } ]
+                                                }, {
+                                                   "value" : [ "." ]
+                                                }, {
+                                                   "r" : "131",
+                                                   "s" : [ {
+                                                      "value" : [ "period" ]
+                                                   } ]
+                                                } ]
+                                             }, {
+                                                "value" : [ ")" ]
+                                             } ]
+                                          } ]
+                                       } ]
+                                    }, {
+                                       "value" : [ " - " ]
+                                    }, {
+                                       "r" : "134",
+                                       "s" : [ {
+                                          "value" : [ "3 ","days" ]
+                                       } ]
+                                    } ]
+                                 }, {
+                                    "value" : [ ",\n                 " ]
+                                 }, {
+                                    "r" : "142",
+                                    "s" : [ {
+                                       "r" : "140",
+                                       "s" : [ {
+                                          "value" : [ "end of " ]
+                                       }, {
+                                          "r" : "139",
+                                          "s" : [ {
+                                             "r" : "136",
+                                             "s" : [ {
+                                                "value" : [ "FHIRHelpers" ]
+                                             } ]
+                                          }, {
+                                             "value" : [ "." ]
+                                          }, {
+                                             "r" : "139",
+                                             "s" : [ {
+                                                "value" : [ "ToInterval","(" ]
+                                             }, {
+                                                "r" : "138",
+                                                "s" : [ {
+                                                   "r" : "137",
+                                                   "s" : [ {
+                                                      "value" : [ "Encounters" ]
+                                                   } ]
+                                                }, {
+                                                   "value" : [ "." ]
+                                                }, {
+                                                   "r" : "138",
+                                                   "s" : [ {
+                                                      "value" : [ "period" ]
+                                                   } ]
+                                                } ]
+                                             }, {
+                                                "value" : [ ")" ]
+                                             } ]
+                                          } ]
+                                       } ]
+                                    }, {
+                                       "value" : [ " + " ]
+                                    }, {
+                                       "r" : "141",
+                                       "s" : [ {
+                                          "value" : [ "3 ","days" ]
+                                       } ]
+                                    } ]
+                                 }, {
+                                    "value" : [ "]" ]
+                                 } ]
+                              } ]
+                           } ]
+                        } ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "147",
+               "locator" : "92:4-97:75",
+               "type" : "Query",
+               "source" : [ {
+                  "localId" : "121",
+                  "locator" : "92:4-92:55",
+                  "alias" : "Encounters",
+                  "expression" : {
+                     "localId" : "120",
+                     "locator" : "92:4-92:44",
+                     "name" : "Pharyngitis Encounters With Antibiotics",
+                     "type" : "ExpressionRef"
+                  }
+               } ],
+               "relationship" : [ {
+                  "localId" : "146",
+                  "locator" : "93:7-97:75",
+                  "alias" : "Tests",
+                  "type" : "With",
+                  "expression" : {
+                     "localId" : "122",
+                     "locator" : "93:12-93:62",
+                     "dataType" : "{http://hl7.org/fhir}Observation",
+                     "templateId" : "http://hl7.org/fhir/StructureDefinition/Observation",
+                     "codeProperty" : "code",
+                     "codeComparator" : "in",
+                     "type" : "Retrieve",
+                     "codes" : {
+                        "locator" : "93:34-93:61",
+                        "name" : "Group A Streptococcus Test",
+                        "type" : "ValueSetRef"
+                     }
+                  },
+                  "suchThat" : {
+                     "localId" : "145",
+                     "locator" : "94:20-97:75",
+                     "type" : "And",
+                     "operand" : [ {
+                        "localId" : "126",
+                        "locator" : "94:20-94:42",
+                        "type" : "Not",
+                        "operand" : {
+                           "locator" : "94:20-94:42",
+                           "type" : "IsNull",
+                           "operand" : {
+                              "localId" : "125",
+                              "locator" : "94:20-94:30",
+                              "path" : "value",
+                              "scope" : "Tests",
+                              "type" : "Property"
+                           }
+                        }
+                     }, {
+                        "localId" : "144",
+                        "locator" : "95:17-97:75",
+                        "type" : "In",
+                        "operand" : [ {
+                           "locator" : "95:33-95:38",
+                           "type" : "Start",
+                           "operand" : {
+                              "name" : "ToInterval",
+                              "libraryName" : "FHIRHelpers",
+                              "type" : "FunctionRef",
+                              "operand" : [ {
+                                 "asType" : "{http://hl7.org/fhir}Period",
+                                 "type" : "As",
+                                 "operand" : {
+                                    "localId" : "128",
+                                    "locator" : "95:17-95:31",
+                                    "path" : "effective",
+                                    "scope" : "Tests",
+                                    "type" : "Property"
+                                 }
+                              } ]
+                           }
+                        }, {
+                           "localId" : "143",
+                           "locator" : "96:16-97:75",
+                           "lowClosed" : true,
+                           "highClosed" : true,
+                           "type" : "Interval",
+                           "low" : {
+                              "localId" : "135",
+                              "locator" : "96:25-96:83",
+                              "type" : "Subtract",
+                              "operand" : [ {
+                                 "localId" : "133",
+                                 "locator" : "96:25-96:74",
+                                 "type" : "Start",
+                                 "operand" : {
+                                    "localId" : "132",
+                                    "locator" : "96:34-96:74",
+                                    "name" : "ToInterval",
+                                    "libraryName" : "FHIRHelpers",
+                                    "type" : "FunctionRef",
+                                    "operand" : [ {
+                                       "localId" : "131",
+                                       "locator" : "96:57-96:73",
+                                       "path" : "period",
+                                       "scope" : "Encounters",
+                                       "type" : "Property"
+                                    } ]
+                                 }
+                              }, {
+                                 "localId" : "134",
+                                 "locator" : "96:78-96:83",
+                                 "value" : 3,
+                                 "unit" : "days",
+                                 "type" : "Quantity"
+                              } ]
+                           },
+                           "high" : {
+                              "localId" : "142",
+                              "locator" : "97:18-97:74",
+                              "type" : "Add",
+                              "operand" : [ {
+                                 "localId" : "140",
+                                 "locator" : "97:18-97:65",
+                                 "type" : "End",
+                                 "operand" : {
+                                    "localId" : "139",
+                                    "locator" : "97:25-97:65",
+                                    "name" : "ToInterval",
+                                    "libraryName" : "FHIRHelpers",
+                                    "type" : "FunctionRef",
+                                    "operand" : [ {
+                                       "localId" : "138",
+                                       "locator" : "97:48-97:64",
+                                       "path" : "period",
+                                       "scope" : "Encounters",
+                                       "type" : "Property"
+                                    } ]
+                                 }
+                              }, {
+                                 "localId" : "141",
+                                 "locator" : "97:69-97:74",
+                                 "value" : 3,
+                                 "unit" : "days",
+                                 "type" : "Quantity"
+                              } ]
+                           }
+                        } ]
+                     } ]
+                  }
+               } ]
+            }
+         }, {
+            "localId" : "150",
+            "locator" : "99:1-100:26",
+            "name" : "Numerator",
+            "context" : "Patient",
+            "accessLevel" : "Public",
+            "annotation" : [ {
+               "type" : "Annotation",
+               "s" : {
+                  "r" : "150",
+                  "s" : [ {
+                     "value" : [ "","define ","\"Numerator\"",":\n   " ]
+                  }, {
+                     "r" : "149",
+                     "s" : [ {
+                        "value" : [ "\"Strep Test Encounters\"" ]
+                     } ]
+                  } ]
+               }
+            } ],
+            "expression" : {
+               "localId" : "149",
+               "locator" : "100:4-100:26",
+               "name" : "Strep Test Encounters",
+               "type" : "ExpressionRef"
+            }
+         } ]
+      }
+   }
+}
