@@ -18,6 +18,7 @@
 
 (require racket/contract racket/list racket/string racket/file racket/path racket/match json
          (only-in cql/parser/parse parse-cql)
+         (only-in cql/parser/ast cql-library-version)
          (only-in cql/compile compile-library current-library-resolver)
          (only-in cql/elm/json elm->jsexpr)
          (only-in cql/error cql-error-string cql-error?)
@@ -33,10 +34,23 @@
   #:transparent)
 
 (define dropped-keys '(localId locator annotation resultTypeName resultTypeSpecifier signature))
+;; structural element tags some translator versions write and others do not — the position in the
+;; tree already says what the element is
+(define structural-types '("InstanceElement" "AliasedQuerySource" "ReturnClause" "CaseItem" "TupleElement"
+                           "LetClause" "SortClause" "AggregateClause" "TupleElementDefinition"))
 
-;; normalize-elm : jsexpr -> jsexpr   translator-only metadata removed, numbers as strings
+;; normalize-elm : jsexpr -> jsexpr   translator-only metadata removed, numbers as strings. Also
+;; version noise: an EMPTY list is the same as an absent one (newer translators write `let: []`,
+;; `dateFilter: []`, …), structural element `type` tags are dropped, and `strict: false` (the schema
+;; default) is the same as no `strict`.
 (define (normalize-elm j)
-  (cond [(hash? j) (for/hash ([(k v) (in-hash j)] #:unless (memq k dropped-keys)) (values k (normalize-elm v)))]
+  (cond [(hash? j) (for/hash ([(k v) (in-hash j)]
+                              #:unless (memq k dropped-keys)
+                              #:unless (null? v)
+                              #:unless (and (eq? k 'type) (member v structural-types))
+                              ;; As.strict defaults to false in the ELM schema
+                              #:unless (and (eq? k 'strict) (eq? v #f)))
+                     (values k (normalize-elm v)))]
         [(list? j) (map normalize-elm j)]
         [(number? j) (number->string j)]
         [else j]))
@@ -92,13 +106,28 @@
                    (values (add1 p) e (cons (list n (first-diff rd od '())) ms)))])))
         (lib-result pkg name #t #t #f (hash-count ref-defs) present equal (reverse mismatches))])]))
 
-;; package-resolver : dir -> (sym version -> cql-library|#f)   <dir>/<Name>.cql, parsed once
+;; package-resolver : dir -> (sym version -> cql-library|#f)
+;; <dir>/<Name>.cql first; else the same library from another corpus package, preferring one whose
+;; header version matches (CQF Measures includes FHIRHelpers 4.0.1 but ships it only as ELM — the
+;; source lives in fhir.cqf.common)
 (define parsed (make-hash))
-(define ((package-resolver dir) name _version)
+(define (parse-file f)
+  (hash-ref! parsed (path->string f)
+             (lambda () (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r))))))
+(define ((package-resolver dir) name version)
   (define f (build-path dir (format "~a.cql" name)))
-  (and (file-exists? f)
-       (hash-ref! parsed (path->string f)
-                  (lambda () (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r)))))))
+  (cond
+    [(file-exists? f) (parse-file f)]
+    [else
+     (define others
+       (for*/list ([pkg (in-list (directory-list (simplify-path (build-path dir 'up)) #:build? #t))]
+                   #:when (directory-exists? pkg)
+                   [g (in-value (build-path pkg (format "~a.cql" name)))]
+                   #:when (file-exists? g)
+                   [lib (in-value (parse-file g))] #:when lib)
+         lib))
+     (or (for/first ([l (in-list others)] #:when (equal? (cql-library-version l) version)) l)
+         (and (pair? others) (car others)))]))
 
 (define (check-elm-corpus dir)
   (for*/list ([pkg (in-list (sort (map path->string (directory-list dir)) string<?))]

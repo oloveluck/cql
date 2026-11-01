@@ -139,7 +139,10 @@
                                        (map operand->jsexpr (elm-function-def-operands s)))
                          'resultTypeSpecifier (and (elm-function-def-result-type s)
                                                    (type->jsexpr (elm-function-def-result-type s)))
-                         'expression (expr->jsexpr (elm-function-def-expression s))))]
+                         ;; an external function has no body
+                         'external (eq? (elm-function-def-expression s) 'external)
+                         'expression (and (not (eq? (elm-function-def-expression s) 'external))
+                                          (expr->jsexpr (elm-function-def-expression s)))))]
     [else (error 'elm->jsexpr "unknown statement: ~s" s)]))
 
 (define (operand->jsexpr o)
@@ -298,9 +301,12 @@
      (hasheq 'type "Is" 'operand (expr->jsexpr (elm-is-operand e))
              'isTypeSpecifier (type->jsexpr (elm-is-type e)))]
     [(elm-as? e)
-     (drop-false (hasheq 'type "As" 'operand (expr->jsexpr (elm-as-operand e))
-                         'asTypeSpecifier (type->jsexpr (elm-as-type e))
-                         'strict (elm-as-strict e)))]
+     ;; an implicit cast names its type as a string (asType); an explicit one as a specifier;
+     ;; strict is always written (the reference translator writes false too)
+     (hasheq 'type "As" 'operand (expr->jsexpr (elm-as-operand e))
+             (if (string? (elm-as-type e)) 'asType 'asTypeSpecifier)
+             (if (string? (elm-as-type e)) (elm-as-type e) (type->jsexpr (elm-as-type e)))
+             'strict (and (elm-as-strict e) #t))]
     [(elm-to? e)
      (with-rt (hasheq 'type (string-append "To" (elm-to-to-type e))
                       'operand (expr->jsexpr (elm-to-operand e)))

@@ -1564,7 +1564,9 @@
   (define env* (struct-copy ienv env
                             [operands (for/fold ([h (hash)]) ([o (in-list ops)] [a (in-list args)])
                                         (hash-set h (elm-operand-def-name o) a))]))
-  (eval-elm (elm-function-def-expression f) env*))
+  (define body (elm-function-def-expression f))
+  (when (eq? body (quote external)) (fail (format "external function ~a has no implementation" name)))
+  (eval-elm body env*))
 
 (define (eval-is v type)
   (cond [(cql-null? v) #f]

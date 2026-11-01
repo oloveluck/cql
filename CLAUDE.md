@@ -79,7 +79,7 @@ operators, `if`/`case`. Layers:
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **32/32 parse; 32/32 compile; 421/803 definitions ELM-equal** — ratcheted. The
+  metadata dropped). **32/32 parse; 32/32 compile; 703/803 definitions ELM-equal** — ratcheted. The
   grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
   modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
   fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
@@ -110,6 +110,16 @@ operators, `if`/`case`. Layers:
   or before` = And(In(A, Interval[B - q, B]), Not(IsNull(B)))); AgeIn*/CalculateAge*At over the model's
   birth-date path; ELM operators with named attributes (First.source, Split.stringToSplit, …). Unqualified
   type names mean the model's type when it has one (`Quantity` in a FHIR library is FHIR.Quantity).
+  Also matched to the reference: a choice operand meeting a System-typed one is cast to the member that
+  converts (`ToQuantity(O.value as FHIR.Quantity)`, an implicit As written with `asType`); an untyped
+  `null` branch of if/case is cast to the other branches' type; a member value passed to a choice-typed
+  parameter is cast to the whole choice; instance element values are coerced to the class's element
+  types; `union` chains group as the reference parse does (`((A u B) u (C u D)) u E`).
+- The corpus harness normalises only translator-VERSION noise, on both sides: empty lists = absent
+  (newer translators write `let: []`, `dateFilter: []`), structural element `type` tags
+  (InstanceElement, AliasedQuerySource, …), and `strict: false` (the schema default). Includes resolve
+  within the package, else from another corpus package (CQF Measures includes FHIRHelpers 4.0.1 but
+  ships only its ELM; the source is in fhir.cqf.common).
 - **Deferred CQL slices**: retrieves (`[Condition: "vs"]`) + a FHIR data-source/retrieve layer (absent —
   `navigate.rkt` assumes in-memory roots), queries (`with`/`where`/`return`/`sort`/`aggregate`),
   terminology-backed membership via the `tx-service`, FHIR model-info from `full-field-specs`, ELM XML

@@ -217,7 +217,7 @@
   (define operands (for/list ([o (in-list (cql-func-operands d))])
                      (cons (cql-operand-name o) (type->ctype (cql-operand-type o)))))
   (define body (cql-func-body d))
-  (define node (if (eq? body 'external) (elm-null #f)
+  (define node (if (eq? body 'external) 'external
                    (compile1 body (cenv-bind empty-cenv 'operand operands))))
   (elm-function-def (symbol->string (cql-func-name d)) (hash-ref (lctx-contexts lx) (cql-func-name d) "Unfiltered")
                     (cql-func-access d)
@@ -289,10 +289,13 @@
      (values (elm-concept (map (lambda (c) (compile1 c env)) codes) display) "Concept")]
     [(cql-minmax which type) (values (minmax-elm which (type-simple type)) (or (type-simple type) "Any"))]
     [(cql-instance type elems)
+     ;; each element value is coerced to the class's element type (decimal { value: 100 } -> ToDecimal)
      (define t (named->ctype (symbol->string type)))
      (values (elm-instance (ctype->elm-name t)
                            (for/list ([te (in-list elems)])
-                             (elm-tuple-elem (cql-tuple-elem-name te) (compile1 (cql-tuple-elem-value te) env))))
+                             (define-values (vn vt) (compile (cql-tuple-elem-value te) env))
+                             (define want (property-type t (symbol->string (cql-tuple-elem-name te))))
+                             (elm-tuple-elem (cql-tuple-elem-name te) (if (and want (conversion-cost vt want)) (coerce vn vt want) vn))))
              t)]
     [_ (fail (format "unsupported expression: ~s" ast))]))
 
@@ -405,6 +408,23 @@
       (values n t)))
 (define (sys e env) (let-values ([(n t) (compile e env)]) (to-system n t)))
 
+;; sys-against : cql cql cenv -> (values elm CType)   like sys, but a CHOICE operand meeting a
+;; concretely typed one is first cast to the member that converts to it — `O.value > 5 'mg'` is
+;; ToQuantity(O.value as FHIR.Quantity) (an implicit As, written with asType)
+(define (sys-against e other env)
+  (define-values (n t) (compile e env))
+  (cond
+    [(and (vector? t) (eq? (vector-ref t 0) 'choice))
+     (define-values (_on ot) (sys other env))
+     (define member (and (not (vector? ot)) (not (equal? ot "Any"))
+                         (for/first ([c (in-list (vector-ref t 1))]
+                                     #:when (let ([k (conversion-cost c ot)]) (and k (<= k 1))))
+                           c)))
+     (if member
+         (to-system (elm-as n (ctype->elm-name member) #f) member)
+         (values n t))]
+    [else (to-system n t)]))
+
 ;; System implicit promotions, the translator's order: Integer -> Long -> Decimal -> Quantity,
 ;; Date -> DateTime, Code -> Concept. promote : elm CType CType -> elm (no-op when not applicable)
 (define promotions
@@ -490,8 +510,25 @@
 
 ;; ---- binary ----------------------------------------------------------------
 (define generic-binops '(union intersect except))
+;; A union chain groups the way the reference translator's parse does: adjacent operands pair up,
+;; the pairs fold left, an odd operand comes last — A u B u C u D u E = ((A u B) u (C u D)) u E.
+;; union-chain : cql -> (listof cql)   the operands of a left-deep union chain
+(define (union-chain e)
+  (match e [(cql-binop 'union l r) (append (union-chain l) (list r))] [_ (list e)]))
+(define (regroup-union operands)
+  (define pairs (let loop ([xs operands])
+                  (match xs
+                    [(list a b rest ...) (cons (cql-binop 'union a b) (loop rest))]
+                    [(list a) (list a)]
+                    ['() '()])))
+  (for/fold ([acc (car pairs)]) ([p (in-list (cdr pairs))]) (cql-binop 'union acc p)))
+
 (define (compile-binop op l r env)
+  (define chain (and (eq? op 'union) (union-chain (cql-binop 'union l r))))
   (cond
+    [(and chain (> (length chain) 3) (not (regrouped? l)))
+     (define g (regroup-union chain))
+     (compile-binop 'union (mark-regrouped (cql-binop-lhs g)) (cql-binop-rhs g) env)]
     [(memq op generic-binops)
      (define-values (lo lt) (compile l env))
      (define-values (ro rt) (compile r env))
@@ -499,8 +536,8 @@
      (values (elm-nary name (list lo ro) (simple-rt (or (composite-or lt rt) "Any"))) (or (composite-or lt rt) lt))]
     [(memq op '(in contains)) (compile-membership op l r env)]
     [else
-     (define-values (lo0 lt0) (sys l env))
-     (define-values (ro0 rt0) (sys r env))
+     (define-values (lo0 lt0) (sys-against l r env))
+     (define-values (ro0 rt0) (sys-against r l env))
      (define-values (lo ro t) (if (memq op '(& and or xor implies)) (values lo0 ro0 lt0) (unify-pair lo0 lt0 ro0 rt0)))
      (define lt (if (eq? lo lo0) lt0 t))
      (define rt (if (eq? ro ro0) rt0 t))
@@ -569,6 +606,11 @@
   (cond [(and ra rb) (if (>= ra rb) a b)]
         [ra a] [rb b] [else "Any"]))
 (define (composite-or a b) (cond [(vector? a) a] [(vector? b) b] [else #f]))
+
+;; a regrouped chain's left side must not be regrouped again (it is itself a union chain)
+(define regrouped (make-weak-hasheq))
+(define (mark-regrouped e) (hash-set! regrouped e #t) e)
+(define (regrouped? e) (hash-ref regrouped e #f))
 
 ;; ---- timing ----------------------------------------------------------------
 ;; compile-timing : op prec cql cql cenv -> (values elm "Boolean")
@@ -707,22 +749,33 @@
           (cond [agg "Any"] [scalar? ret-t] [else (vector 'list ret-t)])))
 
 ;; ---- control flow ----------------------------------------------------------
+;; an untyped `null` branch takes the type of the other branches, as an explicit As (the reference
+;; translator's form): if x is null then null else Interval[…] -> then: As(Null, Interval<DateTime>)
+(define (typed-null n t result-type)
+  (define spec (and (equal? t "Any") (elm-null? n) (ctype->elm-type result-type)))
+  (cond [(not spec) n]
+        [(elm-named-type? spec) (elm-as n (elm-named-type-name spec) #f)]   ; implicit: asType
+        [else (elm-as n spec #f)]))
+(define (known t) (and (not (equal? t "Any")) t))
+
 (define (compile-if c t e env)
-  (define-values (cn _ct) (compile c env))
+  (define-values (cn _ct) (sys c env))
   (define-values (tn tt) (compile t env))
-  (define-values (en _et) (compile e env))
-  (values (elm-if cn tn en) tt))
+  (define-values (en et) (compile e env))
+  (define rt (or (known tt) (known et) "Any"))
+  (values (elm-if cn (typed-null tn tt rt) (typed-null en et rt)) rt))
 
 (define (compile-case comparand items els env)
   (define cmp (and comparand (let-values ([(n _t) (compile comparand env)]) n)))
-  (define result-type (box "Any"))
-  (define its (for/list ([it (in-list items)])
-                (define-values (wn _wt) (compile (cql-case-item-when it) env))
-                (define-values (tn tt) (compile (cql-case-item-then it) env))
-                (set-box! result-type tt)
-                (elm-case-item wn tn)))
-  (define en (and els (let-values ([(n _t) (compile els env)]) n)))
-  (values (elm-case cmp its en) (unbox result-type)))
+  (define arms (for/list ([it (in-list items)])
+                 (define-values (wn _wt) (if comparand (compile (cql-case-item-when it) env) (sys (cql-case-item-when it) env)))
+                 (define-values (tn tt) (compile (cql-case-item-then it) env))
+                 (list wn tn tt)))
+  (define-values (en et) (if els (compile els env) (values #f "Any")))
+  (define rt (or (for/or ([a (in-list arms)]) (known (third a))) (known et) "Any"))
+  (values (elm-case cmp (for/list ([a (in-list arms)]) (elm-case-item (first a) (typed-null (second a) (third a) rt)))
+                    (and en (typed-null en et rt)))
+          rt))
 
 ;; ---- collections -----------------------------------------------------------
 (define (compile-list elems env)
@@ -794,13 +847,13 @@
         'Truncate    '(unary . "Integer")  'Ln '(unary . "Decimal") 'Exp '(unary . "Decimal")
         'IsNull      '(unary . "Boolean")  'IsTrue '(unary . "Boolean") 'IsFalse '(unary . "Boolean")
         'Count       '(unary . "Integer")  'Sum '(unary . #f) 'Min '(unary . #f) 'Max '(unary . #f)
-        'Avg         '(unary . "Decimal")  'First '(unary . "Any") 'Last '(unary . "Any")
+        'Avg         '(unary . "Decimal")  'First '(unary . #f) 'Last '(unary . #f)
         'Length      '(unary . "Integer")  'Upper '(unary . "String") 'Lower '(unary . "String")
         'Exists      '(unary . "Boolean")  'Not '(unary . "Boolean") 'Distinct '(unary . #f)
         'Log         '(nary . "Decimal")   'Power '(nary . #f) 'Round '(nary . "Decimal")
-        'Coalesce    '(nary . "Any")       'Combine '(nary . "String") 'Concatenate '(nary . "String")
+        'Coalesce    '(nary . #f)       'Combine '(nary . "String") 'Concatenate '(nary . "String")
         'StartsWith  '(nary . "Boolean")   'EndsWith '(nary . "Boolean") 'Substring '(nary . "String")
-        'PositionOf  '(nary . "Integer")   'Indexer '(nary . "Any")
+        'PositionOf  '(nary . "Integer")   'Indexer '(nary . #f)
         ;; interval operators
         'Start '(unary . #f) 'End '(unary . #f) 'Width '(unary . #f) 'PointFrom '(unary . #f)
         'SingletonFrom '(unary . #f) 'Collapse '(unary . #f) 'Expand '(nary . #f)
@@ -813,7 +866,7 @@
         'PopulationStdDev '(unary . "Decimal") 'PopulationVariance '(unary . "Decimal") 'GeometricMean '(unary . "Decimal")
         ;; string functions
         'Split '(nary . #f) 'LastPositionOf '(nary . "Integer") 'Matches '(nary . "Boolean")
-        'ReplaceMatches '(nary . "String") 'Message '(nary . "Any")
+        'ReplaceMatches '(nary . "String") 'Message '(nary . #f)
         'Predecessor '(unary . #f) 'Successor '(unary . #f)
         'ToDate '(unary . "Date") 'ToDateTime '(unary . "DateTime") 'ToTime '(unary . "Time")
         'Today '(nary . "Date") 'Now '(nary . "DateTime") 'TimeOfDay '(nary . "Time")
@@ -961,6 +1014,10 @@
 (define (coerce n from to)
   (define m (lctx-model (L)))
   (cond
+    ;; a value passed to a choice-typed parameter is cast to the whole choice
+    ;; (a member type is widened; a choice argument already fits as it is)
+    [(and (vector? to) (eq? (vector-ref to 0) 'choice) (string? from) (not (equal? from "Any")) (conversion-cost from to))
+     (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     [(eqv? (conversion-cost from to) 0) n]
     [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) (promote n from to)]
     [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to))
@@ -1033,8 +1090,9 @@
   (define t0 (if (pair? ts) (car ts) "Any"))
   (define (el t) (or (point-of t) "Any"))
   (case name
-    [(Start End PointFrom Width Min Max Sum First Last SingletonFrom Median Mode Product) (el t0)]
-    [(Abs Predecessor Successor Distinct Flatten Tail Take Skip Slice Expand Collapse LowBoundary HighBoundary) t0]
+    [(Start End PointFrom Width Min Max Sum First Last SingletonFrom Median Mode Product Indexer) (el t0)]
+    [(Abs Predecessor Successor Distinct Tail Take Skip Slice Expand Collapse LowBoundary HighBoundary Message) t0]
+    [(Flatten) (let ([e (point-of t0)]) (if (list-type? e) e t0))]
     [(Coalesce) (or (for/first ([t (in-list ts)] #:unless (equal? t "Any")) t) "Any")]
     [else "Any"]))
 
@@ -1092,6 +1150,18 @@
          (format "{~a}~a" (model-url m) (local-name s))]
         [(regexp-match? #rx"[.{]" s) s]
         [else (system-type-name s)]))
+
+;; ctype->elm-type : CType -> elm type-spec | #f (Any)
+(define (ctype->elm-type t)
+  (match t
+    ["Any" #f]
+    [(? string? s) (elm-named-type (ctype->elm-name s))]
+    [(vector 'list el) (let ([e (ctype->elm-type el)]) (and e (elm-list-type e)))]
+    [(vector 'interval el) (let ([e (ctype->elm-type el)]) (and e (elm-interval-type e)))]
+    [(vector 'choice ts) (let ([es (map ctype->elm-type ts)]) (and (andmap values es) (elm-choice-type es)))]
+    [(vector 'tuple els) (let ([es (map (lambda (e) (cons (symbol->string (car e)) (ctype->elm-type (cdr e)))) els)])
+                           (and (andmap cdr es) (elm-tuple-type es)))]
+    [_ #f]))
 
 (define (compile-type type)
   (match type
