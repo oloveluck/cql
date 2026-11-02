@@ -1,0 +1,15 @@
+eCQM execution corpus — four patient-based proportion measures with their test patients.
+
+Upstream: https://github.com/cqframework/ecqm-content-r4-2021
+  commit 8790bae5baa29954f52558c0519f0bdb0e46c0f2 (retrieved 2026-11-01); License: CC0-1.0
+Copied verbatim:
+  cql/        input/cql/<Library>.cql for the measures and every library they include (12)
+  measure/    input/resources/measure/<Measure>.json (population criteria = define names)
+  tests/      input/tests/<Measure>/ (or input/tests/measure/<Measure>/): one directory per test patient,
+              resources by type; some carry an expected MeasureReport (measurereport-*.json)
+  valueset/   the 57 value sets the libraries declare, from input/vocabulary/valueset (with expansions)
+Measures: BreastCancerScreeningsFHIR (EXM125), CervicalCancerScreeningFHIR (EXM124),
+ColorectalCancerScreeningsFHIR (EXM130), DiabetesHemoglobinA1cHbA1cPoorControl9FHIR (CMS122).
+Expected results: the MeasureReport when the case has one; otherwise the repository's test-case naming
+convention (numer- / numer-…-FAIL- / denom- / denomexcl- or exclusion- / neg-ip- or no-ip-), see
+tests/measure-harness.rkt.

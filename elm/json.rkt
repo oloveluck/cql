@@ -298,7 +298,8 @@
      (drop-false (hasheq 'type "FunctionRef" 'name (elm-function-ref-name e)
                          'libraryName (elm-function-ref-library e)
                          'operand (and (pair? (elm-function-ref-operands e))
-                                       (map expr->jsexpr (elm-function-ref-operands e)))))]
+                                       (map expr->jsexpr (elm-function-ref-operands e)))
+                         'signature (and (elm-function-ref-signature e) (map type->jsexpr (elm-function-ref-signature e)))))]
     [(elm-operand-ref? e) (hasheq 'type "OperandRef" 'name (elm-operand-ref-name e))]
     [(elm-parameter-ref? e)
      (drop-false (hasheq 'type "ParameterRef" 'name (elm-parameter-ref-name e)

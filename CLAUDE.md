@@ -128,6 +128,31 @@ operators, `if`/`case`. Layers:
   (InstanceElement, AliasedQuerySource, …), and `strict: false` (the schema default). Includes resolve
   within the package, else from another corpus package (CQF Measures includes FHIRHelpers 4.0.1 but
   ships only its ELM; the source is in fhir.cqf.common).
+- **Execution over FHIR data** (`run.rkt`, `fhir-value.rkt`, interp's runtime libraries): FHIR data
+  are `fhir-node`s (model type + JSON, `value.rkt`) navigated through the ModelInfo (`fhir-property`:
+  element types, choice elements by their `valueX` key, list elements, `.value` of a primitive is the
+  System value). `load-runtime-library` compiles a library and its includes into `rlib`s (memoised
+  definitions, overloads by name, parameters, terminology defs, include aliases); `call-library-function`
+  picks the overload by the FunctionRef's `signature` (now emitted), else by the argument values' types.
+  A `runtime` carries the data (`resources->data`: type -> resources; patient-context filtering on by
+  default), value set expansions (`valuesets->terminology`) and the evaluation timezone offset
+  (`current-evaluation-offset`: a DateTime without an offset takes the request's — spec; off for the
+  TCK). Retrieve filters by codeProperty against a ValueSet (membership by system+code) or codes (~);
+  an unavailable value set is an error, never false. The main library's parameter defaults apply to its
+  includes (as a measure evaluator passes them). `measure-populations` = patient-based proportion
+  scoring. Also: Code/Concept Equal (all elements, the engine's structural equality) and Equivalent
+  (code+system; Concepts by a shared code) — Code equality was simply broken before (the TCK never
+  compared Codes); dotted property paths (`birthDate.value`); ToList, Split, Slice, IndexOf, Matches,
+  ReplaceMatches, Message (an Error stops evaluation), CalculateAge[At]; `collapse … per`; Coalesce
+  converts a FHIR argument among System ones; a choice argument to a parameter one member converts to.
+  `raco cql <file.cql> --data <dir|json> [--valuesets dir] [--libraries dir] [--define name]…` runs it.
+- **eCQM execution corpus** (`tests/measure-test.rkt`, `tests/measure-harness.rkt`, `tests/vendor/ecqm`):
+  4 measures (Breast/Cervical/Colorectal Cancer Screening, Diabetes HbA1c Poor Control) with their own
+  12 libraries and 57 value set expansions, 76 test patients from cqframework/ecqm-content-r4-2021
+  (CC0). Expected populations: the case's MeasureReport, else the repository's naming convention
+  (numer/denom/denomexcl/neg-ip, `-FAIL-`). **71/76 agree** — ratcheted; the 5 disagreements are named in
+  the test with the evidence (timezone-problem cases the library itself flags, a case identical to a
+  passing one, two MeasureReports inconsistent with the data or with proportion scoring).
 - **Deferred CQL slices**: retrieves (`[Condition: "vs"]`) + a FHIR data-source/retrieve layer (absent —
   `navigate.rkt` assumes in-memory roots), queries (`with`/`where`/`return`/`sort`/`aggregate`),
   terminology-backed membership via the `tx-service`, FHIR model-info from `full-field-specs`, ELM XML

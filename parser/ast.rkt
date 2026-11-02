@@ -397,7 +397,7 @@
     [("width") (cql-call #f 'Width (list operand))]
     [("point") (cql-call #f 'PointFrom (list operand))]
     [("singleton") (cql-call #f 'SingletonFrom (list operand))]
-    [("collapse") (cql-call #f 'Collapse (list operand))]
+    [("collapse") (cql-call #f 'Collapse (if per (list operand per) (list operand)))]
     [("distinct") (cql-call #f 'Distinct (list operand))]
     [("flatten") (cql-call #f 'Flatten (list operand))]
     [("predecessor") (cql-call #f 'Predecessor (list operand))]

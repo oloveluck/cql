@@ -418,7 +418,7 @@
   (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
   (define alias (and fn (include-alias-for (string->symbol (cadr fn)))))
   (if alias
-      (values (elm-function-ref (caddr fn) alias (list n)) (car conv))
+      (values (elm-function-ref (caddr fn) alias (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))) (car conv))
       (values n t)))
 (define (sys e env) (let-values ([(n t) (compile e env)]) (to-system n t)))
 
@@ -954,7 +954,7 @@
         'PositionOf  '(nary . "Integer")   'Indexer '(nary . #f)
         ;; interval operators
         'Start '(unary . #f) 'End '(unary . #f) 'Width '(unary . #f) 'PointFrom '(unary . #f)
-        'SingletonFrom '(unary . #f) 'Collapse '(unary . #f) 'Expand '(nary . #f)
+        'SingletonFrom '(unary . #f) 'Collapse '(nary . #f) 'Expand '(nary . #f)
         ;; list operators
         'Take '(nary . #f) 'Skip '(nary . #f) 'Tail '(unary . #f) 'Slice '(nary . #f)
         'IndexOf '(nary . "Integer") 'Flatten '(unary . #f)
@@ -1001,8 +1001,8 @@
     ;; temporal constructors (only in call position, no target)
     [(and (not target) (memq name '(Date DateTime Time))) (compile-constructor name args env)]
     ;; expand's per-argument may be a bare unit keyword (normalize, then compile as usual)
-    [(and (not target) (eq? name 'Expand) (= 2 (length args)) (not (equal? args (map normalize-per-arg args))))
-     (compile-call target 'Expand (map normalize-per-arg args) env)]
+    [(and (not target) (memq name '(Expand Collapse)) (= 2 (length args)) (not (equal? args (map normalize-per-arg args))))
+     (compile-call target name (map normalize-per-arg args) env)]
     ;; Library.f(args) into an include
     [(include-alias? env target) (call-function (cql-ref-name target) name args env)]
     ;; a local function (or overload set)
@@ -1073,10 +1073,12 @@
      (define formals (parameterize ([current-lctx lx])
                        (map (lambda (o) (type->ctype (cql-operand-type o))) (cql-func-operands f))))
      (values (elm-function-ref (symbol->string name) (and alias (symbol->string alias))
-                               (for/list ([c (in-list compiled)] [ft (in-list formals)]) (coerce (car c) (cdr c) ft)))
+                               (for/list ([c (in-list compiled)] [ft (in-list formals)]) (coerce (car c) (cdr c) ft))
+                               (parameterize ([current-lctx lx])
+                                 (map (lambda (o) (compile-type (cql-operand-type o))) (cql-func-operands f))))
              (func-result-type lx f))]
     [(and alias (not lx))                                  ; unresolved include: untyped reference
-     (values (elm-function-ref (symbol->string name) (symbol->string alias) (map car compiled)) "Any")]
+     (values (elm-function-ref (symbol->string name) (symbol->string alias) (map car compiled) #f) "Any")]
     [else (fail (format "no overload of ~a~a matches ~s" (if alias (format "~a." alias) "") name (map cdr compiled)))]))
 
 ;; ---- overloads and conversions ----------------------------------------------
@@ -1096,10 +1098,14 @@
                   (cond [(andmap values ks) 0] [(ormap values ks) 1] [else #f]))
                 #f)]
            [else (for/or ([c (in-list (vector-ref to 1))]) (let ([k (conversion-cost from c)]) (and k (= k 0) 0)))])]
-;; a choice argument to a parameter of one of its member types: an implicit As (cost 1)
+;; a choice argument to a parameter of one of its member types: an implicit As (cost 1); to a
+    ;; type a member CONVERTS to: As then the conversion (cost 2) — ToConcept(m as CodeableConcept)
     [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
           (for/or ([c (in-list (vector-ref from 1))]) (eqv? 0 (conversion-cost c to))))
      1]
+    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
+          (for/or ([c (in-list (vector-ref from 1))]) (eqv? 1 (conversion-cost c to))))
+     2]
     [(and (vector? from) (vector? to) (eq? (vector-ref from 0) (vector-ref to 0)) (memq (vector-ref from 0) '(list interval)))
      (conversion-cost (vector-ref from 1) (vector-ref to 1))]
     [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) 1]
@@ -1122,8 +1128,11 @@
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     [(eqv? (conversion-cost from to) 0) n]
     [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) (promote n from to)]
-    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to))
+    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
+          (for/or ([c (in-list (vector-ref from 1))]) (eqv? 0 (conversion-cost c to))))
      (elm-as n (ctype->elm-name to) #f)]
+    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to))
+     (let-values ([(cn _ct) (choice-to n from to)]) cn)]
     [(and (string? from) m (model-conversion m from))
      (define-values (n2 t2) (to-system n from))
      (if (eq? n2 n) n (coerce n2 t2 to))]
@@ -1171,7 +1180,7 @@
   (cond
     [(not spec) (fail (format "unknown function '~a'" name))]
     [else
-     (define-values (nodes types)
+     (define-values (nodes0 types0)
        (for/lists (ns ts) ([a (in-list all-args)])
          (cond [(memq name generic-ops) (compile a env)]
                ;; Boolean tests over a choice pick the member converting to Boolean
@@ -1179,6 +1188,16 @@
                 (let-values ([(n t) (compile a env)])
                   (if (and (vector? t) (eq? (vector-ref t 0) 'choice)) (choice-to n t "Boolean") (to-system n t)))]
                [else (sys a env)])))
+     ;; Coalesce's arguments meet at one type, like if/case branches: a FHIR value among System ones
+     ;; is converted (Coalesce(start of P, R.authoredOn) -> …, ToDateTime(R.authoredOn))
+     (define-values (nodes types)
+       (if (eq? name 'Coalesce)
+           (let ([sys-t (for/first ([t (in-list types0)] #:when (and (known t) (not (model-type? t)))) t)])
+             (for/lists (ns ts) ([n (in-list nodes0)] [t (in-list types0)])
+               (if (and sys-t (model-type? t))
+                   (let-values ([(cn ct) (to-system n t)]) (if (equal? ct sys-t) (values cn ct) (values n t)))
+                   (values n t))))
+           (values nodes0 types0)))
      (define rt (cdr spec))
      (define t (or rt (derived-result-type name types)))
      (case (car spec)

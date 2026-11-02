@@ -136,7 +136,7 @@ interval-prefix     : "start" /"of" unary-expr
                     | "width" /"of" unary-expr
                     | "point" /"from" unary-expr
                     | "singleton" /"from" unary-expr
-                    | "collapse" unary-expr
+                    | "collapse" unary-expr (/"per" unary-expr)?
                     | "distinct" unary-expr
                     | "flatten" unary-expr
                     | "predecessor" /"of" unary-expr

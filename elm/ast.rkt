@@ -106,7 +106,9 @@
 ;; (the interpreter evaluates the boundary; JSON writes MinValue/MaxValue)
 (struct elm-minmax       (which value-type boundary) #:prefab)
 (struct elm-expression-ref (name library)    #:prefab) ; library #f when local
-(struct elm-function-ref (name library operands) #:prefab)
+;; signature: the operand type-specs of the overload the translator chose (#f when unknown) — the
+;; interpreter picks that overload among same-named functions
+(struct elm-function-ref (name library operands signature) #:prefab)
 (struct elm-operand-ref  (name)              #:prefab)
 (struct elm-parameter-ref (name library)     #:prefab)
 (struct elm-is           (operand type)      #:prefab) ; type: an ELM type-specifier struct

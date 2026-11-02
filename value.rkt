@@ -13,7 +13,8 @@
          (only-in fhirpath/value fp-long? fp-long fp-long-v fp-quantity? fp-quantity fp-quantity-value fp-quantity-unit)
          (only-in fhirpath/temporal-ops moment? moment->string))
 
-(provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio)
+(provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio) (struct-out fhir-node)
+         current-evaluation-offset
          (struct-out cql-code) (struct-out cql-concept) (struct-out cql-obj)
          (contract-out
           [cql-null   any/c]
@@ -43,6 +44,13 @@
 ;; a typed instance value from a class selector (e.g. System.ValueSet{…}): carries its class name so
 ;; `is` can test the class hierarchy; fields: hash of symbol -> value
 (struct cql-obj      (class fields) #:transparent)
+;; FHIR data at a point in a resource: its model type name ("FHIR.Observation") and its JSON there
+;; (navigated by fhir-value.rkt)
+(struct fhir-node    (type json) #:transparent)
+;; current-evaluation-offset : (parameter (or minutes #f))   the evaluation request's timezone offset:
+;; a DateTime with a time but no offset (a literal, or FHIR data) takes it (cql.hl7.org: "the timezone
+;; offset of the evaluation request"). #f = leave such values offset-less (the expression TCK).
+(define current-evaluation-offset (make-parameter #f))
 
 ;; A CqlValue is one of:
 ;;  - cql-null                          the null singleton (distinct from #f and '())
@@ -59,11 +67,12 @@
 ;;  - cql-tuple                         System.Tuple / structured value
 ;;  - cql-ratio / cql-code / cql-concept
 ;;  - cql-obj                           a typed class instance (System.ValueSet{…} etc)
+;;  - fhir-node                         a FHIR (model) value: resource, element or primitive
 ;; cql-value? recognises the domain; `render` and the interpreter template against it.
 (define (cql-value? x)
   (or (cql-null? x) (cql-null-list? x) (boolean? x) (exact-integer? x) (fp-long? x) (fp-decimal? x)
       (string? x) (moment? x) (fp-quantity? x) (list? x)
-      (cql-interval? x) (cql-tuple? x) (cql-ratio? x) (cql-code? x) (cql-concept? x) (cql-obj? x)))
+      (cql-interval? x) (cql-tuple? x) (cql-ratio? x) (cql-code? x) (cql-concept? x) (cql-obj? x) (fhir-node? x)))
 
 ;; a stable textual rendering, used for debugging and (indirectly) test diagnostics
 (define (render v)
