@@ -44,6 +44,8 @@
   (define rt (runtime data valuesets offset))
   (define memo (make-hash))
   (define (compile1 ast)
+    (hash-ref! compiled-libraries ast (lambda () (compile1* ast))))
+  (define (compile1* ast)
     (parameterize ([current-library-resolver resolver])
       (let ([r (compile-library ast)])
         (if (ok? r) (ok-value r)
@@ -71,6 +73,10 @@
                      (values (symbol->string (or (cql-include-alias d) (cql-include-lib d))) (build src))))
                  (make-rlib elm includes rt all-params))))
   (build lib))
+
+;; compiled ELM by library AST (parse-cql memoises ASTs by source text, so the same CQL is the same
+;; object): evaluating a measure for many patients compiles each library once
+(define compiled-libraries (make-weak-hasheq))
 
 ;; resources->data : (listof jsexpr) -> (type-name -> (listof jsexpr))   Bundles are unwrapped
 (define (resources->data rs #:patient-context? [ctx? #t])
