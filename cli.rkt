@@ -73,14 +73,24 @@
     (exit 1))
   (displayln (elm->json-string elm)))
 
-(define (usage)
-  (eprintf "usage: raco cql <file.cql> [--data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…]\n       raco cql --tck [-v]\n")
-  (exit 2))
+(define (usage [code 2])                             ; --help: stdout, exit 0
+  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…]\n       raco cql --tck [-v]\n")
+  (exit code))
 
 (module+ main
   (define-values (fmt args) (format-flag (vector->list (current-command-line-arguments))))
   (current-format fmt)
+  ;; an unreadable input file is a one-line error (exit 2), not a stack trace
+  (let ([default (uncaught-exception-handler)])
+    (uncaught-exception-handler
+     (lambda (e)
+       (cond [(exn:fail:filesystem? e)
+              (define m (regexp-match #px"path: ([^\n]*)" (exn-message e)))
+              (eprintf "cql: cannot read ~a\n" (if m (cadr m) (exn-message e)))
+              (exit 2)]
+             [else (default e)]))))
   (cond
+    [(ormap (lambda (a) (member a '("-h" "--help"))) args) (usage 0)]
     [(null? args) (usage)]
     [(equal? (car args) "--tck")
      (parameterize ([current-command-line-arguments (list->vector (cdr args))])
