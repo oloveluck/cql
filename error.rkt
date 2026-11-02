@@ -7,11 +7,16 @@
 
 (require racket/contract)
 
-(provide (struct-out cql-error)
+(provide (except-out (struct-out cql-error) cql-error)
+         (rename-out [make-cql-error* cql-error])
          (contract-out [cql-error-string (-> cql-error? string?)]))
 
-;; phase: 'parse | 'translate | 'interpret
-(struct cql-error (phase message) #:transparent)
+;; phase: 'parse | 'translate | 'interpret ; diagnostic: the machine-readable form (fhir/diagnostic),
+;; with the source position, when there is one (parse errors), else #f
+(struct cql-error (phase message diagnostic) #:transparent)
+(define (make-cql-error* phase message [diagnostic #f]) (cql-error phase message diagnostic))
 
 (define (cql-error-string e)
-  (format "CQL ~a error: ~a" (cql-error-phase e) (cql-error-message e)))
+  (if (cql-error-diagnostic e)
+      (cql-error-message e)                     ; already "file:line:col: cql parse error: …"
+      (format "CQL ~a error: ~a" (cql-error-phase e) (cql-error-message e))))

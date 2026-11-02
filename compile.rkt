@@ -19,7 +19,8 @@
          "parser/ast.rkt"
          "elm/ast.rkt"
          "model/modelinfo.rkt"
-         (only-in "error.rkt" cql-error cql-error?)
+         (only-in "error.rkt" cql-error cql-error? cql-error-diagnostic cql-error-phase cql-error-message)
+         (only-in fhir/diagnostic diagnostic attached-loc)
          racket/contract
          (only-in fhir/result/result ok err ok? err?)
          (only-in fhirpath/temporal-ops
@@ -202,9 +203,20 @@
        (parameterize ([current-lctx lx])
          (match (hash-ref (lctx-defs lx) name)
            ['context (context-definition (symbol->string name))]
-           [d (let-values ([(n t) (compile (cql-def-body d) empty-cenv)]) (cons n t))])))
+           [d (in-definition d (format "define \"~a\"" name)
+                             (lambda () (let-values ([(n t) (compile (cql-def-body d) empty-cenv)]) (cons n t))))])))
      (hash-set! memo name r)
      r]))
+
+;; in-definition : def label thunk -> value   a translation error inside this definition is raised
+;; positioned at it (the parser attached its location) and names it — innermost definition first
+(define (in-definition d label thunk)
+  (with-handlers ([(lambda (e) (and (cql-error? e) (not (cql-error-diagnostic e))))
+                   (lambda (e)
+                     (define msg (format "in ~a: ~a" label (cql-error-message e)))
+                     (raise (cql-error (cql-error-phase e) msg
+                                       (diagnostic 'cql 'compile 'error msg (attached-loc d)))))])
+    (thunk)))
 
 ;; context-definition : string -> (cons elm CType)   `context Patient` = SingletonFrom([Patient])
 (define (context-definition cname)
@@ -218,7 +230,8 @@
                      (cons (cql-operand-name o) (type->ctype (cql-operand-type o)))))
   (define body (cql-func-body d))
   (define node (if (eq? body 'external) 'external
-                   (compile1 body (cenv-bind empty-cenv 'operand operands))))
+                   (in-definition d (format "function \"~a\"" (cql-func-name d))
+                                  (lambda () (compile1 body (cenv-bind empty-cenv 'operand operands))))))
   (elm-function-def (symbol->string (cql-func-name d)) (hash-ref (lctx-contexts lx) (cql-func-name d) "Unfiltered")
                     (cql-func-access d)
                     (for/list ([o (in-list (cql-func-operands d))])

@@ -11,26 +11,50 @@
 (require racket/contract
          (prefix-in g: "grammar.rkt")
          "lexer.rkt"
-         (only-in brag/support srcloc-token? srcloc-token-token srcloc-token-srcloc token-struct? token-struct-type)
+         (only-in brag/support srcloc-token? srcloc-token-token srcloc-token-srcloc token-struct? token-struct-type
+                  token-struct-skip? token token-struct-val)
          "ast.rkt"
          (only-in "../error.rkt" cql-error)
+         (only-in fhir/diagnostic exn->diagnostic diagnostic->string diagnostic diagnostic-loc loc loc-line loc-column loc-position
+                  exn:fail:diagnostic error-position attach-loc!)
          (only-in fhir/result/result ok err ok? err?))
 
 (provide
  (contract-out
-  [parse-cql      (-> string? (or/c ok? err?))]   ; (ok cql-library) | (err cql-error)
+  ;; (ok cql-library) | (err cql-error) — a parse error carries its diagnostic (positions in `source`)
+  [parse-cql      (->* (string?) (#:source (or/c string? path? #f)) (or/c ok? err?))]
   [parse-cql-expr (-> string? (or/c ok? err?))]))  ; (ok expr-AST)   | (err cql-error)
 
 (define lib-cache (make-hash))
 (define expr-cache (make-hash))
 
-(define (parse-cql str)
-  (hash-ref! lib-cache str
+(define (parse-cql str #:source [source #f])
+  (hash-ref! lib-cache (cons str source)
              (lambda ()
-               (with-handlers ([exn:fail? (lambda (e) (err (cql-error 'parse (exn-message e))))])
+               (with-handlers ([exn:fail? (lambda (e) (parse-failure e source))])
                  (ok (merge-libraries
                       (for/list ([chunk (in-list (definition-chunks (open-input-string str)))])
-                        (lower-library (g:parse-to-datum (list->token-thunk chunk))))))))))
+                        (with-handlers ([exn:fail? (lambda (e) (raise (chunk-failure e chunk source)))])
+                          (located (lower-library (g:parse-to-datum (list->token-thunk chunk))) chunk source)))))))))
+;; located : cql-library tokens source -> cql-library   each definition remembers where it starts
+;; (fhir/diagnostic attach-loc!) so translation errors can point at it
+(define (located lib chunk source)
+  (define first (for/first ([t (in-list chunk)] #:when (probe-token t)) t))
+  (when (and first (srcloc-token? first))
+    (define sl (srcloc-token-srcloc first))
+    (define l (loc (and source (if (path? source) (path->string source) source))
+                   (srcloc-line sl) (and (srcloc-column sl) (add1 (srcloc-column sl))) (srcloc-position sl) (srcloc-span sl)))
+    (for ([d (in-list (cql-library-defs lib))]) (attach-loc! d l)))
+  lib)
+;; chunk-failure : exn tokens source -> exn:fail:diagnostic   positioned; "the definition ends after"
+;; when the parse ran out of this definition's tokens
+(define (chunk-failure e chunk source)
+  (define last-pos (for/last ([t (in-list chunk)] #:when (srcloc-token? t)
+                              #:unless (let ([k (srcloc-token-token t)]) (and (token-struct? k) (token-struct-skip? k))))
+                     (srcloc-position (srcloc-token-srcloc t))))
+  (define d (exn->diagnostic e 'cql #:source source #:last-position last-pos #:unit "definition"
+                             #:ran-out? (ran-out-probe chunk last-pos)))
+  (exn:fail:diagnostic (diagnostic->string d) (current-continuation-marks) d))
 
 ;; brag's general CFG parser is superlinear in input length, and FHIRHelpers is ~600 lines: parsing
 ;; it whole takes seconds. A library is a sequence of definitions, so we parse DEFINITION BY
@@ -54,6 +78,21 @@
        (eqv? (srcloc-column (srcloc-token-srcloc t)) 0)
        (let ([tok (srcloc-token-token t)])
          (and (token-struct? tok) (memq (token-struct-type tok) definition-starts) #t))))
+;; probe-token : token|srcloc-token -> token-struct|#f   (skip tokens excluded)
+(define (probe-token t)
+  (define k (if (srcloc-token? t) (srcloc-token-token t) t))
+  (and (token-struct? k) (not (token-struct-skip? k)) k))
+;; ran-out-probe : tokens last-position -> (-> boolean)   re-parse with a sentinel token after the
+;; last one: if the error moves to the sentinel, the input was a valid prefix that ran out
+(define ((ran-out-probe toks last-pos) )
+  ;; the sentinel is a COPY of the last real token (a type the grammar knows), placed after it
+  (define last-real (for/last ([t (in-list toks)] #:when (probe-token t)) (probe-token t)))
+  (and last-pos last-real
+       (with-handlers ([exn:fail? (lambda (e) (let ([p (error-position e)]) (and p (> p last-pos))))])
+         (g:parse-to-datum (let ([ts (append toks (list (token (token-struct-type last-real) (token-struct-val last-real)
+                                                                #:position (+ last-pos 100000) #:line 1 #:column 0)))])
+                             (lambda () (if (null? ts) (void) (begin0 (car ts) (set! ts (cdr ts)))))))
+         #f)))
 (define (list->token-thunk toks)
   (lambda () (if (null? toks) (void) (begin0 (car toks) (set! toks (cdr toks))))))
 ;; merge-libraries : (listof cql-library) -> cql-library   the header's id/version, all definitions
@@ -64,20 +103,32 @@
 
 ;; Parse a bare expression by wrapping it in a throwaway define and extracting the body. This keeps
 ;; one grammar (no separate expression start-rule) while letting the harness parse fragments.
+;; parse-failure : exn source -> (err cql-error)   the message is the positioned one-liner; the
+;; diagnostic rides along. #:prefix: characters the expression entry prepends on line 1.
+(define expr-prefix "define __expr__: ")
+(define (parse-failure e source #:prefix [prefix 0])
+  (define d0 (exn->diagnostic e 'cql #:source source))
+  (define d (let ([l (diagnostic-loc d0)])
+              (if (and l (> prefix 0) (eqv? (loc-line l) 1) (loc-column l))
+                  (struct-copy diagnostic d0 [loc (struct-copy loc l [column (max 1 (- (loc-column l) prefix))]
+                                                                  [position (and (loc-position l) (max 1 (- (loc-position l) prefix)))])])
+                  d0)))
+  (err (cql-error 'parse (diagnostic->string d) d)))
+
 (define (parse-cql-expr str)
   (hash-ref! expr-cache str
              (lambda ()
-               (with-handlers ([exn:fail? (lambda (e) (err (cql-error 'parse (exn-message e))))])
+               (with-handlers ([exn:fail? (lambda (e) (parse-failure e #f #:prefix (string-length expr-prefix)))])
                  (define lib (lower-library
                               (g:parse-to-datum
-                               (tokenize (open-input-string (string-append "define __expr__: " str))))))
+                               (tokenize (open-input-string (string-append expr-prefix str))))))
                  (define defs (cql-library-defs lib))
                  (cond
                    [(and (pair? defs) (cql-def? (car defs))) (ok (cql-def-body (car defs)))]
                    [else (err (cql-error 'parse "expected a single expression"))])))))
 
 (module+ test
-  (require rackunit
+  (require rackunit (only-in cql/error cql-error-diagnostic cql-error-string)
            (only-in fhir/result/result ok? ok-value err? err-error))
   (define (P s) (ok-value (parse-cql-expr s)))
   ;; literals
@@ -177,4 +228,9 @@
                 (cql-timing-offset 'same-or-before 'day (qty-lit 3 "days") 'or-less (cql-ref 'A) (cql-ref 'B)))
   (check-true (cql-within? (P "A within 3 days of B")))
   (check-equal? (P "X is true") (cql-call #f 'IsTrue (list (cql-ref 'X))))
-  (check-equal? (P "{ : }") (cql-tuple '())))
+  (check-equal? (P "{ : }") (cql-tuple '()))
+  ;; diagnostics
+  (define (diag src) (cql-error-string (err-error (parse-cql src #:source "t.cql"))))
+  (check-equal? (diag "library T\ndefine X: 1 + \ndefine Y: 2\n") "t.cql:2:13: cql parse error: the definition ends after `+`")
+  (check-equal? (diag "library T\ndefine X: (1 + )\n") "t.cql:2:16: cql parse error: unexpected `)`")
+  (check-equal? (cql-error-string (err-error (parse-cql-expr "1 + * 2"))) "<input>:1:5: cql parse error: unexpected `*`"))

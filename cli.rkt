@@ -10,6 +10,8 @@
 ;;;                            the value sets in --valuesets; prints each definition (or the named ones)
 ;;;   raco cql --tck [-v]      run the vendored OFFICIAL cqframework/cql-tests suites (floor-ratcheted;
 ;;;                            exit 1 on regression; -v lists failures)
+;;; Errors are file:line:col diagnostics on stderr; --format json|outcome prints them on stdout as
+;;; {"diagnostics":[…]} or a FHIR OperationOutcome (fhir/diagnostic).
 ;;; Exit codes: 0 ok · 1 CQL error / regression · 2 usage.
 
 (require (only-in racket/file file->string)
@@ -18,7 +20,8 @@
          (only-in cql/elm/json elm->json-string)
          (only-in cql/error cql-error-string)
          (only-in fhir/result/result ok? ok-value err-error)
-         (only-in cql/error cql-error?)
+         (only-in cql/error cql-error? cql-error-diagnostic cql-error-phase cql-error-message)
+         (only-in fhir/diagnostic diagnostic loc emit-diagnostics format-flag)
          (only-in cql/run load-runtime-library resources->data valuesets->terminology read-json-files rlib-value)
          (only-in cql/parser/ast cql-library-defs cql-def? cql-def-name)
          (only-in cql/value render)
@@ -28,8 +31,8 @@
 
 ;; run-file : file data valuesets|#f libraries|#f (listof name) -> void   evaluate and print definitions
 (define (run-file file data vs-dir lib-dir names)
-  (define (parse f) (let ([r (parse-cql (regexp-replace #px"^#lang[^\n]*\n" (file->string f) ""))])
-                      (unless (ok? r) (eprintf "~a: ~a\n" f (cql-error-string (err-error r))) (exit 1))
+  (define (parse f) (let* ([src (read-source f)] [r (parse-cql src #:source (if (path? f) (path->string f) f))])
+                      (unless (ok? r) (fail-with (err-error r) f src))
                       (ok-value r)))
   (define libdir (or lib-dir (let-values ([(d _n _m) (split-path (path->complete-path file))]) d)))
   (define (res n _v) (let ([g (build-path libdir (format "~a.cql" n))]) (and (file-exists? g) (parse g))))
@@ -44,12 +47,24 @@
     (printf "~a: ~a\n" n (with-handlers ([cql-error? cql-error-string]) (render (rlib-value rl n))))))
 
 ;; compile-file : path-string -> void   print the ELM JSON of the library in `file`, or exit 1
+;; the output format for errors (--format text|json|outcome)
+(define current-format (make-parameter 'text))
+;; fail-with : cql-error file text -> exit 1   a positioned diagnostic when the error has one, else a
+;; diagnostic naming the file (translation errors carry no position yet)
+(define (fail-with e file text)
+  (define d (or (cql-error-diagnostic e)
+                (diagnostic 'cql (case (cql-error-phase e) [(translate) 'compile] [(interpret) 'run] [else (cql-error-phase e)])
+                            'error (cql-error-message e) (loc file #f #f #f #f))))
+  (emit-diagnostics (list d) #:format (current-format) #:text-of (lambda (_) text))
+  (exit 1))
+(define (read-source file) (regexp-replace #px"^#lang[^\n]*" (file->string file) ""))   ; keep line numbers
+
 (define (compile-file file)
-  (define src (regexp-replace #px"^#lang[^\n]*\n" (file->string file) ""))
-  (define pr (parse-cql src))
-  (unless (ok? pr) (eprintf "~a: ~a\n" file (cql-error-string (err-error pr))) (exit 1))
+  (define src (read-source file))
+  (define pr (parse-cql src #:source file))
+  (unless (ok? pr) (fail-with (err-error pr) file src))
   (define cr (compile-library (ok-value pr)))
-  (unless (ok? cr) (eprintf "~a: ~a\n" file (cql-error-string (err-error cr))) (exit 1))
+  (unless (ok? cr) (fail-with (err-error cr) file src))
   (displayln (elm->json-string (ok-value cr))))
 
 (define (usage)
@@ -57,7 +72,8 @@
   (exit 2))
 
 (module+ main
-  (define args (vector->list (current-command-line-arguments)))
+  (define-values (fmt args) (format-flag (vector->list (current-command-line-arguments))))
+  (current-format fmt)
   (cond
     [(null? args) (usage)]
     [(equal? (car args) "--tck")

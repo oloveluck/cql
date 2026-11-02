@@ -12,14 +12,18 @@ cql/base
 
 (require (only-in cql/parser/parse parse-cql)
          (only-in fhir/result/result ok? ok-value err-error)
-         (only-in cql/error cql-error-string)
+         (only-in cql/error cql-error-string cql-error-diagnostic)
+         (only-in fhir/diagnostic raise-diagnostic)
          (only-in racket/port port->string))
 
+(define (source-name src) (cond [(path? src) (path->string src)] [(string? src) src] [else #f]))
+;; a parse error raises exn:fail:diagnostic positioned in this file (fhir/diagnostic)
 (define (cql-read-syntax src in)
-  (define r (parse-cql (port->string in)))
+  (define r (parse-cql (port->string in) #:source (source-name src)))
   (if (ok? r)
       (list (datum->syntax #f (list 'cql-library-form (ok-value r))))
-      (error 'cql (cql-error-string (err-error r)))))
+      (let ([d (cql-error-diagnostic (err-error r))])
+        (if d (raise-diagnostic d) (error 'cql (cql-error-string (err-error r)))))))
 
 (define (cql-read in)
   (map syntax->datum (cql-read-syntax #f in)))
