@@ -16,7 +16,7 @@
 
 (require (only-in racket/file file->string)
          (only-in cql/parser/parse parse-cql)
-         (only-in cql/compile compile-library)
+         (only-in cql/compile compile-library compile-library/errors)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/error cql-error-string)
          (only-in fhir/result/result ok? ok-value err-error)
@@ -63,9 +63,15 @@
   (define src (read-source file))
   (define pr (parse-cql src #:source file))
   (unless (ok? pr) (fail-with (err-error pr) file src))
-  (define cr (compile-library (ok-value pr)))
-  (unless (ok? cr) (fail-with (err-error cr) file src))
-  (displayln (elm->json-string (ok-value cr))))
+  ;; every translation error, not only the first
+  (define-values (elm errors) (compile-library/errors (ok-value pr)))
+  (unless (null? errors)
+    (emit-diagnostics (for/list ([e (in-list errors)])
+                        (or (cql-error-diagnostic e)
+                            (diagnostic 'cql 'compile 'error (cql-error-message e) (loc file #f #f #f #f))))
+                      #:format (current-format) #:text-of (lambda (_) src))
+    (exit 1))
+  (displayln (elm->json-string elm)))
 
 (define (usage)
   (eprintf "usage: raco cql <file.cql> [--data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…]\n       raco cql --tck [-v]\n")

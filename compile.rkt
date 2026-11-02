@@ -33,6 +33,8 @@
  (contract-out
   ;; compile-library : cql-library -> (ok elm-library) | (err cql-error)
   [compile-library (-> cql-library? (or/c ok? err?))]
+  ;; every translation error (each positioned at its definition), and the library when there are none
+  [compile-library/errors (-> cql-library? (values (or/c elm-library? #f) (listof cql-error?)))]
   ;; compile-expr : cql-expression-AST -> (ok elm-expr) | (err cql-error)  (bare-expression entry)
   [compile-expr    (-> any/c (or/c ok? err?))]))
 
@@ -120,10 +122,31 @@
 ;; ---- public API ------------------------------------------------------------
 ;; compile-library : cql-library -> (ok elm-library) | (err cql-error)
 (define (compile-library lib)
-  (with-handlers ([cql-error? (lambda (e) (err e))])
+  (define-values (elm errors) (compile-library/errors lib))
+  (if (null? errors) (ok elm) (err (car errors))))
+
+;; compile-library/errors : cql-library -> (values elm-library|#f (listof cql-error))
+;; every translation error, not just the first: a definition that fails is skipped and the rest
+;; still compile (a reference to it is untyped, so it does not cascade); errors in source order,
+;; each positioned at its definition
+(define (compile-library/errors lib)
+  (define collected (box '()))
+  (with-handlers ([cql-error? (lambda (e) (values #f (list e)))])
     (define lx (make-lctx lib))
-    (parameterize ([current-lctx lx] [compile-memo (make-hasheq)])
-      (ok (assemble-library lib lx)))))
+    (parameterize ([current-lctx lx] [compile-memo (make-hasheq)] [current-errors collected])
+      (define elm (assemble-library lib lx))
+      (define errors (remove-duplicates (reverse (unbox collected))
+                                        (lambda (a b) (and (cql-error-diagnostic a) (equal? (cql-error-diagnostic a) (cql-error-diagnostic b))))))
+      (values (and (null? errors) elm) errors))))
+;; current-errors : (parameter (box (listof cql-error)) | #f)   where accumulating compiles collect
+(define current-errors (make-parameter #f))
+;; collecting : thunk default -> value   run one statement's compile; with an accumulating compile, an
+;; error is recorded and `default` stands in
+(define (collecting thunk default)
+  (define box* (current-errors))
+  (if box*
+      (with-handlers ([cql-error? (lambda (e) (set-box! box* (cons e (unbox box*))) default)]) (thunk))
+      (thunk)))
 
 ;; compile-expr : cql-ast -> (ok elm-node) | (err cql-error)  — a bare expression (harness/CLI)
 (define (compile-expr ast)
@@ -178,9 +201,12 @@
                                  (list (elm-def (symbol->string name) (symbol->string name) #f (car (def-info lx name))))
                                  '())]
          [(? cql-def?)
-          (list (elm-def (symbol->string (cql-def-name d)) (hash-ref (lctx-contexts lx) (cql-def-name d) "Unfiltered")
-                         (cql-def-access d) (car (def-info lx (cql-def-name d)))))]
-         [(? cql-func?) (list (compile-function-def d lx))]
+          (collecting
+           (lambda ()
+             (list (elm-def (symbol->string (cql-def-name d)) (hash-ref (lctx-contexts lx) (cql-def-name d) "Unfiltered")
+                            (cql-def-access d) (car (def-info lx (cql-def-name d))))))
+           '())]
+         [(? cql-func?) (collecting (lambda () (list (compile-function-def d lx))) '())]
          [_ '()]))))
   (elm-library (and (cql-library-id lib) (symbol->string (cql-library-id lib))) (cql-library-version lib)
                usings includes params codesystems valuesets codes concepts contexts statements))
@@ -203,8 +229,12 @@
        (parameterize ([current-lctx lx])
          (match (hash-ref (lctx-defs lx) name)
            ['context (context-definition (symbol->string name))]
-           [d (in-definition d (format "define \"~a\"" name)
-                             (lambda () (let-values ([(n t) (compile (cql-def-body d) empty-cenv)]) (cons n t))))])))
+           [d (with-handlers ([cql-error? (lambda (e)
+                                             ;; a failed definition reads as untyped Null to its referrers
+                                             (hash-set! memo name (cons (elm-null #f) "Any"))
+                                             (raise e))])
+                (in-definition d (format "define \"~a\"" name)
+                               (lambda () (let-values ([(n t) (compile (cql-def-body d) empty-cenv)]) (cons n t)))))])))
      (hash-set! memo name r)
      r]))
 
@@ -1358,4 +1388,11 @@
   ;; a whole library compiles, with a default System using + forward reference resolution
   (define lib (ok-value (compile-library (ok-value (parse-cql "define A: 1 + 1\ndefine B: A * 2")))))
   (check-equal? (length (elm-library-statements lib)) 2)
-  (check-true (elm-expression-ref? (car (elm-nary-operands (elm-def-expression (cadr (elm-library-statements lib))))))))
+  (check-true (elm-expression-ref? (car (elm-nary-operands (elm-def-expression (cadr (elm-library-statements lib)))))))
+  ;; every translation error, each at its definition; a reference to a failed one does not cascade
+  (let-values ([(elm errs) (compile-library/errors
+                            (ok-value (parse-cql "library T\ndefine A: 1\ndefine X: A + Foo\ndefine Y: X + 1\ndefine Z: Baz\n")))])
+    (check-false elm)
+    (check-equal? (length errs) 2)
+    (check-equal? (map (lambda (e) (cql-error-message e)) errs)
+                  '("in define \"X\": unknown identifier 'Foo'" "in define \"Z\": unknown identifier 'Baz'"))))
