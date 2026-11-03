@@ -2,7 +2,7 @@
 
 ;;; measure-operation-test.rkt — Measure/$evaluate-measure with no server: the measure, its CQL (as
 ;;; Library resources), the value sets and one test patient's record form an in-memory data source,
-;;; and the operation is called by its canonical (fhir/operation, cql/measure). The populations must
+;;; and the operation is applied by its canonical (fhir/operation, cql/measure). The populations must
 ;;; equal what the eCQM corpus harness expects for the case (measure-test.rkt).
 
 (require rackunit racket/file racket/path racket/runtime-path racket/list json net/base64
@@ -40,15 +40,15 @@
   (parameterize ([current-data-source data])
     (define pid (hash-ref (car ((data-source-all data) "Patient")) 'id))
     ;; by reference, with the Measure by id; the period at the corpus's -07:00
-    (define report (call-operation "http://hl7.org/fhir/OperationDefinition/Measure-evaluate-measure" #f
-                                   "measure" (hash-ref measure 'id)
-                                   "periodStart" "2021-01-01T00:00:00-07:00" "periodEnd" "2021-12-31"
-                                   "subject" (string-append "Patient/" pid)))
+    (define report (apply-operation "http://hl7.org/fhir/OperationDefinition/Measure-evaluate-measure"
+                                    #:measure (hash-ref measure 'id)
+                                    #:periodStart "2021-01-01T00:00:00-07:00" #:periodEnd "2021-12-31"
+                                    #:subject (string-append "Patient/" pid)))
     (check-equal? (hash-ref report 'resourceType) "MeasureReport")
     (check-equal? (hash-ref report 'type) "individual")
     (check-equal? (hash-ref (populations report) "numerator") 1)
     (check-equal? (hash-ref (populations report) "denominator") 1)
     ;; piped: the Measure itself is the subject
-    (check-equal? (populations ($evaluate-measure measure "periodStart" "2021-01-01T00:00:00-07:00" "periodEnd" "2021-12-31"))
+    (check-equal? (populations ($evaluate-measure measure #:periodStart "2021-01-01T00:00:00-07:00" #:periodEnd "2021-12-31"))
                   (populations report))
-    (check-exn #rx"needs input 'periodStart'" (lambda () ($evaluate-measure measure "periodEnd" "2021-12-31")))))
+    (check-exn #rx"needs input 'periodStart'" (lambda () ($evaluate-measure measure #:periodEnd "2021-12-31")))))

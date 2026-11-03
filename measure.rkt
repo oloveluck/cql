@@ -13,7 +13,7 @@
 ;;; A MeasureReport is `individual` for one subject, `summary` (population counts over every Patient
 ;;; in the source, and the proportion score) without one. Proportion scoring, patient-based (cql/run).
 ;;;
-;;;   ($evaluate-measure measure "periodStart" "2021-01-01" "periodEnd" "2021-12-31" ["subject" "Patient/x"])
+;;;   ($evaluate-measure measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31" [#:subject "Patient/x"])
 ;;; uses the R4 OperationDefinition (it returns a MeasureReport, as CQF Measures does). The
 ;;; evaluation timezone is periodStart's offset, else `current-measure-offset` (minutes, default 0).
 

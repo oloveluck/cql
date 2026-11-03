@@ -163,6 +163,7 @@ operators, `if`/`case`. Layers:
   `current-data-source` (fhir/data-source: a Bundle in memory, a directory, or fhir-server's store) —
   its Library and includes as Library resources, value sets from the source then
   `current-sd-packages`, each patient's data by reference — and `$evaluate-measure` is the operation
-  value (fhir/operation, the R4 OperationDefinition, which returns a MeasureReport). Moved here from
+  value (fhir/operation, the R4 OperationDefinition, which returns a MeasureReport):
+  `(apply-operation "$evaluate-measure" measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31")`. Moved here from
   fhir-server's store/measure.rkt, which now binds it to the store. `tests/measure-operation-test.rkt`
-  evaluates an eCQM case by canonical over an in-memory data source.
+  applies it by canonical to an eCQM case over an in-memory data source.
