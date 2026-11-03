@@ -167,3 +167,8 @@ operators, `if`/`case`. Layers:
   `(apply-operation "$evaluate-measure" measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31")`. Moved here from
   fhir-server's store/measure.rkt, which now binds it to the store. `tests/measure-operation-test.rkt`
   applies it by canonical to an eCQM case over an in-memory data source.
+- **`#lang cql` as a module other code uses** (base.rkt): it provides `library`, `elm`, `elm-json`,
+  `(evaluate resources #:parameters h #:valuesets vss)` — the library over a patient's FHIR data
+  (cql/run `evaluate-library`: define-name -> value) — and `(results)` (no data). Nothing runs at
+  require time: a library with retrieves used to fail as soon as it was required. fhir-examples'
+  screening/ program requires a .cql file and calls `evaluate` per patient.

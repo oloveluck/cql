@@ -32,7 +32,11 @@
   [resources->data      (->* ((listof hash?)) (#:patient-context? boolean?) procedure?)]
   [valuesets->terminology (-> (listof hash?) procedure?)]
   [measure-populations  (-> hash? rlib? (hash/c string? exact-nonnegative-integer?))]
-  [read-json-files      (-> path-string? (listof hash?))])
+  [read-json-files      (-> path-string? (listof hash?))]
+  ;; evaluate-library : the library over these resources -> define-name -> value (every define)
+  [evaluate-library     (->* (cql-library? (listof hash?))
+                             (#:parameters hash? #:valuesets (listof hash?) #:offset (or/c exact-integer? #f))
+                             hash?)])
  rlib-value)
 
 ;; load-runtime-library : cql-library … -> rlib   compiles the library and (recursively, once each)
@@ -144,3 +148,13 @@
                      1 0))))
 ;; a population definition is boolean (patient-based) or a list (non-empty = in)
 (define (truthy? v) (or (eq? v #t) (and (pair? v) #t)))
+
+;; evaluate-library : library resources [#:parameters #:valuesets #:offset] -> (hash name -> value)
+;; the library run over the given FHIR resources (in a Patient context: the Patient among them and
+;; their data), each `define` evaluated — what #lang cql's `evaluate` is
+(define (evaluate-library library resources #:parameters [params (hash)] #:valuesets [vss '()] #:offset [offset #f])
+  (define rl (load-runtime-library library #:data (resources->data resources) #:parameters params
+                                   #:valuesets (valuesets->terminology vss) #:offset offset))
+  (for/hash ([d (in-list (cql-library-defs library))] #:when (cql-def? d))
+    (define name (format "~a" (cql-def-name d)))
+    (values name (rlib-value rl name))))
