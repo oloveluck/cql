@@ -159,3 +159,10 @@ operators, `if`/`case`. Layers:
   output, temporal literals as canonical ELM Date/DateTime/Time constructor nodes (slice-1 emits them as
   a Literal carrying the lexeme — round-trips through our interpreter), and full agreement with the reference
   translator's ELM (the corpus above measures it).
+- **Measures as an operation** (`measure.rkt`): `evaluate-measure` runs a Measure over
+  `current-data-source` (fhir/data-source: a Bundle in memory, a directory, or fhir-server's store) —
+  its Library and includes as Library resources, value sets from the source then
+  `current-sd-packages`, each patient's data by reference — and `$evaluate-measure` is the operation
+  value (fhir/operation, the R4 OperationDefinition, which returns a MeasureReport). Moved here from
+  fhir-server's store/measure.rkt, which now binds it to the store. `tests/measure-operation-test.rkt`
+  evaluates an eCQM case by canonical over an in-memory data source.
