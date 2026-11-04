@@ -32,6 +32,10 @@ jobs:
             "https://github.com/oloveluck/fhir.git?path=fhir" \
             "https://github.com/oloveluck/fhir.git?path=fhir-spec" \
             "https://github.com/oloveluck/fhirpath.git"
+      - name: The CQL conformance suite, the real-library corpus and the eCQM corpus (floor-ratcheted)
+        run: |
+          raco cql --tck
+          raco test tests/elm-corpus-test.rkt tests/measure-test.rkt tests/measure-operation-test.rkt
       - name: Build the documentation
         run: |
           raco scribble +m --html --dest site --dest-name index.html --redirect-main https://docs.racket-lang.org/ scribblings/cql.scrbl
