@@ -19,6 +19,7 @@
 
 (require racket/contract racket/list racket/string racket/match net/base64
          fhir/operation fhir/data-source
+         (only-in fhir/registry registered-resources)
          (only-in fhir/r4/operations evaluate-measure-definition)
          (only-in fhir/package read-package)
          (only-in fhir/sd/sd-index sd-context)
@@ -53,7 +54,8 @@
              (if (ok? r) (ok-value r)
                  (operation-error "processing" "Library ~a: ~a" (hash-ref lib 'url (hash-ref lib 'id ""))
                                   (cql-error-string (err-error r)))))))
-(define (libraries) ((data-source-all (current-data-source)) "Library"))
+;; libraries : -> (listof Library jsexpr)   the data source's, then the registered ones (#lang cql modules)
+(define (libraries) (append ((data-source-all (current-data-source)) "Library") (registered-resources "Library")))
 ;; find-library : canonical|name -> cql-library|#f   by url (|version ignored), else by name (also the
 ;; canonical's last segment: CQL loaded locally for a published Measure)
 (define (find-library key)
