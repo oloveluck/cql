@@ -23,7 +23,8 @@ Part of the @hyperlink["https://github.com/oloveluck/fhir"]{fhir} family; depend
 @section{Install}
 
 @verbatim{
-raco pkg install --link --auto fhir/fhir fhirpath cql      # from source, with the repos alongside
+raco pkg install --link --auto fhir/fhir fhirpath cql
+    # from source, with the repos alongside
 }
 
 @section{Writing a library}
@@ -86,7 +87,8 @@ time a @racket[moment]; intervals, tuples, codes and concepts have their structs
 (define lib (ok-value (parse-cql text #:source "screening.cql")))
 (elm->json-string (ok-value (compile-library lib)))                   (code:comment "the ELM")
 (evaluate-library lib resources #:parameters (hash "Panel Codes" codes))
-(define rl (load-runtime-library lib #:resolver find-library           (code:comment "includes, by name and version")
+(code:comment "includes, by name and version")
+(define rl (load-runtime-library lib #:resolver find-library
                                      #:data (resources->data resources)
                                      #:valuesets (valuesets->terminology value-sets)))
 (rlib-value rl "Hypertensive")
@@ -103,12 +105,14 @@ Over a server's store, fhir-server serves it (@tt{raco fhir-server evaluate-meas
 raco cql screening.cql                                             the ELM JSON
 raco cql screening.cql --data patient/ --valuesets vs/ --define Hypertensive
                                                                    run it over FHIR data (patient context)
-raco cql measure.cql --data bundle.json --libraries libs/            includes found as libs/<Name>.cql
-raco cql --tck [-v]                                                the cqframework/cql-tests suite
+raco cql measure.cql --data bundle.json --libraries libs/
+    includes found as libs/<Name>.cql
+raco cql --tck [-v]
+    the cqframework/cql-tests suite
 }
 
-@tt{--data} is a directory of resources or Bundles, or one file. Each definition, or the ones named
-with @tt{--define}, prints as @tt{name: value}. @tt{--format text|json|outcome} chooses how errors
+@litchar{--data} is a directory of resources or Bundles, or one file. Each definition, or the ones named
+with @litchar{--define}, prints as @tt{name: value}. @litchar{--format text|json|outcome} chooses how errors
 are reported, all of them. Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
 
 @section{Reference}
