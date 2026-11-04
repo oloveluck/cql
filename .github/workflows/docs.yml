@@ -30,7 +30,7 @@ jobs:
       - name: Install the packages (this repository's and the family packages it builds on, in one command)
         run: |
           raco pkg install --no-docs --batch --auto \
-            "." \
+            "$PWD" \
             "https://github.com/oloveluck/fhir.git?path=fhir" \
             "https://github.com/oloveluck/fhir.git?path=fhir-spec" \
             "https://github.com/oloveluck/fhirpath.git"
