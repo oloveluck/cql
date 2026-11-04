@@ -6,8 +6,9 @@
 ;;; Concatenate on strings; `in` is In, InValueSet or AnyInValueSet), function calls resolve among
 ;;; overloads (FHIRHelpers has one ToString per FHIR code type), and a model type meeting a System
 ;;; operator is converted implicitly (FHIR.EncounterStatus -> FHIRHelpers.ToString(…)). So `compile`
-;;; returns (values elm-node CType) — CType is defined in model/modelinfo.rkt: a System simple name
-;;; ("Integer"), a model name ("FHIR.Encounter"), "Any", or a list/interval/choice/tuple vector.
+;;; returns (values elm-node CType) — CType is model/modelinfo.rkt's data definition: a System simple
+;;; name ("Integer"), a model name ("FHIR.Encounter"), "Any", or a list/interval/choice/tuple
+;;; (list-ctype … / choice-ctype … and their predicates and accessors; never the vectors themselves).
 ;;;
 ;;; A library compiles in a library context (`lctx`, below): every name it declares, its data model
 ;;; (from `using`, see model/modelinfo.rkt), its includes (compiled lazily through
@@ -446,9 +447,9 @@
 (define (to-system n t)
   (cond
     ;; a list of model values converts element-wise: (X in list return all Convert(X))
-    [(and (list-type? t) (string? (vector-ref t 1)) (convertible? (vector-ref t 1)))
-     (define-values (cn ct) (to-system* (elm-alias-ref "X") (vector-ref t 1)))
-     (values (elm-query (list (cons "X" n)) '() '() #f cn 'all #f #f) (vector 'list ct))]
+    [(and (list-ctype? t) (string? (ctype-element t)) (convertible? (ctype-element t)))
+     (define-values (cn ct) (to-system* (elm-alias-ref "X") (ctype-element t)))
+     (values (elm-query (list (cons "X" n)) '() '() #f cn 'all #f #f) (list-ctype ct))]
     [else (to-system* n t)]))
 (define (convertible? t)
   (define m (lctx-model (L)))
@@ -470,9 +471,9 @@
 (define (sys-terminology e env)
   (define-values (n t) (compile e env))
   (cond
-    [(and (vector? t) (eq? (vector-ref t 0) 'choice))
+    [(choice-ctype? t)
      (define member (for*/first ([target (in-list '("String" "Code" "Concept"))]
-                                 [c (in-list (vector-ref t 1))]
+                                 [c (in-list (choice-members t))]
                                  #:when (let ([k (conversion-cost c target)]) (and k (= k 1))))
                       c))
      (if member (to-system (elm-as n (ctype->elm-name member) #f) member) (values n t))]
@@ -484,10 +485,10 @@
 (define (sys-against e other env)
   (define-values (n t) (compile e env))
   (cond
-    [(and (vector? t) (eq? (vector-ref t 0) 'choice))
+    [(choice-ctype? t)
      (define-values (_on ot) (sys other env))
      (define target (cond [(and (string? ot) (not (equal? ot "Any"))) ot]
-                          [(interval-type? ot) ot]
+                          [(interval-ctype? ot) ot]
                           [else #f]))
      (if target (choice-to n t target) (values n t))]
     [else (to-system n t)]))
@@ -495,7 +496,7 @@
 ;; choice-to : elm CType(choice) CType -> (values elm CType)   the choice members that convert to
 ;; `target`: none -> unchanged ; one -> Convert(x as M) ; several -> a Case over `x is M`
 (define (choice-to n t target)
-  (define members (for/list ([c (in-list (vector-ref t 1))]
+  (define members (for/list ([c (in-list (choice-members t))]
                              #:when (let ([k (conversion-cost c target)]) (and k (<= k 1))))
                     c))
   (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (ctype->elm-name m) #f) m)]) cn))
@@ -520,9 +521,6 @@
   (cond [(hash-ref promotions (cons at bt) #f) (values (promote a at bt) b bt)]
         [(hash-ref promotions (cons bt at) #f) (values a (promote b bt at) at)]
         [else (values a b at)]))
-(define (point-of t) (if (and (vector? t) (memq (vector-ref t 0) '(interval list))) (vector-ref t 1) #f))
-(define (interval-type? t) (and (vector? t) (eq? (vector-ref t 0) 'interval)))
-(define (list-type? t) (and (vector? t) (eq? (vector-ref t 0) 'list)))
 
 ;; ---- references ------------------------------------------------------------
 ;; compile-ref : sym cenv -> (values elm CType)   local scope, then the library, then the sort row
@@ -674,13 +672,13 @@
         (sys-against l r env)))
   (cond
     [(and (eq? op 'in) (member rt '("ValueSet" "CodeSystem")))
-     (define kind (string-append (if (list-type? lt) "Any" "") (if (equal? rt "ValueSet") "InValueSet" "InCodeSystem")))
+     (define kind (string-append (if (list-ctype? lt) "Any" "") (if (equal? rt "ValueSet") "InValueSet" "InCodeSystem")))
      (values (elm-in-valueset kind lo ro) "Boolean")]   ; (json: code vs codes by kind)
     [(eq? op 'in)
-     (define el (point-of rt))
+     (define el (ctype-element rt))
      (values (elm-nary "In" (list (if el (promote lo lt el) lo) ro) "Boolean") "Boolean")]
     [else
-     (define el (point-of lt))
+     (define el (ctype-element lt))
      (values (elm-nary "Contains" (list lo (if el (promote ro rt el) ro)) "Boolean") "Boolean")]))
 
 ;; numeric promotion Integer < Long < Decimal < Quantity ; #f/Any when not numeric
@@ -690,7 +688,7 @@
   (define rb (hash-ref numeric-rank b #f))
   (cond [(and ra rb) (if (>= ra rb) a b)]
         [ra a] [rb b] [else "Any"]))
-(define (composite-or a b) (cond [(vector? a) a] [(vector? b) b] [else #f]))
+(define (composite-or a b) (cond [(compound-ctype? a) a] [(compound-ctype? b) b] [else #f]))
 
 ;; union-of-different-types : cql cql cenv -> (list elm CType) | #f
 ;; List<A> union List<B> of unrelated model types: both cast to List<Choice<A, B>>, as the reference does
@@ -698,13 +696,13 @@
   (define-values (lo lt) (compile l env))
   (define-values (ro rt) (compile r env))
   (define m (lctx-model (L)))
-  (define (el t) (and (list-type? t) (vector-ref t 1)))
+  (define (el t) (and (list-ctype? t) (ctype-element t)))
   (define a (el lt)) (define b (el rt))
-  (define (members t) (if (and (vector? t) (eq? (vector-ref t 0) 'choice)) (vector-ref t 1) (list t)))
+  (define members choice-members)
   (cond
-    [(and m a b (not (equal? a b)) (or (model-type? a) (vector? a)) (or (model-type? b) (vector? b))
+    [(and m a b (not (equal? a b)) (or (model-type? a) (compound-ctype? a)) (or (model-type? b) (compound-ctype? b))
           (not (and (string? a) (string? b) (or (model-subtype? m a b) (model-subtype? m b a)))))
-     (define ct (vector 'list (vector 'choice (remove-duplicates (append (members a) (members b))))))
+     (define ct (list-ctype (choice-ctype (remove-duplicates (append (members a) (members b))))))
      (define spec (ctype->elm-type ct))
      (define (cast n t) (if (equal? t ct) n (elm-as n spec #f)))
      (list (elm-nary "Union" (list (cast lo lt) (cast ro rt)) #f) ct)]
@@ -722,15 +720,15 @@
   (define-values (an0 at0) (sys-against a b env))
   (define-values (bn0 bt0) (sys-against b a env))
   (define-values (an bn _t)
-    (if (or (vector? at0) (vector? bt0)) (values an0 bn0 at0) (unify-pair an0 at0 bn0 bt0)))
-  (define a-point? (not (interval-type? at0)))
-  (define b-point? (not (interval-type? bt0)))
+    (if (or (compound-ctype? at0) (compound-ctype? bt0)) (values an0 bn0 at0) (unify-pair an0 at0 bn0 bt0)))
+  (define a-point? (not (interval-ctype? at0)))
+  (define b-point? (not (interval-ctype? bt0)))
   (define op*
     (case op
-      [(included-in during) (if (and a-point? (interval-type? bt0)) 'in op)]
-      [(properly-included-in) (if (and a-point? (interval-type? bt0)) 'proper-in op)]
-      [(includes) (if (and b-point? (interval-type? at0)) 'contains op)]
-      [(properly-includes) (if (and b-point? (interval-type? at0)) 'proper-contains op)]
+      [(included-in during) (if (and a-point? (interval-ctype? bt0)) 'in op)]
+      [(properly-included-in) (if (and a-point? (interval-ctype? bt0)) 'proper-in op)]
+      [(includes) (if (and b-point? (interval-ctype? at0)) 'contains op)]
+      [(properly-includes) (if (and b-point? (interval-ctype? at0)) 'proper-contains op)]
       [else op]))
   (values (elm-timing op* (and prec (units->prec prec)) an bn) "Boolean"))
 
@@ -745,8 +743,8 @@
   (define-values (bn0 bt) (sys-against b a env))
   (define before? (memq op '(before same-or-before)))
   (define on? (memq op '(same-or-before same-or-after)))
-  (define an (if (interval-type? at) (elm-unary (if before? "End" "Start") an0 #f) an0))
-  (define bn (if (interval-type? bt) (elm-unary (if before? "Start" "End") bn0 #f) bn0))
+  (define an (if (interval-ctype? at) (elm-unary (if before? "End" "Start") an0 #f) an0))
+  (define bn (if (interval-ctype? bt) (elm-unary (if before? "Start" "End") bn0 #f) bn0))
   (define-values (qn _qt) (compile-literal q))
   (define shifted (elm-nary (if before? "Subtract" "Add") (list bn qn) #f))
   (define p (and prec (units->prec prec)))
@@ -793,10 +791,10 @@
                                          [(member ct '("ValueSet" "CodeSystem")) "in"]
                                          [else "~"]))
                          ;; a single (non-list, non-ValueSet) terminology becomes a list
-                         (and term (if (or (list-type? ct) (member ct '("ValueSet" "CodeSystem")))
+                         (and term (if (or (list-ctype? ct) (member ct '("ValueSet" "CodeSystem")))
                                        codes
                                        (elm-unary "ToList" codes #f))))
-          (vector 'list qname)))
+          (list-ctype qname)))
 (define (retrieve-node qname code-property comparator codes)
   (define m (lctx-model (L)))
   (elm-retrieve (format "{~a}~a" (model-url m) (local-name qname))
@@ -811,7 +809,7 @@
                  (define-values (n t) (compile (cql-source-expr s) env))
                  (list (cql-source-alias s) n t)))
   (define single? (= 1 (length srcs)))
-  (define (elem t) (if (list-type? t) (vector-ref t 1) t))
+  (define (elem t) (if (list-ctype? t) (ctype-element t) t))
   (define env1 (cenv-bind env 'alias (for/list ([s (in-list srcs)]) (cons (first s) (elem (third s))))))
   (define-values (env2 let-elms)
     (for/fold ([e env1] [acc '()] #:result (values e (reverse acc))) ([l (in-list (cql-query-lets q))])
@@ -849,10 +847,10 @@
            [(cql-ref n) #:when (property-type ret-t (symbol->string n))
             (elm-sort-by 'column dir (symbol->string n))]
            [e (elm-sort-by 'expression dir (let-values ([(n _t) (sys e row-env)]) n))]))]))
-  (define scalar? (and single? (not (list-type? (third (car srcs))))))
+  (define scalar? (and single? (not (list-ctype? (third (car srcs))))))
   (values (elm-query (for/list ([s (in-list srcs)]) (cons (symbol->string (first s)) (second s)))
                      let-elms rels where ret ret-distinct sort agg)
-          (cond [agg "Any"] [scalar? ret-t] [else (vector 'list ret-t)])))
+          (cond [agg "Any"] [scalar? ret-t] [else (list-ctype ret-t)])))
 
 ;; ---- control flow ----------------------------------------------------------
 ;; an untyped `null` branch takes the type of the other branches, as an explicit As (the reference
@@ -908,7 +906,7 @@
     (for/fold ([acc '()] [t "Any"] #:result (values (reverse acc) t)) ([e (in-list elems)])
       (define-values (n et) (compile e env))
       (values (cons n acc) et)))
-  (values (elm-list nodes) (vector 'list t)))
+  (values (elm-list nodes) (list-ctype t)))
 
 (define (compile-interval low high lc hc env)
   (define-values (ln0 lt0) (sys low env))
@@ -917,7 +915,7 @@
   (define ln (typed-null ln0 lt0 pt))
   (define hn (typed-null hn0 ht0 pt))
   (define lt pt)
-  (values (elm-interval ln hn lc hc) (vector 'interval lt)))
+  (values (elm-interval ln hn lc hc) (interval-ctype lt)))
 
 (define (compile-tuple elems env)
   (values (elm-tuple (for/list ([te (in-list elems)])
@@ -941,12 +939,12 @@
      (cond
        ;; a property of a LIST of model values flattens, as the reference translator writes it:
        ;; ($this in list where $this.p is not null return all $this.p)
-       [(and (list-type? tt) (string? (vector-ref tt 1)) (regexp-match? #rx"[.]" (vector-ref tt 1)))
+       [(and (list-ctype? tt) (string? (ctype-element tt)) (regexp-match? #rx"[.]" (ctype-element tt)))
         (define p (elm-property (elm-alias-ref "$this") (symbol->string name) #f))
         (define q (elm-query (list (cons "$this" tn)) '() '()
                              (elm-unary "Not" (elm-unary "IsNull" p "Boolean") "Boolean") p 'all #f #f))
-        (define el (property-type (vector-ref tt 1) (symbol->string name)))
-        (if (list-type? el)
+        (define el (property-type (ctype-element tt) (symbol->string name)))
+        (if (list-ctype? el)
             (values (elm-unary "Flatten" q #f) el)
             (values q pt))]
        [else (values (elm-property tn (symbol->string name) #f) pt)])]))
@@ -954,7 +952,7 @@
 ;; property-type : CType string -> CType|#f
 (define system-properties
   (hash "Code" (hash "code" "String" "system" "String" "version" "String" "display" "String")
-        "Concept" (hash "codes" (vector 'list "Code") "display" "String")
+        "Concept" (hash "codes" (list-ctype "Code") "display" "String")
         "Quantity" (hash "value" "Decimal" "unit" "String")
         "Ratio" (hash "numerator" "Quantity" "denominator" "Quantity")))
 (define (property-type t name)
@@ -965,10 +963,10 @@
            [(and m (regexp-match? #rx"[.]" s)) (model-element-type m s name)]
            [(equal? s "Any") "Any"]
            [else #f])]
-    [(vector 'list el) (let ([p (property-type el name)]) (and p (if (list-type? p) p (vector 'list p))))]
-    [(vector 'interval el) (and (member name '("low" "high")) el)]
-    [(vector 'tuple els) (let ([e (assq (string->symbol name) els)]) (and e (cdr e)))]
-    [(vector 'choice _) "Any"]
+    [(? list-ctype?) (let ([p (property-type (ctype-element t) name)]) (and p (if (list-ctype? p) p (list-ctype p))))]
+    [(? interval-ctype?) (and (member name '("low" "high")) (ctype-element t))]
+    [(? tuple-ctype?) (let ([e (assq (string->symbol name) (tuple-fields t))]) (and e (cdr e)))]
+    [(? choice-ctype?) "Any"]
     [_ #f]))
 
 (define (compile-index target idx env)
@@ -976,7 +974,7 @@
   (define-values (in _it) (compile idx env))
   (values (elm-nary "Indexer" (list tn in) (simple-rt (elem-type tt))) (elem-type tt)))
 
-(define (elem-type t) (if (and (vector? t) (eq? (vector-ref t 0) 'list)) (vector-ref t 1) "Any"))
+(define (elem-type t) (or (and (list-ctype? t) (ctype-element t)) "Any"))
 
 ;; system operators reachable as function-call syntax: name -> (arity-kind . result-type)
 ;; arity-kind: 'unary (1 arg -> elm-unary) | 'nary (n args -> elm-nary)
@@ -1067,15 +1065,15 @@
 ;; compile-method : op cql (listof cql) cenv -> (values elm CType)
 (define (compile-method op target args env)
   (define-values (tn tt) (compile target env))
-  (define el (if (list-type? tt) (vector-ref tt 1) tt))
+  (define el (if (list-ctype? tt) (ctype-element tt) tt))
   (define (this-env) (struct-copy cenv (cenv-bind env 'alias (list (cons '$this el))) [this "$this"]))
   (match op
     ['where
      (define-values (c _ct) (sys (car args) (this-env)))
-     (values (elm-query (list (cons "$this" tn)) '() '() c #f #f #f #f) (vector 'list el))]
+     (values (elm-query (list (cons "$this" tn)) '() '() c #f #f #f #f) (list-ctype el))]
     ['select
      (define-values (r rt) (compile (car args) (this-env)))
-     (values (elm-query (list (cons "$this" tn)) '() '() #f r #f #f #f) (vector 'list rt))]
+     (values (elm-query (list (cons "$this" tn)) '() '() #f r #f #f #f) (list-ctype rt))]
     ['empty (values (elm-unary "Not" (elm-unary "Exists" tn "Boolean") "Boolean") "Boolean")]
     ;; skip(n) / take(n) / tail() are Slice(source, start, end)
     ['skip (values (elm-nary "Slice" (list tn (compile1 (car args) env) (elm-null #f)) #f) tt)]
@@ -1132,29 +1130,26 @@
     [(equal? from to) 0]
     [(or (equal? to "Any") (equal? from "Any")) 0]
     [(and (string? from) (string? to) m (model-subtype? m from to)) 0]
-    [(and (vector? to) (eq? (vector-ref to 0) 'choice))
+    [(choice-ctype? to)
      ;; a choice argument fits a choice parameter when all its members do (0), or some do (1: the
      ;; translator accepts the overlap)
-     (cond [(vector? from)
-            (if (eq? (vector-ref from 0) 'choice)
-                (let ([ks (map (lambda (f) (conversion-cost f to)) (vector-ref from 1))])
-                  (cond [(andmap values ks) 0] [(ormap values ks) 1] [else #f]))
-                #f)]
-           [else (for/or ([c (in-list (vector-ref to 1))]) (let ([k (conversion-cost from c)]) (and k (= k 0) 0)))])]
-;; a choice argument to a parameter of one of its member types: an implicit As (cost 1); to a
+     (cond [(choice-ctype? from)
+            (let ([ks (map (lambda (f) (conversion-cost f to)) (choice-members from))])
+              (cond [(andmap values ks) 0] [(ormap values ks) 1] [else #f]))]
+           [(compound-ctype? from) #f]
+           [else (for/or ([c (in-list (choice-members to))]) (let ([k (conversion-cost from c)]) (and k (= k 0) 0)))])]
+    ;; a choice argument to a parameter of one of its member types: an implicit As (cost 1); to a
     ;; type a member CONVERTS to: As then the conversion (cost 2) — ToConcept(m as CodeableConcept)
-    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
-          (for/or ([c (in-list (vector-ref from 1))]) (eqv? 0 (conversion-cost c to))))
+    [(and (choice-ctype? from) (string? to) (for/or ([c (in-list (choice-members from))]) (eqv? 0 (conversion-cost c to))))
      1]
-    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
-          (for/or ([c (in-list (vector-ref from 1))]) (eqv? 1 (conversion-cost c to))))
+    [(and (choice-ctype? from) (string? to) (for/or ([c (in-list (choice-members from))]) (eqv? 1 (conversion-cost c to))))
      2]
-    [(and (vector? from) (vector? to) (eq? (vector-ref from 0) (vector-ref to 0)) (memq (vector-ref from 0) '(list interval)))
-     (conversion-cost (vector-ref from 1) (vector-ref to 1))]
+    [(or (and (list-ctype? from) (list-ctype? to)) (and (interval-ctype? from) (interval-ctype? to)))
+     (conversion-cost (ctype-element from) (ctype-element to))]
     [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) 1]
     [(and (string? from) m (model-conversion m from))
      => (lambda (c) (let ([k (conversion-cost (car c) to)]) (and k (< k 2) (+ 1 k))))]
-    [(and (equal? to "Tuple") (vector? from) (eq? (vector-ref from 0) 'tuple)) 0]
+    [(and (equal? to "Tuple") (tuple-ctype? from)) 0]
     [else #f]))
 
 ;; coerce : elm CType CType -> elm   apply the implicit conversions conversion-cost counted
@@ -1163,18 +1158,16 @@
   (cond
     ;; a value passed to a choice-typed parameter is cast to the whole choice
     ;; a choice argument only partly inside a choice parameter is cast to the parameter's choice
-    [(and (vector? to) (eq? (vector-ref to 0) 'choice) (vector? from) (eq? (vector-ref from 0) 'choice)
-          (eqv? (conversion-cost from to) 1))
+    [(and (choice-ctype? to) (choice-ctype? from) (eqv? (conversion-cost from to) 1))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     ;; (a member type is widened; a choice argument already fits as it is)
-    [(and (vector? to) (eq? (vector-ref to 0) 'choice) (string? from) (not (equal? from "Any")) (conversion-cost from to))
+    [(and (choice-ctype? to) (string? from) (not (equal? from "Any")) (conversion-cost from to))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     [(eqv? (conversion-cost from to) 0) n]
     [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) (promote n from to)]
-    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to)
-          (for/or ([c (in-list (vector-ref from 1))]) (eqv? 0 (conversion-cost c to))))
+    [(and (choice-ctype? from) (string? to) (for/or ([c (in-list (choice-members from))]) (eqv? 0 (conversion-cost c to))))
      (elm-as n (ctype->elm-name to) #f)]
-    [(and (vector? from) (eq? (vector-ref from 0) 'choice) (string? to))
+    [(and (choice-ctype? from) (string? to))
      (let-values ([(cn _ct) (choice-to n from to)]) cn)]
     [(and (string? from) m (model-conversion m from))
      (define-values (n2 t2) (to-system n from))
@@ -1229,7 +1222,7 @@
                ;; Boolean tests over a choice pick the member converting to Boolean
                [(memq name '(IsTrue IsFalse))
                 (let-values ([(n t) (compile a env)])
-                  (if (and (vector? t) (eq? (vector-ref t 0) 'choice)) (choice-to n t "Boolean") (to-system n t)))]
+                  (if (choice-ctype? t) (choice-to n t "Boolean") (to-system n t)))]
                [else (sys a env)])))
      ;; Coalesce's arguments meet at one type, like if/case branches: a FHIR value among System ones
      ;; is converted (Coalesce(start of P, R.authoredOn) -> …, ToDateTime(R.authoredOn))
@@ -1257,11 +1250,11 @@
 ;; derived-result-type : sym (listof CType) -> CType   for system operators typed by their arguments
 (define (derived-result-type name ts)
   (define t0 (if (pair? ts) (car ts) "Any"))
-  (define (el t) (or (point-of t) "Any"))
+  (define (el t) (or (ctype-element t) "Any"))
   (case name
     [(Start End PointFrom Width Min Max Sum First Last SingletonFrom Median Mode Product Indexer) (el t0)]
     [(Abs Predecessor Successor Distinct Tail Take Skip Slice Expand Collapse LowBoundary HighBoundary Message) t0]
-    [(Flatten) (let ([e (point-of t0)]) (if (list-type? e) e t0))]
+    [(Flatten) (let ([e (ctype-element t0)]) (if (list-ctype? e) e t0))]
     [(Coalesce) (or (for/first ([t (in-list ts)] #:unless (equal? t "Any")) t) "Any")]
     [else "Any"]))
 
@@ -1307,10 +1300,10 @@
 (define (type->ctype t)
   (match t
     [(named-type name) (named->ctype (symbol->string name))]
-    [(interval-type el) (vector 'interval (type->ctype el))]
-    [(list-type el) (vector 'list (type->ctype el))]
-    [(choice-type ts) (vector 'choice (map type->ctype ts))]
-    [(tuple-type els) (vector 'tuple (map (lambda (e) (cons (car e) (type->ctype (cdr e)))) els))]
+    [(interval-type el) (interval-ctype (type->ctype el))]
+    [(list-type el) (list-ctype (type->ctype el))]
+    [(choice-type ts) (choice-ctype (map type->ctype ts))]
+    [(tuple-type els) (tuple-ctype (map (lambda (e) (cons (car e) (type->ctype (cdr e)))) els))]
     [_ "Any"]))
 ;; ctype->elm-name : CType(string) -> "{urn:hl7-org:elm-types:r1}Integer" | "{http://hl7.org/fhir}Period"
 (define (ctype->elm-name s)
@@ -1325,10 +1318,10 @@
   (match t
     ["Any" #f]
     [(? string? s) (elm-named-type (ctype->elm-name s))]
-    [(vector 'list el) (let ([e (ctype->elm-type el)]) (and e (elm-list-type e)))]
-    [(vector 'interval el) (let ([e (ctype->elm-type el)]) (and e (elm-interval-type e)))]
-    [(vector 'choice ts) (let ([es (map ctype->elm-type ts)]) (and (andmap values es) (elm-choice-type es)))]
-    [(vector 'tuple els) (let ([es (map (lambda (e) (cons (symbol->string (car e)) (ctype->elm-type (cdr e)))) els)])
+    [(? list-ctype?) (let ([e (ctype->elm-type (ctype-element t))]) (and e (elm-list-type e)))]
+    [(? interval-ctype?) (let ([e (ctype->elm-type (ctype-element t))]) (and e (elm-interval-type e)))]
+    [(? choice-ctype?) (let ([es (map ctype->elm-type (choice-members t))]) (and (andmap values es) (elm-choice-type es)))]
+    [(? tuple-ctype?) (let ([es (map (lambda (e) (cons (symbol->string (car e)) (ctype->elm-type (cdr e)))) (tuple-fields t))])
                            (and (andmap cdr es) (elm-tuple-type es)))]
     [_ #f]))
 

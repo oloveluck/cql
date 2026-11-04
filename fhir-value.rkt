@@ -44,12 +44,13 @@
      (define t (model-element-type m (fhir-node-type n) name))
      (match t
        [#f (let ([v (hash-ref j (string->symbol name) #f)]) (if v (wrap "Any" v) cql-null))]
-       [(vector 'choice members)
-        (or (for/or ([c (in-list members)])
+       [(? choice-ctype?)
+        (or (for/or ([c (in-list (choice-members t))])
               (define v (hash-ref j (string->symbol (string-append name (cap (local c)))) #f))
               (and v (wrap c v)))
             cql-null)]
-       [(vector 'list el)
+       [(? list-ctype?)
+        (define el (ctype-element t))
         (define v (hash-ref j (string->symbol name) #f))
         (cond [(list? v) (for/list ([x (in-list v)]) (wrap el x))]
               [v (list (wrap el v))]

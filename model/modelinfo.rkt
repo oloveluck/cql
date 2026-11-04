@@ -13,11 +13,37 @@
 ;;;   - "Integer" | "String" | …     a System type, by simple name
 ;;;   - "FHIR.Encounter" | …         a model type, namespace-qualified
 ;;;   - "Any"                        unknown
-;;;   - (vector 'list CType) | (vector 'interval CType)
-;;;   - (vector 'choice (listof CType))
-;;;   - (vector 'tuple (listof (cons symbol CType)))
+;;;   - (list-ctype CType) | (interval-ctype CType)      (vector 'list CType) | (vector 'interval CType)
+;;;   - (choice-ctype (listof CType))                     (vector 'choice (listof CType))
+;;;   - (tuple-ctype (listof (cons symbol CType)))        (vector 'tuple (listof (cons symbol CType)))
+;;; The vectors are the representation (equal? compares them, the harnesses print them); the
+;;; constructors, predicates and accessors below are how code reads and writes them.
 
 (require racket/contract racket/match racket/runtime-path racket/list)
+
+;; ---- CType ----------------------------------------------------------------------------------
+(provide list-ctype interval-ctype choice-ctype tuple-ctype
+         list-ctype? interval-ctype? choice-ctype? tuple-ctype? compound-ctype?
+         ctype-element choice-members tuple-fields)
+;; list-ctype / interval-ctype : CType -> CType ; choice-ctype : (listof CType) -> CType ;
+;; tuple-ctype : (listof (cons symbol CType)) -> CType
+(define (list-ctype el) (vector 'list el))
+(define (interval-ctype el) (vector 'interval el))
+(define (choice-ctype members) (vector 'choice members))
+(define (tuple-ctype fields) (vector 'tuple fields))
+;; the predicates: one per compound variant, and the compound kinds together
+(define (ctype-tag? t tag) (and (vector? t) (eq? (vector-ref t 0) tag)))
+(define (list-ctype? t) (ctype-tag? t 'list))
+(define (interval-ctype? t) (ctype-tag? t 'interval))
+(define (choice-ctype? t) (ctype-tag? t 'choice))
+(define (tuple-ctype? t) (ctype-tag? t 'tuple))
+(define (compound-ctype? t) (vector? t))
+;; ctype-element : CType -> CType | #f   the element type of a list or interval
+(define (ctype-element t) (and (or (list-ctype? t) (interval-ctype? t)) (vector-ref t 1)))
+;; choice-members : CType -> (listof CType)   a choice's members; any other type is its own one member
+(define (choice-members t) (if (choice-ctype? t) (vector-ref t 1) (list t)))
+;; tuple-fields : CType -> (listof (cons symbol CType))
+(define (tuple-fields t) (if (tuple-ctype? t) (vector-ref t 1) '()))
 
 (provide
  (struct-out model) (struct-out class-info)
@@ -42,13 +68,13 @@
 (define (spec->ctype s)
   (match s
     [(? string? s) (system-simple s)]
-    [(list 'list t) (vector 'list (spec->ctype t))]
-    [(list 'interval t) (vector 'interval (spec->ctype t))]
-    [(list 'choice ts ...) (vector 'choice (map spec->ctype ts))]
+    [(list 'list t) (list-ctype (spec->ctype t))]
+    [(list 'interval t) (interval-ctype (spec->ctype t))]
+    [(list 'choice ts ...) (choice-ctype (map spec->ctype ts))]
     [_ "Any"]))
 ;; "System.String" -> "String" ; "Interval<System.DateTime>" -> (vector 'interval "DateTime")
 (define (system-simple s)
-  (cond [(regexp-match #rx"^Interval<(.*)>$" s) => (lambda (m) (vector 'interval (system-simple (cadr m))))]
+  (cond [(regexp-match #rx"^Interval<(.*)>$" s) => (lambda (m) (interval-ctype (system-simple (cadr m))))]
         [(regexp-match #rx"^System[.](.*)$" s) => cadr]
         [else s]))
 
@@ -113,7 +139,13 @@
   (check-equal? (model-element-type m "FHIR.Encounter" "status") "FHIR.EncounterStatus")
   (check-equal? (model-element-type m "FHIR.Encounter" "id") "FHIR.id")          ; inherited from Resource
   (check-equal? (model-element-type m "FHIR.Patient" "name") (vector 'list "FHIR.HumanName"))
-  (check-true (vector? (model-element-type m "FHIR.Observation" "effective")))
+  (check-true (choice-ctype? (model-element-type m "FHIR.Observation" "effective")))
+  (check-equal? (ctype-element (list-ctype "Integer")) "Integer")
+  (check-false (ctype-element "Integer"))
+  (check-equal? (choice-members (choice-ctype '("Integer" "String"))) '("Integer" "String"))
+  (check-equal? (choice-members "Integer") '("Integer"))
+  (check-equal? (tuple-fields (tuple-ctype (list (cons 'a "Integer")))) (list (cons 'a "Integer")))
+  (check-true (compound-ctype? (interval-ctype "Date"))) (check-false (compound-ctype? "Date"))
   (check-equal? (model-conversion m "FHIR.EncounterStatus") (cons "String" "FHIRHelpers.ToString"))
   (check-equal? (model-conversion m "FHIR.Period") (cons (vector 'interval "DateTime") "FHIRHelpers.ToInterval"))
   (check-true (model-subtype? m "FHIR.Encounter" "FHIR.Resource"))
