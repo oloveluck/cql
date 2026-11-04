@@ -4,6 +4,7 @@ CQL (cql.hl7.org) compiled to ELM and run by an ELM interpreter: the expression 
 
 Part of **fhir — FHIR as a family of Racket `#lang`s** ([oloveluck/fhir](https://github.com/oloveluck/fhir)).
 Collection `cql`. `#lang cql` — a `.cql` file is a module; `racket file` prints the compiled JSON.
+Reference: [oloveluck.github.io/cql](https://oloveluck.github.io/cql/).
 
 ## Install
 

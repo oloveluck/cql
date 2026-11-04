@@ -1,0 +1,57 @@
+# Builds the Scribble documentation and publishes it to GitHub Pages.
+# The family's packages are not on pkgs.racket-lang.org yet, so the ones this
+# package builds on are installed from their GitHub repositories first.
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Bogdanp/setup-racket@v1.11
+        with:
+          version: stable
+          variant: CS
+          distribution: full
+      - name: Install the family packages this one builds on
+        run: |
+          raco pkg install --no-docs --batch --auto \
+            "https://github.com/oloveluck/fhir.git?path=fhir" \
+            "https://github.com/oloveluck/fhirpath.git"
+      - name: Install this repository's packages
+        run: raco pkg install --no-docs --batch --auto .
+      - name: Build the documentation
+        run: |
+          raco scribble --html --dest site --dest-name index.html --redirect-main https://docs.racket-lang.org/ scribblings/cql.scrbl
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - id: deployment
+        uses: actions/deploy-pages@v4
