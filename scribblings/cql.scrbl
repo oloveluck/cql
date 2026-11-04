@@ -115,6 +115,32 @@ raco cql --tck [-v]
 with @litchar{--define}, prints as @tt{name: value}. @litchar{--format text|json|outcome} chooses how errors
 are reported, all of them. Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
 
+@section{Limits}
+
+@itemlist[
+@item{@bold{Data model.} FHIR 4.0.1 (4.0.0 and an unversioned @tt{using FHIR} share it). No R5
+ModelInfo, no QDM. A retrieve filters by type and code; @tt{dateProperty} and @tt{dateRange} are not
+applied, and @tt{templateId} is carried but not used to filter. The Patient context applies when the
+data holds exactly one Patient, matched by @tt{subject}, @tt{patient} and @tt{beneficiary}
+references.}
+@item{@bold{Terminology.} Membership comes from the ValueSet resources supplied: their
+@tt{expansion}, else enumerated concepts. Filters, nested value sets and excludes are not evaluated,
+and the terminology service is not called; a value set with neither is empty, and one not supplied
+at all is an error. @tt{in CodeSystem} looks the code system up in the same table.}
+@item{@bold{Measures.} Proportion scoring, patient-based, from the first library and the first
+group's population codes; @tt{Measure.scoring} is not read, so ratio, continuous-variable and cohort
+measures are scored as proportions. No stratifiers, supplemental data or measure observations; an
+episode-of-care population counts as in when its list is non-empty. @tt{$evaluate-measure} reads
+@tt{measure}, @tt{periodStart}, @tt{periodEnd} and @tt{subject} only.}
+@item{@bold{The module.} @racket[evaluate] passes no library resolver, so a library with an
+@tt{include} must run through @racket[load-runtime-library] or the command line. A translation error
+does not fail the module: @racket[elm] is @racket[#f] and only running the file reports it.}
+@item{@bold{ELM} is emitted as JSON only. Of 803 definitions in the published corpus 61 differ from
+the reference translator, in named categories (translator-version noise around @tt{InValueSet},
+choice operands in timing phrases, @tt{Interval[…].low} re-typing, ratio details in FHIRHelpers, one
+measure's day-of-procedure phrases). Three expression-suite tests remain, each a corpus
+contradiction or a grammar for one test.}]
+
 @section{Reference}
 
 @subsection[#:style 'unnumbered]{@hash-lang[] @tt{cql}}
