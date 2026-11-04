@@ -36,7 +36,7 @@ jobs:
             "https://github.com/oloveluck/fhirpath.git"
       - name: Build the documentation
         run: |
-          raco scribble --html --dest site --dest-name index.html --redirect-main https://docs.racket-lang.org/ scribblings/cql.scrbl
+          raco scribble +m --html --dest site --dest-name index.html --redirect-main https://docs.racket-lang.org/ scribblings/cql.scrbl
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
