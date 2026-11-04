@@ -158,3 +158,30 @@
   (for/hash ([d (in-list (cql-library-defs library))] #:when (cql-def? d))
     (define name (format "~a" (cql-def-name d)))
     (values name (rlib-value rl name))))
+
+;; ---- living examples ------------------------------------------------------------------------
+(module+ test
+  (require rackunit)
+  ;; data: a Bundle flattens; in a Patient context another patient's resources are not retrieved
+  (define p1 (hasheq 'resourceType "Patient" 'id "p1"))
+  (define mine (hasheq 'resourceType "Observation" 'id "o1" 'subject (hasheq 'reference "Patient/p1")))
+  (define theirs (hasheq 'resourceType "Observation" 'id "o2" 'subject (hasheq 'reference "Patient/p2")))
+  (define nobodys (hasheq 'resourceType "Observation" 'id "o3"))
+  (define bundle (hasheq 'resourceType "Bundle" 'entry (list (hasheq 'resource theirs) (hasheq 'resource nobodys))))
+  (define data (resources->data (list p1 mine bundle)))
+  (check-equal? (map (lambda (r) (hash-ref r 'id)) (data "Observation")) '("o1" "o3"))
+  (check-equal? (map (lambda (r) (hash-ref r 'id)) (data "Patient")) '("p1"))
+  (check-equal? (data "Condition") '())
+  (check-equal? (map (lambda (r) (hash-ref r 'id)) ((resources->data (list p1 mine theirs) #:patient-context? #f) "Observation"))
+                '("o1" "o2"))
+  ;; an absolute reference to the patient counts as the patient's
+  (check-equal? (length ((resources->data (list p1 (hash-set mine 'subject (hasheq 'reference "http://s/fhir/Patient/p1")))) "Observation")) 1)
+  ;; terminology: an expansion, else the enumerated compose; |version ignored; unknown -> #f
+  (define vs-exp (hasheq 'url "http://x/vs1" 'expansion (hasheq 'contains (list (hasheq 'system "http://x/cs" 'code "a")))))
+  (define vs-cmp (hasheq 'url "http://x/vs2" 'compose (hasheq 'include (list (hasheq 'system "http://x/cs" 'concept (list (hasheq 'code "b")))))))
+  (define tx (valuesets->terminology (list vs-exp vs-cmp)))
+  (check-true (hash-ref (tx "http://x/vs1") (cons "http://x/cs" "a") #f))
+  (check-true (hash-ref (tx "http://x/vs2|1.0") (cons "http://x/cs" "b") #f))
+  (check-false (hash-ref (tx "http://x/vs2") (cons "http://x/cs" "a") #f))
+  (check-false (tx "http://x/none"))
+  (check-true (truthy? (list 1))) (check-false (truthy? '())) (check-false (truthy? #f)))

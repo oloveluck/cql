@@ -166,3 +166,16 @@
                        #:offset (or (period-offset start) (current-measure-offset))))))
 
 (register-operation! $evaluate-measure)
+
+;; ---- living examples ------------------------------------------------------------------------
+(module+ test
+  (require rackunit (only-in "value.rkt" cql-interval-low cql-interval-high) (only-in fhirpath/temporal-ops moment->string))
+  ;; the period's offset is its start's, in minutes
+  (check-equal? (period-offset "2021-01-01T00:00:00-07:00") -420)
+  (check-equal? (period-offset "2021-01-01T00:00:00+05:30") 330)
+  (check-equal? (period-offset "2021-01-01T00:00:00Z") 0)
+  (check-false (period-offset "2021-01-01"))
+  ;; the Measurement Period is whole days, end inclusive
+  (define mp (measurement-period "2021-01-01" "2021-12-31" 0))
+  (check-equal? (moment->string (cql-interval-low mp)) "@2021-01-01T00:00:00.000")
+  (check-equal? (moment->string (cql-interval-high mp)) "@2021-12-31T23:59:59.999"))

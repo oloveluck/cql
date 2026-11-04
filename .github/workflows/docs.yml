@@ -35,7 +35,7 @@ jobs:
       - name: The CQL conformance suite, the real-library corpus and the eCQM corpus (floor-ratcheted)
         run: |
           raco cql --tck
-          raco test library.rkt tests/registry-test.rkt value.rkt interp/base.rkt interp/temporal.rkt interp/arith.rkt interp/compare.rkt interp/interval.rkt interp.rkt
+          raco test library.rkt tests/registry-test.rkt run.rkt measure.rkt value.rkt interp/base.rkt interp/temporal.rkt interp/arith.rkt interp/compare.rkt interp/interval.rkt interp.rkt
           raco test tests/elm-corpus-test.rkt tests/measure-test.rkt tests/measure-operation-test.rkt
       - name: Build the documentation
         run: |
