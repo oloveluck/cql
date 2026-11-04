@@ -215,6 +215,9 @@ The evaluation request's timezone offset. A DateTime with a time and no offset t
 
 @defproc[(run-library [lib elm-library?]) hash?]{Every definition evaluated with no data: name to value.}
 @defproc[(eval-elm [node elm-expr?] [env ienv?]) cql-value?]{One ELM node in an environment.}
+The semantics the operators rest on are the @tt{cql/interp/} modules — @tt{temporal} (durations,
+boundaries, date arithmetic), @tt{arith}, @tt{compare} (ordering, equality, equivalence) and
+@tt{interval} (relations, membership, set operations, expand/collapse) — each pure and tested alone.
 @defproc[(make-ienv [#:defs defs hash? (hash)] [#:operands operands hash? (hash)]) ienv?]
 @defproc[(runtime [data procedure?] [valueset procedure?] [offset (or/c exact-integer? #f)]) runtime?]{
 What a library runs against: @racket[data] is @tt{type-name -> (listof resource)}, scoped to the

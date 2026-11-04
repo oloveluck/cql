@@ -31,6 +31,14 @@ operators, `if`/`case`. Layers:
 - `cql/interp.rkt` + `cql/value.rkt` — the ELM interpreter (`eval-elm`, the ELM analog of `fp-eval`),
   **reusing** `fhirpath/{decimal,quantity,temporal-ops,equality,value}` and adding CQL's structured
   carriers (`cql-interval`/`cql-tuple`/`cql-ratio`/`cql-code`/`cql-concept`) + the `cql-null` singleton.
+  The algebra is `cql/interp/`, one pure, tested module per concern — `base.rkt` (the error, the
+  numeric tower, 32-bit overflow to null, interval bounds), `temporal.rkt` (constructors with domain
+  checks, components, duration/difference and their uncertainty intervals, boundaries, truncation,
+  date arithmetic), `arith.rkt`, `compare.rkt` (`cql-compare`/`cql-equal`/`equivalent`, the null-aware
+  list helpers) and `interval.rkt` (relations, membership, set operations, collapse/expand, the timing
+  dispatch) — and `interp.rkt` keeps the environment, the evaluator, the operator catalogue, queries,
+  strings, aggregates, navigation and conversions. Six operators used to be registered twice (the
+  later `def-op!` wins): the dead first copies are gone.
   Key semantic bridge: CQL is single-value-with-`null` (three-valued And/Or/Xor/Implies; null-propagating
   arithmetic/comparison), not FHIRPath's always-collection model.
 - `#lang cql` (`cql/lang/reader.rkt` + `cql/base.rkt`): a `.cql` file is one library; the reader
