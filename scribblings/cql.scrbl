@@ -6,7 +6,7 @@
 @title{cql: Clinical Quality Language for Racket}
 
 @hyperlink["https://cql.hl7.org/"]{CQL} compiled to ELM, and ELM run. The compiler covers the
-expression and definition language with the System types, intervals, queries, and the typed
+expression and definition language with the System types, intervals and queries, and the typed
 translation of libraries over FHIR R4 (retrieves, includes, terminology definitions, the implicit
 FHIRHelpers conversions) with the reference translator's own ModelInfo. The interpreter runs the ELM
 over FHIR data: retrieves, value set membership, measure populations.
@@ -26,65 +26,101 @@ Part of the @hyperlink["https://github.com/oloveluck/fhir"]{fhir} family; depend
 raco pkg install --link --auto fhir/fhir fhirpath cql      # from source, with the repos alongside
 }
 
-@section{@hash-lang[] @tt{cql}}
-@defmodulelang[cql]
+@section{Writing a library}
 
-A @tt{.cql} file is one library. The module provides:
-
-@itemlist[
-@item{@racket[library], the CQL AST; @racket[elm], the ELM AST; @racket[elm-json], the canonical ELM
-JSON text.}
-@item{@racket[(evaluate resources #:parameters h #:valuesets vss)]: the library over a patient's FHIR
-resources (a list of jsexprs, the Patient among them) as a hash from definition name to value.
-@racket[h] maps parameter names to values; @racket[vss] is a list of ValueSet jsexprs with expansions.}
-@item{@racket[(results)]: every definition evaluated with no data, for libraries without retrieves.}]
-
-Nothing runs when the module is required. Running the file prints the ELM JSON. A parse error is a
-compile error positioned in the file; a translation error names its @tt{define}.
+A file is one library: a header, then definitions. @tt{using FHIR version '4.0.1'} loads the FHIR
+model, so @tt{[Observation]} retrieves resources and @tt{O.code.coding} navigates them;
+@tt{context Patient} scopes retrieves to one patient; @tt{parameter} declares an input;
+@tt{include} brings in another library under an alias. Names with spaces are quoted with
+@tt{"…"}, strings with @tt{'…'}.
 
 @verbatim|{#lang cql
 library BloodPressureScreening version '1.0.0'
 using FHIR version '4.0.1'
 parameter "Panel Codes" List<System.String>
 context Patient
+
 define "Readings":
   [Observation] O where exists (O.code.coding C where C.code.value in "Panel Codes")
+
 define "Systolic Values":
   "Readings" O return singleton from (O.component C
                                         where exists (C.code.coding K where K.code.value = '8480-6')
                                         return (C.value as FHIR.Quantity).value.value)
+
 define "Highest Systolic": Max("Systolic Values")
 define "Hypertensive": "Highest Systolic" >= 140}|
 
-@section{Values}
-@defmodule[cql/value]
+Without FHIRHelpers, FHIR primitives are navigated to their @tt{.value}; a library that includes
+FHIRHelpers gets the implicit conversions the reference translator makes. Terminology definitions
+(@tt{valueset "BP Panels": 'http://…'}) make @tt{[Observation: "BP Panels"]} a retrieve filtered by
+membership. The language reference is @hyperlink["https://cql.hl7.org/"]{cql.hl7.org}.
 
-CQL is single-valued with @racket[cql-null] (three-valued logic), not FHIRPath's collections.
-Integers are exact integers; Long, Decimal, Quantity and Date/DateTime/Time reuse fhirpath's
-@racket[fp-long], @racket[fp-decimal], @racket[fp-quantity] and @racket[moment]; strings and booleans
-are Racket's; a List is a list.
+@section{Using it}
 
-@deftogether[(
-@defthing[cql-null any/c]
-@defproc[(cql-null? [v any/c]) boolean?]
-@defthing[cql-null-list any/c]
-@defproc[(cql-null-list? [v any/c]) boolean?])]{
-The null singleton, and a null cast to a list type (@tt{null as List<T>}): still null, but
-@tt{Length} sees an empty list.}
-@defstruct*[cql-interval ([low any/c] [high any/c] [low-closed? boolean?] [high-closed? boolean?])]{Normalized to closed bounds at construction.}
-@defstruct*[cql-tuple ([fields hash?])]{Symbol to value.}
-@defstruct*[cql-ratio ([numerator fp-quantity?] [denominator fp-quantity?])]
-@defstruct*[cql-code ([code any/c] [system any/c] [version any/c] [display any/c])]
-@defstruct*[cql-concept ([codes list?] [display any/c])]
-@defstruct*[cql-obj ([class string?] [fields hash?])]{An instance of another class (@tt{System.ValueSet{…}}), carrying its class for @tt{is}.}
-@defstruct*[fhir-node ([type string?] [json any/c])]{FHIR data at a point in a resource: its model type (@racket["FHIR.Observation"]) and the JSON there.}
-@defproc[(cql-value? [v any/c]) boolean?]
-@defproc[(render [v any/c]) string?]{A stable rendering for diagnostics: @racket[(render (list 1 2))] is @racket["{1, 2}"].}
-@defparam[current-evaluation-offset minutes (or/c exact-integer? #f)]{
-The evaluation request's timezone offset. A DateTime with a time and no offset takes it;
-@racket[#f] leaves such values offset-less (what the expression suite expects).}
+@bold{As a module.} @racket[(require "screening.cql")] compiles the library when the program
+compiles; a parse or translation error is a compile error, positioned in the file (a translation
+error names its @tt{define}). The module provides @racket[evaluate]: the library over one patient's
+resources (the Patient among them), every definition's value by name.
 
-@section{Parsing and compiling}
+@racketblock[
+(require (only-in "screening.cql" [evaluate screen]))
+(screen (cons patient observations) #:parameters (hash "Panel Codes" '("85354-9" "55284-4")))
+(code:comment "=> (hash \"Readings\" ... \"Highest Systolic\" 152 \"Hypertensive\" #t ...)")
+]
+
+Resources are FHIR JSON. @tt{#:valuesets} takes ValueSet resources with expansions, for a
+library's terminology definitions. @racket[(results)] evaluates a library that has no retrieves with
+no data. @tt{racket screening.cql} prints the ELM JSON. A library with @tt{include}s runs through
+@racket[load-runtime-library] with a resolver, or the command line, which finds them by file name.
+
+@bold{Values.} Integers, strings and booleans are Racket's; @tt{null} is @racket[cql-null]; lists are
+lists; a Decimal is fhirpath's @racket[fp-decimal], a Quantity an @racket[fp-quantity], a date or
+time a @racket[moment]; intervals, tuples, codes and concepts have their structs
+(@secref["cql-values"]). @racket[render] prints any of them.
+
+@bold{From Racket.}
+
+@racketblock[
+(require cql/parser/parse cql/compile cql/elm/json cql/run fhir/result/result)
+(define lib (ok-value (parse-cql text #:source "screening.cql")))
+(elm->json-string (ok-value (compile-library lib)))                   (code:comment "the ELM")
+(evaluate-library lib resources #:parameters (hash "Panel Codes" codes))
+(define rl (load-runtime-library lib #:resolver find-library           (code:comment "includes, by name and version")
+                                     #:data (resources->data resources)
+                                     #:valuesets (valuesets->terminology value-sets)))
+(rlib-value rl "Hypertensive")
+]
+
+@bold{Measures.} @tt{Measure/$evaluate-measure} runs a Measure's library over a data source:
+@racket[(apply-operation "$evaluate-measure" measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31" #:subject "Patient/x")]
+with @racket[current-data-source] holding the patients, the Library resources and the value sets.
+Over a server's store, fhir-server serves it (@tt{raco fhir-server evaluate-measure}).
+
+@bold{Command line.}
+
+@verbatim{
+raco cql screening.cql                                             the ELM JSON
+raco cql screening.cql --data patient/ --valuesets vs/ --define Hypertensive
+                                                                   run it over FHIR data (patient context)
+raco cql measure.cql --data bundle.json --libraries libs/            includes found as libs/<Name>.cql
+raco cql --tck [-v]                                                the cqframework/cql-tests suite
+}
+
+@tt{--data} is a directory of resources or Bundles, or one file. Each definition, or the ones named
+with @tt{--define}, prints as @tt{name: value}. @tt{--format text|json|outcome} chooses how errors
+are reported, all of them. Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
+
+@section{Reference}
+
+@subsection[#:style 'unnumbered]{@hash-lang[] @tt{cql}}
+@defmodulelang[cql]
+
+Provides @racket[library] (the CQL AST), @racket[elm] (the ELM AST), @racket[elm-json],
+@racket[(evaluate resources #:parameters h #:valuesets vss)] and @racket[(results)]. Nothing runs when
+the module is required.
+
+@subsection[#:style 'unnumbered]{@tt{cql/parser/parse}}
 @defmodule[cql/parser/parse]
 
 @defproc[(parse-cql [str string?] [#:source source (or/c string? path? #f) #f]) (or/c ok? err?)]{
@@ -98,11 +134,11 @@ in @racket[source]. Libraries parse definition by definition and are memoized.}
 @defproc[(compile-library [lib cql-library?]) (or/c ok? err?)]{@racket[(ok elm-library)], or the first translation error.}
 @defproc[(compile-library/errors [lib cql-library?]) (values (or/c elm-library? #f) (listof cql-error?))]{
 Every translation error, each positioned at its definition; a failing definition is skipped and the
-rest still compile, and a reference to it does not report again.}
+rest still compile.}
 @defproc[(compile-expr [ast any/c]) (or/c ok? err?)]{A bare expression to an ELM node.}
 @defparam[current-library-resolver resolve (-> symbol? (or/c string? #f) (or/c cql-library? #f))]{
-How @tt{include} finds a library's AST by name and version. @racket[#f] means unknown: references into
-it compile untyped.}
+How @tt{include} finds a library's AST by name and version. @racket[#f] means unknown: references
+into it compile untyped.}
 
 @subsection[#:style 'unnumbered]{@tt{cql/elm/json}}
 @defmodule[cql/elm/json]
@@ -117,32 +153,52 @@ Canonical ELM JSON of a library (wrapped in @tt{{"library": …}}) or a bare nod
 @defmodule[cql/error]
 
 @defstruct*[cql-error ([phase (or/c 'parse 'translate 'interpret)] [message string?] [diagnostic any/c])]{
-The payload of an @racket[err]. @racket[diagnostic] is a @tt{fhir/diagnostic} with the position when
-there is one, else @racket[#f]; the constructor takes it as an optional third argument.}
-@defproc[(cql-error-string [e cql-error?]) string?]{@tt{file:line:col: cql parse error: …} or @tt{CQL translate error: …}.}
+The payload of an @racket[err]; @racket[diagnostic] is a @tt{fhir/diagnostic} or @racket[#f] (the
+constructor's optional third argument).}
+@defproc[(cql-error-string [e cql-error?]) string?]
 
-@section{Running ELM}
+@subsection[#:style 'unnumbered #:tag "cql-values"]{@tt{cql/value}}
+@defmodule[cql/value]
+
+@deftogether[(
+@defthing[cql-null any/c]
+@defproc[(cql-null? [v any/c]) boolean?]
+@defthing[cql-null-list any/c]
+@defproc[(cql-null-list? [v any/c]) boolean?])]{
+The null singleton, and a null cast to a list type (@tt{null as List<T>}): still null, but
+@tt{Length} sees an empty list.}
+@defstruct*[cql-interval ([low any/c] [high any/c] [low-closed? boolean?] [high-closed? boolean?])]{Normalized to closed bounds at construction.}
+@defstruct*[cql-tuple ([fields hash?])]{Symbol to value.}
+@defstruct*[cql-ratio ([numerator fp-quantity?] [denominator fp-quantity?])]
+@defstruct*[cql-code ([code any/c] [system any/c] [version any/c] [display any/c])]
+@defstruct*[cql-concept ([codes list?] [display any/c])]
+@defstruct*[cql-obj ([class string?] [fields hash?])]{An instance of another class, carrying its class for @tt{is}.}
+@defstruct*[fhir-node ([type string?] [json any/c])]{FHIR data at a point in a resource: its model type (@racket["FHIR.Observation"]) and the JSON there.}
+@defproc[(cql-value? [v any/c]) boolean?]
+@defproc[(render [v any/c]) string?]{@racket[(render (list 1 2))] is @racket["{1, 2}"].}
+@defparam[current-evaluation-offset minutes (or/c exact-integer? #f)]{
+The evaluation request's timezone offset. A DateTime with a time and no offset takes it;
+@racket[#f] leaves such values offset-less (what the expression suite expects).}
+
+@subsection[#:style 'unnumbered]{@tt{cql/interp}}
 @defmodule[cql/interp]
 
 @defproc[(run-library [lib elm-library?]) hash?]{Every definition evaluated with no data: name to value.}
 @defproc[(eval-elm [node elm-expr?] [env ienv?]) cql-value?]{One ELM node in an environment.}
-@defproc[(make-ienv [#:defs defs hash? (hash)] [#:operands operands hash? (hash)]) ienv?]{An environment: definitions (name to a promise of a value) and operands.}
+@defproc[(make-ienv [#:defs defs hash? (hash)] [#:operands operands hash? (hash)]) ienv?]
 @defproc[(runtime [data procedure?] [valueset procedure?] [offset (or/c exact-integer? #f)]) runtime?]{
-What a library runs against: @racket[data] is @tt{type-name -> (listof resource)}, already scoped to
-the context patient; @racket[valueset] is @tt{url -> (hash (cons system code) -> #t) | #f}, where
-@racket[#f] means the value set is unavailable, an error when needed; @racket[offset] as
-@racket[current-evaluation-offset].}
+What a library runs against: @racket[data] is @tt{type-name -> (listof resource)}, scoped to the
+context patient; @racket[valueset] is @tt{url -> (hash (cons system code) -> #t) | #f}, where
+@racket[#f] means unavailable, an error when needed.}
 @defproc[(make-rlib [lib elm-library?] [includes hash?] [rt (or/c runtime? #f)] [parameters hash?]) rlib?]{
-A library ready to run: its definitions memoised, its includes (alias to @racket[rlib]), and parameter
-values that override the library's defaults.}
+A library ready to run: definitions memoised, includes by alias, parameter values overriding the
+library's defaults.}
 @defproc[(rlib-value [rl rlib?] [name string?]) cql-value?]{A definition's value.}
 @deftogether[(@defproc[(runtime? [v any/c]) boolean?] @defproc[(rlib? [v any/c]) boolean?] @defproc[(ienv? [v any/c]) boolean?])]
 @defproc[(test-equal? [a any/c] [b any/c]) boolean?]{Value equality as the conformance harness compares results.}
 
 @subsection[#:style 'unnumbered]{@tt{cql/run}}
 @defmodule[cql/run]
-
-Libraries over FHIR data: includes, a data source, terminology, measure populations.
 
 @defproc[(evaluate-library [lib cql-library?] [resources (listof hash?)]
                            [#:parameters parameters hash? (hash)]
@@ -156,28 +212,25 @@ by name. What @hash-lang[] @tt{cql}'s @racket[evaluate] is.}
                                [#:valuesets valuesets procedure? (lambda (url) #f)]
                                [#:parameters parameters hash? (hash)]
                                [#:offset offset (or/c exact-integer? #f) #f]) rlib?]{
-Compiles the library and, once each, the libraries it includes (found by @racket[resolver]), binding
-the include aliases.}
-@defproc[(resources->data [resources (listof hash?)] [#:patient-context? patient-context? boolean? #t]) procedure?]{
-Resources (Bundles unwrapped) as a retrieve source, by type.}
-@defproc[(valuesets->terminology [valuesets (listof hash?)]) procedure?]{
-ValueSets with expansions (else enumerated compose concepts) as the membership function
-@racket[runtime] takes.}
+Compiles the library and, once each, the libraries it includes (found by @racket[resolver], a
+@tt{name version -> cql-library | #f}), binding the include aliases. The main library's parameters
+apply to its includes.}
+@defproc[(resources->data [resources (listof hash?)] [#:patient-context? patient-context? boolean? #t]) procedure?]{Resources (Bundles unwrapped) as a retrieve source, by type.}
+@defproc[(valuesets->terminology [valuesets (listof hash?)]) procedure?]{ValueSets with expansions (else enumerated compose concepts) as the membership function @racket[runtime] takes.}
 @defproc[(measure-populations [measure hash?] [rl rlib?]) (hash/c string? exact-nonnegative-integer?)]{
 One patient's proportion-measure populations (initial-population, denominator, exclusions, numerator,
-exception), each 0 or 1, from the Measure's population criteria.}
+exception), each 0 or 1.}
 @defproc[(read-json-files [dir path-string?]) (listof hash?)]{Every @tt{.json} under a directory, MeasureReports excluded.}
 
-@section{Measures as an operation}
+@subsection[#:style 'unnumbered]{@tt{cql/measure}}
 @defmodule[cql/measure]
 
 @defthing[$evaluate-measure procedure?]{
 The R4 @tt{Measure/$evaluate-measure} as a @tt{fhir/operation} value, registered when the module
 loads. It runs over @racket[current-data-source]: the Measure's Library and includes as Library
 resources, value sets from the source then @racket[current-sd-packages], each patient's data by
-reference. @racket[(apply-operation "$evaluate-measure" measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31" #:subject "Patient/x")]
-returns an individual MeasureReport; without a subject, a summary report over every Patient with the
-proportion score.}
+reference. An individual MeasureReport with @tt{#:subject}; without, a summary over every Patient
+with the proportion score.}
 @defproc[(evaluate-measure [measure hash?] [period-start string?] [period-end string?]
                            [#:subject subject (or/c string? #f) #f]
                            [#:valuesets valuesets procedure? (lambda (url) #f)]
@@ -186,18 +239,18 @@ proportion score.}
 @defproc[(period-offset [s string?]) (or/c exact-integer? #f)]{@racket["2021-01-01T00:00:00-07:00"] gives @racket[-420].}
 @defparam[current-measure-offset minutes exact-integer?]{The evaluation timezone when the period start has no offset. Default 0.}
 
-@section{The data model}
+@subsection[#:style 'unnumbered]{@tt{cql/model/modelinfo}}
 @defmodule[cql/model/modelinfo]
 
-The FHIR 4.0.1 ModelInfo the reference translator ships, read from a compact form. A CType is a
-System type by name (@racket["Integer"]), a model type (@racket["FHIR.Encounter"]), @racket["Any"],
-or a vector: @racket[(vector 'list T)], @racket[(vector 'interval T)], @racket[(vector 'choice Ts)],
+The FHIR 4.0.1 ModelInfo the reference translator ships. A CType is a System type by name
+(@racket["Integer"]), a model type (@racket["FHIR.Encounter"]), @racket["Any"], or a vector:
+@racket[(vector 'list T)], @racket[(vector 'interval T)], @racket[(vector 'choice Ts)],
 @racket[(vector 'tuple fields)].
 
 @defstruct*[model ([name string?] [url string?] [version string?] [patient-class string?] [birth-date-path string?]
                    [classes hash?] [conversions hash?] [contexts hash?])]
 @defstruct*[class-info ([name string?] [base any/c] [identifier any/c] [primary-code-path any/c] [retrievable? boolean?] [elements hash?])]
-@defproc[(find-model [name string?] [version (or/c string? #f)]) (or/c model? #f)]{The models shipped: FHIR 4.0.1 (4.0.0 shares it).}
+@defproc[(find-model [name string?] [version (or/c string? #f)]) (or/c model? #f)]
 @deftogether[(
 @defproc[(model-class [m model?] [name string?]) (or/c class-info? #f)]
 @defproc[(model-element-type [m model?] [type string?] [element string?]) (or/c any/c #f)]
@@ -206,20 +259,5 @@ or a vector: @racket[(vector 'list T)], @racket[(vector 'interval T)], @racket[(
 @defproc[(model-context-type [m model?] [context string?]) (or/c string? #f)]
 @defproc[(model-resolve-type [m model?] [name string?]) (or/c string? #f)])]{
 A class; an element's type, searching the base chain; the subtype relation; a type's implicit
-conversion (the target CType and the FHIRHelpers function); a context's type; a bare name resolved
+conversion (target CType and FHIRHelpers function); a context's type; a bare name resolved
 (@racket["Encounter"] to @racket["FHIR.Encounter"]).}
-
-@section{Command line}
-
-@verbatim{
-raco cql <file.cql>                                   the ELM JSON
-raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…
-                                                      run it over FHIR data (patient context)
-raco cql --tck [-v]                                   the cqframework/cql-tests suite (floor-ratcheted)
-}
-
-@tt{--data} takes a directory of resources or Bundles, or one file; includes are found as
-@tt{<Name>.cql} in @tt{--libraries} (default: beside the file); @tt{--valuesets} supplies
-expansions. Each definition, or the ones named with @tt{--define}, prints as @tt{name: value}. A
-leading @hash-lang[] line is ignored. @tt{--format text|json|outcome} chooses how errors are
-reported, all of them. Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
