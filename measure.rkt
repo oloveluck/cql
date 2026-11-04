@@ -175,7 +175,7 @@
   (check-equal? (period-offset "2021-01-01T00:00:00+05:30") 330)
   (check-equal? (period-offset "2021-01-01T00:00:00Z") 0)
   (check-false (period-offset "2021-01-01"))
-  ;; the Measurement Period is whole days, end inclusive
+  ;; the Measurement Period is whole days, end inclusive, in the evaluation's zone (0 = UTC)
   (define mp (measurement-period "2021-01-01" "2021-12-31" 0))
-  (check-equal? (moment->string (cql-interval-low mp)) "@2021-01-01T00:00:00.000")
-  (check-equal? (moment->string (cql-interval-high mp)) "@2021-12-31T23:59:59.999"))
+  (check-equal? (moment->string (cql-interval-low mp)) "@2021-01-01T00:00:00.000Z")
+  (check-equal? (moment->string (cql-interval-high mp)) "@2021-12-31T23:59:59.999Z"))
