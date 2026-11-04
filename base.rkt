@@ -12,7 +12,7 @@
 ;;;   (results)  every define evaluated with no data (for libraries without retrieves)
 ;;; Nothing runs when the module is required. Run the file to print the ELM JSON.
 
-(require (for-syntax racket/base)
+(require (for-syntax racket/base syntax/parse (only-in cql/parser/ast cql-library?))
          (only-in cql/compile compile-library)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/interp run-library)
@@ -27,12 +27,18 @@
 ;; (cql-library-form ast) yields the prefab library-AST literal; module-begin picks it up.
 (define-syntax-rule (cql-library-form ast) (quote ast))
 
+;; the module body the reader produces: one (cql-library-form <library>), or none for an empty file
+(begin-for-syntax
+  (define-syntax-class library-form
+    #:description "a (cql-library-form <library>) form, as the #lang cql reader writes it"
+    (pattern ((~datum cql-library-form) ast)
+             #:fail-unless (cql-library? (syntax->datum #'ast)) "not a CQL library AST")))
+
 (define-syntax (cql-module-begin stx)
-  (syntax-case stx ()
-    [(_ form ...)
+  (syntax-parse stx
+    [(_ (~optional form:library-form))
      #'(#%module-begin
-        (define forms (list form ...))
-        (define library (and (pair? forms) (car forms)))         ; the CQL library AST
+        (define library (~? form #f))                            ; the CQL library AST
         (define elm-result (and library (compile-library library)))
         (define elm (and elm-result (ok? elm-result) (ok-value elm-result))) ; the ELM library AST
         (define elm-json (and elm (elm->json-string elm)))       ; canonical ELM JSON string
