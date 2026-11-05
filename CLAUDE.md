@@ -180,3 +180,9 @@ operators, `if`/`case`. Layers:
   (cql/run `evaluate-library`: define-name -> value) — and `(results)` (no data). Nothing runs at
   require time: a library with retrieves used to fail as soon as it was required. fhir-examples'
   screening/ program requires a .cql file and calls `evaluate` per patient.
+
+- **Editor and agent support** (`support.rkt`, through `fhir/lang/support`): diagnostics (parse, then
+  every definition translated), the libraries beside a document as its project, the declarations as an
+  outline (read from the text), hover, go to definition (an include alias leads to the library's file
+  when it is beside; a qualified `C.X` through its alias), completion of declared names and keywords,
+  and the tools `cql_elm` and `cql_evaluate`. The LSP and MCP hubs load it by collection name.
