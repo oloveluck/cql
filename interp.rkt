@@ -171,7 +171,9 @@
     [(elm-nary op operands _rt) (apply-op op operands env)]
     [(elm-unary op operand _rt) (apply-op op (list operand) env)]
     [(elm-interval low high lc hc)
-     (make-interval-value (and low (eval-elm low env)) (and high (eval-elm high env)) lc hc)]
+     ;; a closed flag may be an expression (a promoted interval reads the original's flags)
+     (define (flag x) (if (boolean? x) x (let ([v (eval-elm x env)]) (and (boolean? v) v))))
+     (make-interval-value (and low (eval-elm low env)) (and high (eval-elm high env)) (flag lc) (flag hc))]
     [(elm-list elems) (map (lambda (e) (eval-elm e env)) elems)]
     [(elm-tuple elems)
      (cql-tuple (for/hash ([te (in-list elems)])
@@ -864,7 +866,8 @@
                                       [("version") (cql-code-version v)] [("display") (cql-code-display v)] [else #f])
                            cql-null)]
         [(cql-concept? v) (case path [("codes") (cql-concept-codes v)] [("display") (or (cql-concept-display v) cql-null)] [else cql-null])]
-        [(cql-interval? v) (case path [("low") (or (cql-interval-low v) cql-null)] [("high") (or (cql-interval-high v) cql-null)] [else cql-null])]
+        [(cql-interval? v) (case path [("low") (or (cql-interval-low v) cql-null)] [("high") (or (cql-interval-high v) cql-null)]
+                             [("lowClosed") (cql-interval-low-closed? v)] [("highClosed") (cql-interval-high-closed? v)] [else cql-null])]
         [else cql-null]))          ; slice-1: property on non-tuples is undecidable -> null
 (define (eval-function name args env)
   (define f (hash-ref (ienv-funcs env) name (lambda () (fail (format "unknown function ~a" name)))))

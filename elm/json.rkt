@@ -260,13 +260,15 @@
     [(elm-unary? e)
      (with-rt (operator-body (elm-unary-op e) (list (elm-unary-operand e)) #t) (elm-unary-result-type e))]
     [(elm-interval? e)
-     ;; lowClosed/highClosed are meaningful booleans — must NOT be dropped when #f
-     (hash-set*
-      (drop-false (hasheq 'type "Interval"
-                          'low (and (elm-interval-low e) (expr->jsexpr (elm-interval-low e)))
-                          'high (and (elm-interval-high e) (expr->jsexpr (elm-interval-high e)))))
-      'lowClosed (elm-interval-low-closed e)
-      'highClosed (elm-interval-high-closed e))]
+     ;; lowClosed/highClosed are meaningful booleans — must NOT be dropped when #f; a closed flag
+     ;; that is an expression (a promoted interval reads the original's) is lowClosedExpression
+     (define (closed h key expr-key v)
+       (if (boolean? v) (hash-set h key v) (hash-set h expr-key (expr->jsexpr v))))
+     (closed (closed (drop-false (hasheq 'type "Interval"
+                                         'low (and (elm-interval-low e) (expr->jsexpr (elm-interval-low e)))
+                                         'high (and (elm-interval-high e) (expr->jsexpr (elm-interval-high e)))))
+                     'lowClosed 'lowClosedExpression (elm-interval-low-closed e))
+             'highClosed 'highClosedExpression (elm-interval-high-closed e))]
     [(elm-list? e)
      (hasheq 'type "List" 'element (map expr->jsexpr (elm-list-elements e)))]
     [(elm-tuple? e)

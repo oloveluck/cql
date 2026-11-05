@@ -28,7 +28,7 @@
  (struct-out lib-result)
  (contract-out
   [check-elm-corpus (-> path-string? (listof lib-result?))]
-  [normalize-elm (-> any/c any/c)]))
+  [normalize-elm (->* (any/c) (any/c) any/c)]))
 
 (struct lib-result (package name parse-ok? compile-ok? error defs-total defs-present defs-equal mismatches)
   #:transparent)
@@ -39,19 +39,24 @@
 (define structural-types '("InstanceElement" "AliasedQuerySource" "ReturnClause" "CaseItem" "TupleElement"
                            "LetClause" "SortClause" "AggregateClause" "TupleElementDefinition"))
 
-;; normalize-elm : jsexpr -> jsexpr   translator-only metadata removed, numbers as strings. Also
-;; version noise: an EMPTY list is the same as an absent one (newer translators write `let: []`,
-;; `dateFilter: []`, …), structural element `type` tags are dropped, and `strict: false` (the schema
-;; default) is the same as no `strict`.
-(define (normalize-elm j)
+;; normalize-elm : jsexpr [key] -> jsexpr   translator-only metadata removed, numbers as strings.
+;; Also version noise: an EMPTY list is the same as an absent one (newer translators write `let: []`,
+;; `dateFilter: []`, …), structural element `type` tags are dropped, `strict: false` (the schema
+;; default) is the same as no `strict`, and around value sets — ValueSetRef's `preserve`, its `type`
+;; where the position says it (InValueSet's `valueset`, Retrieve's `codes`), Retrieve's default
+;; `codeComparator` "in" — the two corpus packages' translators disagree, so neither form is held.
+(define (normalize-elm j [key #f])
   (cond [(hash? j) (for/hash ([(k v) (in-hash j)]
                               #:unless (memq k dropped-keys)
                               #:unless (null? v)
                               #:unless (and (eq? k 'type) (member v structural-types))
                               ;; As.strict defaults to false in the ELM schema
-                              #:unless (and (eq? k 'strict) (eq? v #f)))
-                     (values k (normalize-elm v)))]
-        [(list? j) (map normalize-elm j)]
+                              #:unless (and (eq? k 'strict) (eq? v #f))
+                              #:unless (eq? k 'preserve)
+                              #:unless (and (eq? k 'type) (equal? v "ValueSetRef") (memq key '(valueset codes)))
+                              #:unless (and (eq? k 'codeComparator) (equal? v "in")))
+                     (values k (normalize-elm v k)))]
+        [(list? j) (map (lambda (x) (normalize-elm x key)) j)]
         [(number? j) (number->string j)]
         [else j]))
 

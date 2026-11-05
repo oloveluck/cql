@@ -491,7 +491,15 @@
                           [(interval-ctype? ot) ot]
                           [else #f]))
      (if target (choice-to n t target) (values n t))]
+    ;; a member value against an interval whose points are the choice (`Interval[C.onset,
+    ;; C.abatement] includes E.period`): cast to the whole choice, the interval's own point type
+    [(and (string? t) (member-of-interval-choice t other env))
+     => (lambda (ch) (values (elm-as n (ctype->elm-type ch) #f) ch))]
     [else (to-system n t)]))
+(define (member-of-interval-choice t other env)
+  (define-values (_on ot) (compile other env))
+  (and (interval-ctype? ot) (choice-ctype? (ctype-element ot))
+       (member t (choice-members (ctype-element ot))) (ctype-element ot)))
 
 ;; choice-to : elm CType(choice) CType -> (values elm CType)   the choice members that convert to
 ;; `target`: none -> unchanged ; one -> Convert(x as M) ; several -> a Case over `x is M`
@@ -508,19 +516,42 @@
                 target)]))
 
 ;; System implicit promotions, the translator's order: Integer -> Long -> Decimal -> Quantity,
-;; Date -> DateTime, Code -> Concept. promote : elm CType CType -> elm (no-op when not applicable)
+;; Date -> DateTime, Code -> Concept — and an interval of one (Interval<Date> -> Interval<DateTime>).
 (define promotions
   (hash (cons "Integer" "Decimal") "ToDecimal" (cons "Integer" "Long") "ToLong" (cons "Long" "Decimal") "ToDecimal"
         (cons "Integer" "Quantity") "ToQuantity" (cons "Decimal" "Quantity") "ToQuantity"
         (cons "Date" "DateTime") "ToDateTime" (cons "Code" "Concept") "ToConcept"))
+;; promotion : CType CType -> string|#f   the converting operator from one type to the other
+(define (promotion from to)
+  (cond [(and (string? from) (string? to)) (hash-ref promotions (cons from to) #f)]
+        [(and (interval-ctype? from) (interval-ctype? to)) (promotion (ctype-element from) (ctype-element to))]
+        [else #f]))
+;; promote : elm CType CType -> elm   (no-op when not applicable). An interval is rebuilt over its
+;; converted bounds, the closed flags read from the original — the reference translator's form
+;; (FHIRCommon's ToInterval: an Interval<Date> arm beside Interval<DateTime> ones):
+;;   Interval[ToDateTime(X.low), ToDateTime(X.high)] with lowClosedExpression X.lowClosed, …
 (define (promote n from to)
-  (define op (hash-ref promotions (cons from to) #f))
-  (if op (elm-unary op n to) n))
+  (define op (promotion from to))
+  (cond [(not op) n]
+        [(interval-ctype? from)
+         (define (bound p) (elm-unary op (elm-property n p #f) (ctype-element to)))
+         (elm-interval (bound "low") (bound "high") (elm-property n "lowClosed" #f) (elm-property n "highClosed" #f))]
+        [else (elm-unary op n to)]))
 ;; unify-pair : elm CType elm CType -> (values elm elm CType)   promote the narrower operand
 (define (unify-pair a at b bt)
-  (cond [(hash-ref promotions (cons at bt) #f) (values (promote a at bt) b bt)]
-        [(hash-ref promotions (cons bt at) #f) (values a (promote b bt at) at)]
+  (cond [(promotion at bt) (values (promote a at bt) b bt)]
+        [(promotion bt at) (values a (promote b bt at) at)]
         [else (values a b at)]))
+;; unify-timing : elm CType elm CType -> (values elm elm)   a point or interval operand meets the
+;; other's point type: the narrower side is promoted — a Date point against an Interval<DateTime>,
+;; an Interval<Date> against a DateTime point (Example's `… 30 days or less before Today()`)
+(define (point-of t) (if (interval-ctype? t) (ctype-element t) t))
+(define (widen t p) (if (interval-ctype? t) (interval-ctype p) p))
+(define (unify-timing a at b bt)
+  (define pa (point-of at)) (define pb (point-of bt))
+  (cond [(and (string? pa) (string? pb) (promotion pa pb)) (values (promote a at (widen at pb)) b)]
+        [(and (string? pa) (string? pb) (promotion pb pa)) (values a (promote b bt (widen bt pa)))]
+        [else (values a b)]))
 
 ;; ---- references ------------------------------------------------------------
 ;; compile-ref : sym cenv -> (values elm CType)   local scope, then the library, then the sort row
@@ -719,8 +750,7 @@
 (define (compile-timing op prec a b env)
   (define-values (an0 at0) (sys-against a b env))
   (define-values (bn0 bt0) (sys-against b a env))
-  (define-values (an bn _t)
-    (if (or (compound-ctype? at0) (compound-ctype? bt0)) (values an0 bn0 at0) (unify-pair an0 at0 bn0 bt0)))
+  (define-values (an bn) (unify-timing an0 at0 bn0 bt0))
   (define a-point? (not (interval-ctype? at0)))
   (define b-point? (not (interval-ctype? bt0)))
   (define op*
@@ -745,23 +775,28 @@
   (define on? (memq op '(same-or-before same-or-after)))
   (define an (if (interval-ctype? at) (elm-unary (if before? "End" "Start") an0 #f) an0))
   (define bn (if (interval-ctype? bt) (elm-unary (if before? "Start" "End") bn0 #f) bn0))
+  (define pa (point-of at)) (define pb (point-of bt))
   (define-values (qn _qt) (compile-literal q))
   (define shifted (elm-nary (if before? "Subtract" "Add") (list bn qn) #f))
   (define p (and prec (units->prec prec)))
   (case qual
     [(or-less less-than)
      (define edge-closed (and (eq? qual 'or-less) #t))
-     (define iv (if before?
-                    (elm-interval shifted bn edge-closed (and on? #t))
-                    (elm-interval bn shifted (and on? #t) edge-closed)))
-     (values (elm-nary "And" (list (elm-timing 'in p an iv)
+     (define iv0 (if before?
+                     (elm-interval shifted bn edge-closed (and on? #t))
+                     (elm-interval bn shifted (and on? #t) edge-closed)))
+     ;; a DateTime A against a Date B: the interval around B is promoted (ToDateTime over its bounds)
+     (define-values (an* iv) (unify-timing an pa iv0 (interval-ctype pb)))
+     (values (elm-nary "And" (list (elm-timing 'in p an* iv)
                                    (elm-unary "Not" (elm-unary "IsNull" bn "Boolean") "Boolean"))
                        "Boolean")
              "Boolean")]
     [(or-more more-than)
      (define t (if before? (if (eq? qual 'or-more) 'same-or-before 'before) (if (eq? qual 'or-more) 'same-or-after 'after)))
-     (values (elm-timing t p an shifted) "Boolean")]
-    [else (values (elm-timing 'same-as p an shifted) "Boolean")]))
+     (define-values (an* sh) (unify-timing an pa shifted pb))
+     (values (elm-timing t p an* sh) "Boolean")]
+    [else (define-values (an* sh) (unify-timing an pa shifted pb))
+          (values (elm-timing 'same-as p an* sh) "Boolean")]))
 
 ;; A [properly] within q of B : In(A, Interval[B - q, B + q]) and not (B is null)
 (define (compile-within properly? q a b env)
@@ -876,8 +911,14 @@
       (if (and sys-t (model-type? (cdr b)))
           (let-values ([(n t) (to-system (car b) (cdr b))]) (if (equal? t sys-t) (cons n t) b))
           b)))
-  (define rt (or (for/first ([b (in-list converted)] #:when (known (cdr b))) (cdr b)) "Any"))
-  (values (for/list ([b (in-list converted)]) (typed-null (car b) (cdr b) rt)) rt))
+  ;; promotable System types meet at the widest one (an Interval<Date> arm beside Interval<DateTime>)
+  (define rt (or (for/fold ([rt #f]) ([b (in-list converted)] #:when (known (cdr b)))
+                   (cond [(not rt) (cdr b)] [(promotion rt (cdr b)) (cdr b)] [else rt]))
+                 "Any"))
+  (values (for/list ([b (in-list converted)])
+            (define n (if (and (known (cdr b)) (promotion (cdr b) rt)) (promote (car b) (cdr b) rt) (car b)))
+            (typed-null n (cdr b) rt))
+          rt))
 (define (model-type? t) (and (string? t) (regexp-match? #rx"[.]" t)))
 
 (define (compile-if c t e env)
@@ -1164,7 +1205,7 @@
     [(and (choice-ctype? to) (string? from) (not (equal? from "Any")) (conversion-cost from to))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     [(eqv? (conversion-cost from to) 0) n]
-    [(and (string? from) (string? to) (hash-ref promotions (cons from to) #f)) (promote n from to)]
+    [(promotion from to) (promote n from to)]
     [(and (choice-ctype? from) (string? to) (for/or ([c (in-list (choice-members from))]) (eqv? 0 (conversion-cost c to))))
      (elm-as n (ctype->elm-name to) #f)]
     [(and (choice-ctype? from) (string? to))
