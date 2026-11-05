@@ -138,6 +138,14 @@ the Library resources and the value sets, and answers a MeasureReport:
 Over a server's store, fhir-server serves the same operation
 (@tt{raco fhir-server evaluate-measure}).
 
+@section{In an editor, for an agent}
+
+@tt{cql/support} is what the family's language server (fhir-lsp) and MCP server (fhir-mcp) load for
+CQL: a library's diagnostics (parse, then every definition translated), the libraries beside it as its
+project, the declarations as an outline, hover, go to definition (an include alias leads to the
+library's file beside it), completion of declared names and keywords, and the tools @tt{cql_elm} and
+@tt{cql_evaluate}. It is a @tt{fhir/lang/support} value; the hubs know no CQL.
+
 @section{Limits}
 
 @itemlist[
