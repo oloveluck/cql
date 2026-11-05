@@ -139,7 +139,7 @@
   (define-values (t2 e2) (call-tool (hash-ref by-name "cql_elm") (hasheq 'cql "library L\ndefine X: 1 +\n")))
   (check-true e2)
   (define-values (t3 e3) (call-tool (hash-ref by-name "cql_evaluate") (hasheq 'cql "library L\ndefine X: 1 + 2\n" 'resources '())))
-  (check-false e3) (check-equal? (hash-ref (string->jsexpr t3) 'X) 3)
+  (check-false e3) (check-equal? (hash-ref (string->jsexpr t3) 'X) "3")     ; values render as text
   (define dir (make-temporary-file "cql-support-~a" 'directory))
   (with-output-to-file (build-path dir "a.cql") (lambda () (display "library a\n")))
   (check-equal? (length (project-files (build-path dir "x.cql"))) 1)
