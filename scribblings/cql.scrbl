@@ -5,40 +5,33 @@
 
 @title{cql: Clinical Quality Language for Racket}
 
-@hyperlink["https://cql.hl7.org/"]{CQL} compiled to ELM, and ELM run. The compiler covers the
-expression and definition language with the System types, intervals and queries, and the typed
-translation of libraries over FHIR R4 (retrieves, includes, terminology definitions, the implicit
-FHIRHelpers conversions) with the reference translator's own ModelInfo. The interpreter runs the ELM
-over FHIR data: retrieves, value set membership, measure populations.
+@hyperlink["https://cql.hl7.org/"]{CQL} for Racket. You write a library in a @tt{.cql} file; it is
+compiled to ELM (the standard machine form) and the ELM is run over FHIR R4 data: retrieves, value
+set membership, queries, the implicit FHIRHelpers conversions, and measure populations. A
+@tt{.cql} file is a Racket module whose definitions a program evaluates over a patient's resources.
 
-Measured against the published suites: cqframework/cql-tests 1820/1823; 32 published libraries
-compile with 742 of 803 definitions ELM-identical to the reference translator; four eCQMs agree with
-their expected populations on 71 of 76 test patients.
-
-Part of the @hyperlink["https://github.com/oloveluck/fhir"]{fhir} family; depends on @tt{fhir} and
-@tt{fhirpath} (the System value carriers).
+Held to the published suites: cqframework/cql-tests 1820 of 1823; 32 published libraries compile
+with 742 of 803 definitions identical to the reference translator's ELM; four eCQMs agree with their
+expected populations on 71 of 76 test patients. Part of the
+@hyperlink["https://github.com/oloveluck/fhir"]{fhir} family.
 
 @table-of-contents[]
 
-@section{Install}
+@section{Quick start}
+
+@bold{1. Install.} The packages are not on the Racket package server yet; clone the repositories
+side by side and install from source:
 
 @verbatim{
 raco pkg install --link --auto fhir/fhir fhirpath cql
-    # from source, with the repos alongside
 }
 
-@section{Writing a library}
-
-A file is one library: a header, then definitions. @tt{using FHIR version '4.0.1'} loads the FHIR
-model, so @tt{[Observation]} retrieves resources and @tt{O.code.coding} navigates them;
-@tt{context Patient} scopes retrieves to one patient; @tt{parameter} declares an input;
-@tt{include} brings in another library under an alias. Names with spaces are quoted with
-@tt{"…"}, strings with @tt{'…'}.
+@bold{2. Write a library.}
 
 @verbatim|{#lang cql
 library BloodPressureScreening version '1.0.0'
 using FHIR version '4.0.1'
-parameter "Panel Codes" List<System.String>
+parameter "Panel Codes" List<System.String> default { '85354-9', '55284-4' }
 context Patient
 
 define "Readings":
@@ -52,17 +45,54 @@ define "Systolic Values":
 define "Highest Systolic": Max("Systolic Values")
 define "Hypertensive": "Highest Systolic" >= 140}|
 
-Without FHIRHelpers, FHIR primitives are navigated to their @tt{.value}; a library that includes
-FHIRHelpers gets the implicit conversions the reference translator makes. Terminology definitions
-(@tt{valueset "BP Panels": 'http://…'}) make @tt{[Observation: "BP Panels"]} a retrieve filtered by
-membership. The language reference is @hyperlink["https://cql.hl7.org/"]{cql.hl7.org}.
+@bold{3. Run it over a patient's resources} (a directory of FHIR JSON files or Bundles, one Patient
+among them):
+
+@verbatim{
+$ raco cql screening.cql --data patient/
+Readings: { Observation(...), Observation(...) }
+Systolic Values: { 152, 138 }
+Highest Systolic: 152
+Hypertensive: true
+}
+
+A mistake is reported on its line, naming the definition: @tt{screening.cql:12:1: cql compile error:
+in define "Systolic Values": unknown function 'Mx'}. Without @litchar{--data}, @tt{raco cql screening.cql} prints
+the ELM JSON.
+
+@section{Writing a library}
+
+A file is one library: a header, then definitions. @tt{using FHIR version '4.0.1'} loads the FHIR
+model, so @tt{[Observation]} retrieves resources and @tt{O.code.coding} navigates them;
+@tt{context Patient} scopes retrieves to one patient; @tt{parameter} declares an input (with a
+@tt{default}); @tt{include} brings in another library under an alias; @tt{valueset "Name": 'url'}
+makes @tt{[Observation: "Name"]} a retrieve filtered by membership. Names with spaces are quoted
+with @tt{"…"}, strings with @tt{'…'}. Without FHIRHelpers, FHIR primitives are navigated to their
+@tt{.value}; a library that includes FHIRHelpers gets the implicit conversions the reference
+translator makes. The language reference is @hyperlink["https://cql.hl7.org/"]{cql.hl7.org}.
 
 @section{Using it}
 
-@bold{As a module.} @racket[(require "screening.cql")] compiles the library when the program
-compiles; a parse or translation error is a compile error, positioned in the file (a translation
-error names its @tt{define}). The module provides @racket[evaluate]: the library over one patient's
-resources (the Patient among them), every definition's value by name.
+@subsection{Command line}
+
+@tabular[#:style 'boxed #:sep @hspace[2]
+(list (list @tt{raco cql lib.cql} "the ELM JSON")
+      (list @tt{raco cql lib.cql --data patient/} "run it; every definition as name: value")
+      (list @tt{raco cql lib.cql --data bundle.json --define Hypertensive} "just the named definitions")
+      (list @tt{raco cql lib.cql --data p/ --valuesets vs/} "ValueSet resources (with expansions) for the library's value sets")
+      (list @tt{raco cql measure.cql --data p/ --libraries libs/} @elem{includes found as @tt{libs/<Name>.cql}})
+      (list @tt{raco cql --tck [-v]} "the cqframework/cql-tests suite, floor-ratcheted"))]
+
+@litchar{--format text|json|outcome} chooses how errors are reported (all of them, not just the
+first). Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
+
+@subsection{As a module}
+
+@racket[(require "screening.cql")] compiles the library when the program compiles; a parse or
+translation error is a compile error positioned in the file. The module provides @racket[evaluate],
+the library over one patient's resources (the Patient among them), answering every definition's
+value by name; @racket[(results)] for a library with no retrieves; and the library's @racket[elm].
+Requiring the module also registers it as a Library resource, so measure evaluation finds it by name.
 
 @racketblock[
 (require (only-in "screening.cql" [evaluate screen]))
@@ -70,76 +100,64 @@ resources (the Patient among them), every definition's value by name.
 (code:comment "=> (hash \"Readings\" ... \"Highest Systolic\" 152 \"Hypertensive\" #t ...)")
 ]
 
-Resources are FHIR JSON. @tt{#:valuesets} takes ValueSet resources with expansions, for a
-library's terminology definitions. @racket[(results)] evaluates a library that has no retrieves with
-no data. @tt{racket screening.cql} prints the ELM JSON. A library with @tt{include}s runs through
-@racket[load-runtime-library] with a resolver, or the command line, which finds them by file name.
+Resources are FHIR JSON. @racket[#:valuesets] takes ValueSet resources with expansions.
 
-@bold{Values.} Integers, strings and booleans are Racket's; @tt{null} is @racket[cql-null]; lists are
-lists; a Decimal is fhirpath's @racket[fp-decimal], a Quantity an @racket[fp-quantity], a date or
-time a @racket[moment]; intervals, tuples, codes and concepts have their structs
-(@secref["cql-values"]). @racket[render] prints any of them.
+@subsection{Values}
 
-@bold{From Racket.}
+Integers, strings and booleans are Racket's; @tt{null} is @racket[cql-null]; lists are lists; a
+Decimal is fhirpath's @racket[fp-decimal], a Quantity an @racket[fp-quantity], a date or time a
+@racket[moment]; intervals, tuples, codes and concepts have their own structs
+(@secref["cql-values"]). @racket[render] prints any of them the way the command line does.
+
+@subsection{From Racket}
 
 @racketblock[
 (require cql/parser/parse cql/compile cql/elm/json cql/run fhir/result/result)
 (define lib (ok-value (parse-cql text #:source "screening.cql")))
 (elm->json-string (ok-value (compile-library lib)))                   (code:comment "the ELM")
 (evaluate-library lib resources #:parameters (hash "Panel Codes" codes))
-(code:comment "includes, by name and version")
+(code:comment "with includes, resolved by name and version")
 (define rl (load-runtime-library lib #:resolver find-library
                                      #:data (resources->data resources)
                                      #:valuesets (valuesets->terminology value-sets)))
 (rlib-value rl "Hypertensive")
 ]
 
-@bold{Measures.} @tt{Measure/$evaluate-measure} runs a Measure's library over a data source:
-@racket[(apply-operation "$evaluate-measure" measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31" #:subject "Patient/x")]
-with @racket[current-data-source] holding the patients, the Library resources and the value sets.
-Over a server's store, fhir-server serves it (@tt{raco fhir-server evaluate-measure}).
+@subsection{Measures}
 
-@bold{Command line.}
+@tt{Measure/$evaluate-measure} runs a Measure's library over a data source holding the patients,
+the Library resources and the value sets, and answers a MeasureReport:
 
-@verbatim{
-raco cql screening.cql                                             the ELM JSON
-raco cql screening.cql --data patient/ --valuesets vs/ --define Hypertensive
-                                                                   run it over FHIR data (patient context)
-raco cql measure.cql --data bundle.json --libraries libs/
-    includes found as libs/<Name>.cql
-raco cql --tck [-v]
-    the cqframework/cql-tests suite
-}
+@racketblock[
+(require fhir/operation fhir/data-source cql/measure)
+(parameterize ([current-data-source (directory->data-source "ecqm/")])
+  (apply-operation "$evaluate-measure" measure
+                   #:periodStart "2021-01-01" #:periodEnd "2021-12-31" #:subject "Patient/x"))
+]
 
-@litchar{--data} is a directory of resources or Bundles, or one file. Each definition, or the ones named
-with @litchar{--define}, prints as @tt{name: value}. @litchar{--format text|json|outcome} chooses how errors
-are reported, all of them. Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
+Over a server's store, fhir-server serves the same operation
+(@tt{raco fhir-server evaluate-measure}).
 
 @section{Limits}
 
 @itemlist[
-@item{@bold{Data model.} FHIR 4.0.1 (4.0.0 and an unversioned @tt{using FHIR} share it). No R5
-ModelInfo, no QDM. A retrieve filters by type and code; @tt{dateProperty} and @tt{dateRange} are not
-applied, and @tt{templateId} is carried but not used to filter. The Patient context applies when the
-data holds exactly one Patient, matched by @tt{subject}, @tt{patient} and @tt{beneficiary}
-references.}
+@item{@bold{Data model.} FHIR 4.0.1 only (4.0.0 and an unversioned @tt{using FHIR} share it); no
+R5 ModelInfo, no QDM. A retrieve filters by type and code; @tt{dateProperty} and @tt{dateRange}
+are not applied. The Patient context applies when the data holds exactly one Patient, matched by
+@tt{subject}, @tt{patient} and @tt{beneficiary} references.}
 @item{@bold{Terminology.} Membership comes from the ValueSet resources supplied: their
-@tt{expansion}, else enumerated concepts. Filters, nested value sets and excludes are not evaluated,
-and the terminology service is not called; a value set with neither is empty, and one not supplied
-at all is an error. @tt{in CodeSystem} looks the code system up in the same table.}
+@tt{expansion}, else enumerated concepts. Filters and nested value sets are not evaluated and the
+terminology service is not called; a value set not supplied is an error.}
 @item{@bold{Measures.} Proportion scoring, patient-based, from the first library and the first
-group's population codes; @tt{Measure.scoring} is not read, so ratio, continuous-variable and cohort
-measures are scored as proportions. No stratifiers, supplemental data or measure observations; an
-episode-of-care population counts as in when its list is non-empty. @tt{$evaluate-measure} reads
-@tt{measure}, @tt{periodStart}, @tt{periodEnd} and @tt{subject} only.}
+group's population codes; @tt{Measure.scoring} is not read. No stratifiers, supplemental data or
+measure observations. @tt{$evaluate-measure} reads @tt{measure}, @tt{periodStart},
+@tt{periodEnd} and @tt{subject}.}
 @item{@bold{The module.} @racket[evaluate] passes no library resolver, so a library with an
-@tt{include} must run through @racket[load-runtime-library] or the command line. A translation error
-does not fail the module: @racket[elm] is @racket[#f] and only running the file reports it.}
-@item{@bold{ELM} is emitted as JSON only. Of 803 definitions in the published corpus 61 differ from
-the reference translator, in named categories (translator-version noise around @tt{InValueSet},
-choice operands in timing phrases, @tt{Interval[…].low} re-typing, ratio details in FHIRHelpers, one
-measure's day-of-procedure phrases). Three expression-suite tests remain, each a corpus
-contradiction or a grammar for one test.}]
+@tt{include} runs through @racket[load-runtime-library] or the command line.}
+@item{@bold{ELM} is emitted as JSON only. Of 803 definitions in the published corpus, 61 differ
+from the reference translator in named categories (translator-version noise around
+@tt{InValueSet}, choice operands in timing phrases, @tt{Interval[…].low} re-typing, ratio details
+in FHIRHelpers, one measure's day-of-procedure phrases).}]
 
 @section{Reference}
 
