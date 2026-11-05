@@ -23,8 +23,8 @@
   (cons (car d) (string-join (for/list ([seg (in-list (cadr d))] #:unless (number? seg)) (format "~a" seg)) ".")))
 (define (short v) (let ([s (format "~s" v)]) (if (> (string-length s) 70) (string-append (substring s 0 70) "…") s)))
 (define classes
-  (sort (for/fold ([h (hash)] #:result (hash->list h))
-                  ([r (in-list rs)] [m (in-list (lib-result-mismatches r))])
+  (sort (for*/fold ([h (hash)] #:result (hash->list h))
+                   ([r (in-list rs)] [m (in-list (lib-result-mismatches r))])
           (hash-update h (class-of (cadr m)) (lambda (l) (cons (list (lib-result-name r) (car m) (cadr m)) l)) '()))
         > #:key (lambda (c) (length (cdr c)))))
 (printf "  difference classes (first difference, reference vs ours), largest first:\n")
