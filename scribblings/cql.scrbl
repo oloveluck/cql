@@ -11,7 +11,7 @@ set membership, queries, the implicit FHIRHelpers conversions, and measure popul
 @tt{.cql} file is a Racket module whose definitions a program evaluates over a patient's resources.
 
 Held to the published suites: cqframework/cql-tests 1820 of 1823; 32 published libraries compile
-with 742 of 803 definitions identical to the reference translator's ELM; four eCQMs agree with their
+with 764 of 803 definitions identical to the reference translator's ELM; four eCQMs agree with their
 expected populations on 71 of 76 test patients. Part of the
 @hyperlink["https://github.com/oloveluck/fhir"]{fhir} family.
 

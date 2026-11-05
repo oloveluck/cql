@@ -87,7 +87,7 @@ operators, `if`/`case`. Layers:
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **32/32 parse; 32/32 compile; 742/803 definitions ELM-equal** — ratcheted. The
+  metadata dropped). **32/32 parse; 32/32 compile; 764/803 definitions ELM-equal** — ratcheted. The
   grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
   modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
   fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
@@ -123,19 +123,31 @@ operators, `if`/`case`. Layers:
   `null` branch of if/case is cast to the other branches' type; a member value passed to a choice-typed
   parameter is cast to the whole choice; instance element values are coerced to the class's element
   types; `union` chains group as the reference parse does (`((A u B) u (C u D)) u E`).
-- Remaining ELM differences (61 definitions, ratcheted): translator-version noise the normaliser does
-  not cover (a newer translator writes InValueSet's valueset without `type` + `preserve`, older ones omit
-  `codeComparator` on explicit code paths — the two packages disagree, so neither form matches both);
-  a choice operand against a timing phrase whose other side is an interval (the reference converts via
-  the Period member); `Interval[…].low` re-typing in FHIRCommon's age/range intervals; ratio/quantity
-  instance details in FHIRHelpers; EXM108's day-of-procedure phrases (16 defs). `cql/tests/
-  elm-corpus-harness.rkt` + the scratch differs in the session are the tools: group mismatches by
-  first-difference path, then fix the largest class.
+- **Promotions over intervals** (`promotion`/`promote`/`unify-timing` in compile.rkt): an
+  Interval<Date> meeting an Interval<DateTime> — a case arm beside one (FHIRCommon's ToInterval), a
+  timing operand, the window of `A 30 days or less before Today()` against a DateTime A — is rebuilt
+  as the reference writes it: `Interval[ToDateTime(X.low), ToDateTime(X.high)]` with
+  `lowClosedExpression`/`highClosedExpression` = `X.lowClosed`/`X.highClosed` (X repeated). The
+  `elm-interval` closed fields may be expressions: the emitter writes the `…Expression` keys, the
+  interpreter evaluates them, and `.lowClosed`/`.highClosed` navigate an interval value. if/case
+  branches meet at the widest promotable type. A member value against an interval whose points are
+  a choice (`Interval[C.onset, C.abatement] includes E.period`) is cast to the whole choice
+  (`member-of-interval-choice`), not converted to System.
+- Remaining ELM differences (39 definitions, ratcheted; `tests/elm-corpus-test.rkt` prints them
+  CLASSIFIED by the kind and path of the first difference, largest class first, with examples — the
+  work list): EXM108's day-of-procedure phrases and typed unions (a union of differently-typed queries
+  the reference casts to a choice list); a CodeRef through an include alias inside `such that`;
+  `condition.onset during encounter.period` where the two packages' translators pick DIFFERENT choice
+  members (CQF Measures: Period; the CQL IG: dateTime); ratio/quantity instance details and
+  Message operands in FHIRHelpers; a handful of single cases the output names.
 - The corpus harness normalises only translator-VERSION noise, on both sides: empty lists = absent
   (newer translators write `let: []`, `dateFilter: []`), structural element `type` tags
-  (InstanceElement, AliasedQuerySource, …), and `strict: false` (the schema default). Includes resolve
-  within the package, else from another corpus package (CQF Measures includes FHIRHelpers 4.0.1 but
-  ships only its ELM; the source is in fhir.cqf.common).
+  (InstanceElement, AliasedQuerySource, …), `strict: false` (the schema default), and around value
+  sets — ValueSetRef's `preserve`, its `type` under InValueSet's `valueset`/Retrieve's `codes`,
+  Retrieve's default `codeComparator` "in", and a FALSE `lowClosed`/`highClosed` (fhir.cqf.common's
+  translator leaves it out; ours writes it) — the two packages disagree, so neither form is held.
+  Includes resolve within the package, else from another corpus package (CQF Measures includes
+  FHIRHelpers 4.0.1 but ships only its ELM; the source is in fhir.cqf.common).
 - **Execution over FHIR data** (`run.rkt`, `fhir-value.rkt`, interp's runtime libraries): FHIR data
   are `fhir-node`s (model type + JSON, `value.rkt`) navigated through the ModelInfo (`fhir-property`:
   element types, choice elements by their `valueX` key, list elements, `.value` of a primitive is the
