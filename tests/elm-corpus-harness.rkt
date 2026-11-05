@@ -53,6 +53,9 @@
                               ;; As.strict defaults to false in the ELM schema
                               #:unless (and (eq? k 'strict) (eq? v #f))
                               #:unless (eq? k 'preserve)
+                              ;; fhir.cqf.common's translator leaves out a FALSE closed flag (the
+                              ;; schema default is true, so it is meaningful; our emitter writes it)
+                              #:unless (and (memq k '(lowClosed highClosed)) (eq? v #f))
                               #:unless (and (eq? k 'type) (equal? v "ValueSetRef") (memq key '(valueset codes)))
                               #:unless (and (eq? k 'codeComparator) (equal? v "in")))
                      (values k (normalize-elm v k)))]
