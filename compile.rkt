@@ -862,7 +862,10 @@
   (define-values (ret ret-t)
     (if (cql-query-ret q)
         (compile (cql-return-expr (cql-query-ret q)) env2)
-        (values #f (if single? (elem (third (car srcs))) "Tuple"))))
+        ;; a multi-source query without a return yields a tuple of its aliases (the translator's
+        ;; Tuple{QualifyingEncounter: Encounter, SelectedProcedure: Procedure})
+        (values #f (if single? (elem (third (car srcs)))
+                       (tuple-ctype (for/list ([s (in-list srcs)]) (cons (string->symbol (format "~a" (first s))) (elem (third s)))))))))
   (define ret-distinct (and (cql-query-ret q) (cql-return-distinct? (cql-query-ret q))))
   (define agg
     (and (cql-query-agg q)
@@ -958,11 +961,15 @@
   (define lt pt)
   (values (elm-interval ln hn lc hc) (interval-ctype lt)))
 
+;; a tuple carries its elements' types (`return {id: …, requestStatusReason: GetStatusReason(D)}`
+;; is a Tuple{id: String, requestStatusReason: …}): a property on it is typed, and a union of
+;; queries returning tuples beside ones returning resources is cast to the choice of both
 (define (compile-tuple elems env)
-  (values (elm-tuple (for/list ([te (in-list elems)])
-                       (define-values (vn _t) (compile (cql-tuple-elem-value te) env))
-                       (elm-tuple-elem (cql-tuple-elem-name te) vn)))
-          "Tuple"))
+  (define compiled (for/list ([te (in-list elems)])
+                     (define-values (vn t) (compile (cql-tuple-elem-value te) env))
+                     (list (cql-tuple-elem-name te) vn t)))
+  (values (elm-tuple (for/list ([c (in-list compiled)]) (elm-tuple-elem (first c) (second c))))
+          (tuple-ctype (for/list ([c (in-list compiled)]) (cons (string->symbol (format "~a" (first c))) (third c))))))
 
 ;; ---- navigation / calls / indexing ----------------------------------------
 ;; X.name : an include alias names a definition there ; a query alias reads with `scope` ; otherwise a
