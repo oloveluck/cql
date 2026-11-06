@@ -87,7 +87,7 @@ operators, `if`/`case`. Layers:
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **32/32 parse; 32/32 compile; 764/803 definitions ELM-equal** — ratcheted. The
+  metadata dropped). **32/32 parse; 32/32 compile; 766/803 definitions ELM-equal** — ratcheted. The
   grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
   modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
   fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
@@ -133,7 +133,7 @@ operators, `if`/`case`. Layers:
   branches meet at the widest promotable type. A member value against an interval whose points are
   a choice (`Interval[C.onset, C.abatement] includes E.period`) is cast to the whole choice
   (`member-of-interval-choice`), not converted to System.
-- Remaining ELM differences (39 definitions, ratcheted; `tests/elm-corpus-test.rkt` prints them
+- Remaining ELM differences (37 definitions, ratcheted; `tests/elm-corpus-test.rkt` prints them
   CLASSIFIED by the kind and path of the first difference, largest class first, with examples — the
   work list): EXM108's day-of-procedure phrases and typed unions (a union of differently-typed queries
   the reference casts to a choice list); a CodeRef through an include alias inside `such that`;
