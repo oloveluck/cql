@@ -43,7 +43,13 @@ operand        : identifier type-specifier
 func-body      : expr | "external"
 
 ;; ---- expression precedence cascade (low -> high binding) ------------------------------------
-expr                : query | implies-expr
+;; A query and an if-then-else are OPEN: their last clause (where/return/sort/…, else) extends as far
+;; as it can (cql.g4's greedy ANTLR choice). brag has no greediness, so an open term as an operand
+;; was ambiguous and brag could close it early — `exists (Q) a where P or R` as `(exists … where P)
+;; or R`, `if c then x else L.f(y)` as `(if c then x else L).f(y)`. So every binary level has a
+;; closed form (no open term anywhere) and an -open form whose LAST operand is open: an open term is
+;; only ever the rightmost operand, and the parse is unique. The -open forms lower like the closed ones.
+expr                : implies-expr | implies-open
 
 ;; ---- queries (over lists / singletons; no FHIR retrieve in this slice) ----------------------
 query               : source-clause query-tail
@@ -81,6 +87,22 @@ membership-expr     : equality-expr     (@membership-op equality-expr)*
 equality-expr       : comparison-expr   (@equality-op comparison-expr)*
 comparison-expr     : setop-expr        comp-tail*
 comp-tail           : @comparison-op setop-expr | timing-rel | between-tail
+implies-open        : (or-expr @implies-op)* or-open
+or-open             : (and-expr @or-op)* and-open
+and-open            : (membership-expr @and-op)* membership-open
+membership-open     : (equality-expr @membership-op)* equality-open
+equality-open       : (comparison-expr @equality-op)* comparison-open
+comparison-open     : setop-open | setop-expr comp-tail* comp-tail-open
+comp-tail-open      : @comparison-op setop-open | timing-rel-open
+timing-rel-open     : timing-op setop-open
+setop-open          : (additive-expr @setop-op)* additive-open
+additive-open       : (multiplicative-expr @additive-op)* multiplicative-open
+multiplicative-open : (power-expr @multiplicative-op)* power-open
+power-open          : (type-expr @power-op)* unary-open
+;; the open terms: a query, an if-then-else, and prefix operators over one (`not exists (Q) a where …`,
+;; `distinct (xs) x sort by …` is Distinct of the query)
+unary-open          : query | if-expr | @unary-op unary-open | interval-prefix-open
+interval-prefix-open : "distinct" query | "flatten" query
 ;; X between A and B  ==  X >= A and X <= B (operands additive so `and` stays the delimiter)
 between-tail        : /"between" additive-expr /"and" additive-expr
 timing-rel          : timing-op setop-expr
@@ -108,10 +130,7 @@ offset-qual         : "or more" | "or less"
 excl-qual           : "less than" | "more than"
 prec-of             : prec /"of"
 prec                : identifier
-setop-expr          : additive-expr     (@setop-op setop-rhs)*
-;; a query may be the RIGHT operand of a set operator: (…) union [B] Y where … (cql.g4 puts query in
-;; expression). Only the right: a query on the left would end its greedy where/aggregate body early.
-@setop-rhs          : additive-expr | query
+setop-expr          : additive-expr     (@setop-op additive-expr)*
 additive-expr       : multiplicative-expr (@additive-op multiplicative-expr)*
 multiplicative-expr : power-expr        (@multiplicative-op power-expr)*
 power-expr          : type-expr         (@power-op type-expr)*
@@ -128,7 +147,7 @@ cast-expr           : /"cast" unary-expr /"as" type-specifier
 convert-expr        : /"convert" unary-expr /"to" type-specifier
 ;; duration-of / component-from are TERMS (cql.g4), not primaries: as primaries they would take
 ;; postfix tails — `duration in hours of Global.F(x)` parsed as `(duration in hours of Global).F(x)`
-unary-expr          : @unary-op unary-expr | "exists" query | interval-prefix | duration-of
+unary-expr          : @unary-op unary-expr | interval-prefix | duration-of
                     | component-from | postfix-expr
 ;; interval/list prefix operators
 interval-prefix     : "start" /"of" unary-expr
@@ -151,8 +170,8 @@ dot-member          : @ref-id
 indexer             : /"[" expr /"]"
 
 primary             : literal
-                    | if-expr
                     | case-expr
+                    | aliased-set-op
                     | interval-selector
                     | typed-list-selector
                     | typed-tuple-selector
@@ -191,6 +210,10 @@ difference-between   : /"difference" /"in" identifier /"between" additive-expr /
 ;; The precision word stays a plain identifier (so calendar units like `year` still work in quantities);
 ;; the compiler validates it. `from` is the disambiguating keyword.
 component-from      : identifier /"from" unary-expr
+
+;; `flatten (Q) items."Starts during"(p)`: distinct/flatten of a clause-less query, as a term that takes
+;; postfix tails (the reference translator's reading: Starts during(Flatten(Query(Q items)), p))
+aliased-set-op      : ("distinct" | "flatten") source-clause
 
 if-expr             : /"if" expr /"then" expr /"else" expr
 case-expr           : /"case" expr? case-item+ case-else? /"end"

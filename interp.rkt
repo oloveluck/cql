@@ -185,6 +185,7 @@
     [(elm-alias-ref name) (lookup-operand name env)]
     [(elm-minmax _which _vt boundary) (eval-elm boundary env)]
     [(elm-query-let-ref name) (lookup-operand name env)]
+    [(elm-identifier-ref "$this") (current-sort-row)]
     [(elm-identifier-ref name) (eval-property (current-sort-row) name)]
     [(elm-expression-ref name #f) (force-value (hash-ref (ienv-defs env) name (lambda () (fail (format "unknown reference ~a" name)))))]
     [(elm-expression-ref name lib) (rlib-value (target-lib env lib) name)]
@@ -969,5 +970,8 @@
   (require (only-in "parser/parse.rkt" parse-cql) (only-in "compile.rkt" compile-library))
   (define results (run-library (ok-value (compile-library (ok-value (parse-cql "define A: 3 + 4\ndefine B: A * 2"))))))
   (check-equal? (hash-ref results "A") 7)
-  (check-equal? (hash-ref results "B") 14))
+  (check-equal? (hash-ref results "B") 14)
+  ;; in `sort by`, a fluent function without a target applies to the row ($this)
+  (define sorted (run-library (ok-value (compile-library (ok-value (parse-cql "define fluent function Neg(x Integer): -x\ndefine S: ({3, 1, 2}) v sort by Neg() asc"))))))
+  (check-equal? (hash-ref sorted "S") '(3 2 1)))
 

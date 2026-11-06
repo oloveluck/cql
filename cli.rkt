@@ -2,7 +2,9 @@
 
 ;;; cli.rkt — `raco cql`: the command line for the CQL package.
 ;;;
-;;;   raco cql <file.cql>      compile a CQL library to ELM and print the ELM JSON
+;;;   raco cql <file.cql> [--libraries <dir>]
+;;;                            compile a CQL library to ELM and print the ELM JSON; includes are found in
+;;;                            --libraries (default: beside the file), so included functions type-check
 ;;;                            (a leading `#lang cql` line is ignored, so both raw .cql and #lang files work)
 ;;;   raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…
 ;;;                            RUN the library over FHIR data (resources or Bundles; patient context),
@@ -16,7 +18,7 @@
 
 (require (only-in racket/file file->string)
          (only-in cql/parser/parse parse-cql)
-         (only-in cql/compile compile-library compile-library/errors)
+         (only-in cql/compile compile-library compile-library/errors current-library-resolver)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/error cql-error-string)
          (only-in fhir/result/result ok? ok-value err-error)
@@ -31,12 +33,8 @@
 
 ;; run-file : file data valuesets|#f libraries|#f (listof name) -> void   evaluate and print definitions
 (define (run-file file data vs-dir lib-dir names)
-  (define (parse f) (let* ([src (read-source f)] [r (parse-cql src #:source (if (path? f) (path->string f) f))])
-                      (unless (ok? r) (fail-with (err-error r) f src))
-                      (ok-value r)))
-  (define libdir (or lib-dir (let-values ([(d _n _m) (split-path (path->complete-path file))]) d)))
-  (define (res n _v) (let ([g (build-path libdir (format "~a.cql" n))]) (and (file-exists? g) (parse g))))
-  (define lib (parse file))
+  (define res (library-resolver file lib-dir))
+  (define lib (parse-file file))
   (define resources (if (directory-exists? data) (read-json-files data) (list (call-with-input-file data read-json))))
   (define rl (with-handlers ([exn:fail? (lambda (e) (eprintf "~a\n" (exn-message e)) (exit 1))])
                (load-runtime-library lib #:resolver res #:data (resources->data resources)
@@ -46,7 +44,19 @@
   (for ([n (in-list defs)])
     (printf "~a: ~a\n" n (with-handlers ([cql-error? cql-error-string]) (render (rlib-value rl n))))))
 
-;; compile-file : path-string -> void   print the ELM JSON of the library in `file`, or exit 1
+;; parse-file : path-string -> cql-library   or exit 1 with the parse diagnostic
+(define (parse-file f)
+  (let* ([src (read-source f)] [r (parse-cql src #:source (if (path? f) (path->string f) f))])
+    (unless (ok? r) (fail-with (err-error r) f src))
+    (ok-value r)))
+
+;; library-resolver : path-string dir|#f -> (name version -> cql-library|#f)   includes as <Name>.cql in
+;; lib-dir, or beside `file`
+(define (library-resolver file lib-dir)
+  (define libdir (or lib-dir (let-values ([(d _n _m) (split-path (path->complete-path file))]) d)))
+  (lambda (n _v) (let ([g (build-path libdir (format "~a.cql" n))]) (and (file-exists? g) (parse-file g)))))
+
+;; compile-file : path-string [dir|#f] -> void   print the ELM JSON of the library in `file`, or exit 1
 ;; the output format for errors (--format text|json|outcome)
 (define current-format (make-parameter 'text))
 ;; fail-with : cql-error file text -> exit 1   a positioned diagnostic when the error has one, else a
@@ -59,12 +69,14 @@
   (exit 1))
 (define (read-source file) (regexp-replace #px"^#lang[^\n]*" (file->string file) ""))   ; keep line numbers
 
-(define (compile-file file)
+(define (compile-file file [lib-dir #f])
   (define src (read-source file))
   (define pr (parse-cql src #:source file))
   (unless (ok? pr) (fail-with (err-error pr) file src))
   ;; every translation error, not only the first
-  (define-values (elm errors) (compile-library/errors (ok-value pr)))
+  (define-values (elm errors)
+    (parameterize ([current-library-resolver (library-resolver file lib-dir)])
+      (compile-library/errors (ok-value pr))))
   (unless (null? errors)
     (emit-diagnostics (for/list ([e (in-list errors)])
                         (or (cql-error-diagnostic e)
@@ -74,7 +86,7 @@
   (displayln (elm->json-string elm)))
 
 (define (usage [code 2])                             ; --help: stdout, exit 0
-  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…]\n       raco cql --tck [-v]\n")
+  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n       raco cql --tck [-v]\n")
   (exit code))
 
 (module+ main
@@ -105,4 +117,6 @@
          [(and (equal? (car as) "--libraries") (pair? (cdr as))) (loop (cddr as) data vs (cadr as) names)]
          [(and (equal? (car as) "--define") (pair? (cdr as))) (loop (cddr as) data vs libs (cons (cadr as) names))]
          [else (usage)]))]
-    [else (compile-file (car args))]))
+    [(null? (cdr args)) (compile-file (car args))]
+    [(and (equal? (cadr args) "--libraries") (= (length args) 3)) (compile-file (car args) (caddr args))]
+    [else (usage)]))

@@ -108,7 +108,8 @@
 
 ;; ---- local scope -----------------------------------------------------------
 ;; A cenv maps names bound INSIDE an expression to (cons kind CType): kind 'operand (function
-;; operand), 'alias (query source), 'let (query let), 'acc (aggregate accumulator). `row` is the
+;; operand), 'alias (query source), 'let (query let), 'acc (aggregate accumulator), 'row ($this, the
+;; row of a `sort by`, as a fluent function's implicit target). `row` is the
 ;; element type a `sort by` expression is evaluated against (#f elsewhere).
 ;; `this` is the alias ("$this") whose properties bare names reach inside a FHIRPath-style
 ;; .where(…)/.select(…), #f elsewhere.
@@ -560,6 +561,7 @@
   (match (local-ref env name)
     [(cons 'alias t) (values (elm-alias-ref s) t)]
     [(cons 'let t) (values (elm-query-let-ref s) t)]
+    [(cons 'row t) (values (elm-identifier-ref s) t)]                 ; $this, the sort row
     [(cons _ t) (values (elm-operand-ref s) t)]
     [#f
      (define lx (L))
@@ -1100,6 +1102,13 @@
     ;; x.f(args) where f is a fluent function, local or included
     [(and target (fluent-home name (cons target args) env))
      => (lambda (home) (call-function (if (eq? home 'local) #f home) name (cons target args) env))]
+    ;; inside `sort by`, f(args) may be a fluent function over the row: f($this, args), as the
+    ;; reference translator reads `sort by start of "Interval"() asc`
+    [(and (not target) (cenv-row env)
+          (let ([env* (cenv-bind env 'row (list (cons '$this (cenv-row env))))] [this (cql-ref '$this)])
+            (let ([home (fluent-home name (cons this args) env*)])
+              (and home (list home env* this)))))
+     => (match-lambda [(list home env* this) (call-function (if (eq? home 'local) #f home) name (cons this args) env*)])]
     [(and (not target) (regexp-match age-rx (symbol->string name))) => (lambda (m) (compile-age m args env))]
     ;; FHIRPath-style methods on a collection: x.first(), x.where(cond), x.single(), …
     [(and target (hash-ref fhirpath-methods name #f)) => (lambda (op) (compile-method op target args env))]

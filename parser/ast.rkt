@@ -231,12 +231,14 @@
 
     ;; binary levels: operand (op operand)* — left associative
     [(list (or 'implies-expr 'or-expr 'and-expr 'membership-expr 'equality-expr
-               'setop-expr 'additive-expr 'multiplicative-expr 'power-expr)
+               'setop-expr 'additive-expr 'multiplicative-expr 'power-expr
+               'implies-open 'or-open 'and-open 'membership-open 'equality-open
+               'setop-open 'additive-open 'multiplicative-open 'power-open)
            first rest ...)
      (fold-binops (lower first) rest)]
 
     ;; comparison level also carries timing operators (before/after/same-as/…), possibly precision-qualified
-    [(list 'comparison-expr first tails ...) (fold-comp (lower first) tails)]
+    [(list (or 'comparison-expr 'comparison-open) first tails ...) (fold-comp (lower first) (map closed-tail tails))]
 
     ;; type test / cast / convert
     [(list 'type-expr operand) (lower operand)]
@@ -247,10 +249,14 @@
     ;; unary
     [(list 'unary-expr operand) (lower operand)]
     [(list 'unary-expr (? string? op) operand) (cql-unop (op->sym op) (lower operand))]
+    [(list 'unary-open operand) (lower operand)]
+    [(list 'unary-open (? string? op) operand) (cql-unop (op->sym op) (lower operand))]
+    [(list 'interval-prefix-open kw operand) (interval-prefix->call kw (lower operand) #f)]
 
     ;; interval/list prefix operators -> system operator calls (reuse the call machinery)
     [(list 'interval-prefix kw operand) (interval-prefix->call kw (lower operand) #f)]
     [(list 'interval-prefix kw operand per) (interval-prefix->call kw (lower operand) (lower per))]
+    [(list 'aliased-set-op kw source) (interval-prefix->call kw (lower-query (list source)) #f)]
 
     ;; postfix: primary tail*
     [(list 'postfix-expr prim tails ...)
@@ -378,6 +384,13 @@
 ;; grammar); any other `X between A and B` desugars to X >= A and X <= B.
 (define between-units
   '(year years month months week weeks day days hour hours minute minutes second seconds millisecond milliseconds))
+;; closed-tail : datum -> datum   an open comparison tail (its operand ends in an open term) in the
+;; closed tail's shape
+(define (closed-tail t)
+  (match t
+    [(list 'comp-tail-open (list 'timing-rel-open top operand)) (list 'comp-tail (list 'timing-rel top operand))]
+    [(list 'comp-tail-open op operand) (list 'comp-tail op operand)]
+    [_ t]))
 (define (fold-comp acc tails)
   (for/fold ([acc acc]) ([t (in-list tails)])
     (match t

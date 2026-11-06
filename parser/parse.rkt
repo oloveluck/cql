@@ -172,6 +172,30 @@
                 (cql-binop 'in (cql-lit 5) (cql-interval (cql-lit 1) (cql-lit 10) #t #t)))
   ;; if / case
   (check-equal? (P "if true then 1 else 2") (cql-if (cql-lit #t) (cql-lit 1) (cql-lit 2)))
+  ;; open terms (query, if) extend as far as they can: the else takes the call, the where takes the
+  ;; comparison and the `or`, and an if may be a right operand
+  (check-equal? (P "if c then 1 else L.f(y)")
+                (cql-if (cql-ref 'c) (cql-lit 1) (cql-call (cql-ref 'L) 'f (list (cql-ref 'y)))))
+  (check-equal? (P "if c then null else (xs) i where i > 1")
+                (cql-if (cql-ref 'c) (cql-lit 'null)
+                        (cql-query (list (cql-source 'i (cql-ref 'xs))) '()
+                                   (cql-binop '> (cql-ref 'i) (cql-lit 1)) #f #f #f '())))
+  (check-equal? (P "exists (xs) a where p or q")
+                (cql-unop 'exists (cql-query (list (cql-source 'a (cql-ref 'xs))) '()
+                                             (cql-binop 'or (cql-ref 'p) (cql-ref 'q)) #f #f #f '())))
+  (check-equal? (P "1 + if c then 2 else 3 * 4")
+                (cql-binop '+ (cql-lit 1) (cql-if (cql-ref 'c) (cql-lit 2) (cql-binop '* (cql-lit 3) (cql-lit 4)))))
+  ;; a query as the right operand of membership; distinct/flatten of a query
+  (check-equal? (P "x in (rs) r return r.d")
+                (cql-binop 'in (cql-ref 'x)
+                           (cql-query (list (cql-source 'r (cql-ref 'rs))) '() #f
+                                      (cql-return #f (cql-property (cql-ref 'r) 'd)) #f #f '())))
+  (check-equal? (P "distinct (xs) s sort asc")
+                (cql-call #f 'Distinct (list (cql-query (list (cql-source 's (cql-ref 'xs))) '() #f #f 'asc #f '()))))
+  ;; flatten of a clause-less query takes postfix tails: (flatten (xs) i).f(p)
+  (check-equal? (P "flatten (xs) i.f(p)")
+                (cql-call (cql-call #f 'Flatten (list (cql-query (list (cql-source 'i (cql-ref 'xs))) '() #f #f #f #f '())))
+                          'f (list (cql-ref 'p))))
   (check-equal? (P "case when true then 1 else 2 end")
                 (cql-case #f (list (cql-case-item (cql-lit #t) (cql-lit 1))) (cql-lit 2)))
   ;; navigation + function call
