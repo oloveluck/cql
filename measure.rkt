@@ -25,6 +25,8 @@
          (only-in fhir/sd/sd-index sd-context)
          (only-in fhir/result/result ok? ok-value err-error)
          (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
+         (only-in "parser/ast.rkt" cql-library-defs cql-parameter? cql-parameter-name cql-parameter-type
+                  interval-type named-type)
          (only-in "compile.rkt" compile-expr)
          (only-in "interp.rkt" eval-elm make-ienv)
          (only-in "value.rkt" current-evaluation-offset)
@@ -36,7 +38,7 @@
           [evaluate-measure (->* (hash? string? string?)
                                  (#:subject (or/c string? #f) #:valuesets procedure? #:offset (or/c exact-integer? #f))
                                  hash?)]
-          [measurement-period (-> string? string? (or/c exact-integer? #f) any/c)]
+          [measurement-period (->* (string? string? (or/c exact-integer? #f)) (#:date? boolean?) any/c)]
           [period-offset (-> string? (or/c exact-integer? #f))]))
 
 (define current-measure-offset (make-parameter 0))
@@ -85,13 +87,29 @@
                            (map cdr rs)))))))
 
 ;; ---- evaluation -----------------------------------------------------------------------------
-;; measurement-period : periodStart periodEnd offset -> Interval<DateTime>   whole days, end inclusive
-(define (measurement-period start end offset)
+;; measurement-period : periodStart periodEnd offset [#:date?] -> Interval<DateTime>|Interval<Date>
+;; whole days, end inclusive; Interval<Date> when the library declares the parameter so (HEDIS)
+(define (measurement-period start end offset #:date? [date? #f])
   (define (day s) (substring s 0 (min 10 (string-length s))))
   (parameterize ([current-evaluation-offset offset])
     (eval-elm (ok-value (compile-expr (ok-value (parse-cql-expr
-                                                 (format "Interval[@~aT00:00:00.000, @~aT23:59:59.999]" (day start) (day end))))))
+                                                 (if date?
+                                                     (format "Interval[@~a, @~a]" (day start) (day end))
+                                                     (format "Interval[@~aT00:00:00.000, @~aT23:59:59.999]" (day start) (day end)))))))
               (make-ienv))))
+
+;; period-parameter : cql-library -> (values name date?)   the library's measurement period parameter:
+;; its declared name, matched without case ("Measurement Period", HEDIS's "Measurement period"), and
+;; whether it is an Interval<Date>; "Measurement Period" and DateTime when it declares none
+(define (period-parameter lib)
+  (define p (for/first ([d (in-list (cql-library-defs lib))]
+                        #:when (and (cql-parameter? d)
+                                    (string-ci=? (format "~a" (cql-parameter-name d)) "Measurement Period")))
+              d))
+  (values (if p (format "~a" (cql-parameter-name p)) "Measurement Period")
+          (match (and p (cql-parameter-type p))
+            [(interval-type (named-type (or 'Date 'System.Date))) #t]
+            [_ #f])))
 
 ;; period-offset : string -> minutes|#f   "2021-01-01T00:00:00-07:00" -> -420
 (define (period-offset s)
@@ -110,39 +128,48 @@
   (define source-vs (valuesets->terminology ((data-source-all ds) "ValueSet")))
   (define pkg-vs (packages-valuesets))
   (define (valuesets url) (or (source-vs url) (pkg-vs url) (extra-vs url)))
-  (define mp (measurement-period start end offset))
+  (define-values (mp-name mp-date?) (period-parameter lib))
+  (define mp (measurement-period start end offset #:date? mp-date?))
   (define (populations pid)
     (define cache (make-hash))
     (define (data type) (hash-ref! cache type (lambda () ((data-source-of-patient ds) type pid))))
     (define rl (load-runtime-library lib #:resolver include-resolver #:data data
-                                     #:valuesets valuesets #:parameters (hash "Measurement Period" mp) #:offset offset))
+                                     #:valuesets valuesets #:parameters (hash mp-name mp) #:offset offset))
     (with-handlers ([cql-error? (lambda (e) (operation-error "processing" "Patient/~a: ~a" pid (cql-error-string e)))])
-      (measure-populations measure rl)))
+      (measure-group-populations measure rl)))
   (define pids (if subject
                    (list (regexp-replace #rx"^Patient/" subject ""))
                    (for/list ([p (in-list ((data-source-all ds) "Patient"))]) (hash-ref p 'id))))
-  (define counts
-    (for/fold ([acc (hash)]) ([pid (in-list pids)])
-      (for/fold ([acc acc]) ([(k v) (in-hash (populations pid))]) (hash-update acc k (lambda (n) (+ n v)) 0))))
+  (define groups (hash-ref measure 'group '()))
+  (define counts                                          ; one count hash per group
+    (for/fold ([acc (map (lambda (_g) (hash)) groups)]) ([pid (in-list pids)])
+      (for/list ([acc-g (in-list acc)] [pops (in-list (populations pid))])
+        (for/fold ([a acc-g]) ([(k v) (in-hash pops)]) (hash-update a k (lambda (n) (+ n v)) 0)))))
   (measure-report measure counts start end subject))
 
+;; measure-report : Measure (listof counts) periodStart periodEnd subject|#f -> MeasureReport jsexpr
+;; a report group per Measure.group (its id and code carried over), populations in canonical order,
+;; the proportion score on a summary
 (define population-order '("initial-population" "denominator" "denominator-exclusion" "denominator-exception" "numerator"))
 (define (measure-report measure counts start end subject)
-  (define (c k) (hash-ref counts k 0))
-  (define denom (- (c "denominator") (c "denominator-exclusion") (c "denominator-exception")))
-  (define group
-    (hasheq 'population (for/list ([k (in-list population-order)] #:when (hash-has-key? counts k))
-                          (hasheq 'code (hasheq 'coding (list (hasheq 'system "http://terminology.hl7.org/CodeSystem/measure-population"
-                                                                      'code k)))
-                                  'count (c k)))))
-  (define group* (if (and (not subject) (> denom 0))
-                     (hash-set group 'measureScore (hasheq 'value (exact->inexact (/ (c "numerator") denom))))
-                     group))
+  (define (report-group g counts)
+    (define (c k) (hash-ref counts k 0))
+    (define denom (- (c "denominator") (c "denominator-exclusion") (c "denominator-exception")))
+    (define pops
+      (for/list ([k (in-list population-order)] #:when (hash-has-key? counts k))
+        (hasheq 'code (hasheq 'coding (list (hasheq 'system "http://terminology.hl7.org/CodeSystem/measure-population"
+                                                    'code k)))
+                'count (c k))))
+    (define base (for/fold ([h (hasheq 'population pops)]) ([k (in-list '(id code))] #:when (hash-has-key? g k))
+                   (hash-set h k (hash-ref g k))))
+    (if (and (not subject) (> denom 0))
+        (hash-set base 'measureScore (hasheq 'value (exact->inexact (/ (c "numerator") denom))))
+        base))
   (define base (hasheq 'resourceType "MeasureReport" 'status "complete"
                        'type (if subject "individual" "summary")
                        'measure (or (hash-ref measure 'url #f) (string-append "Measure/" (hash-ref measure 'id "")))
                        'period (hasheq 'start start 'end end)
-                       'group (list group*)))
+                       'group (for/list ([g (in-list (hash-ref measure 'group '()))] [c (in-list counts)]) (report-group g c))))
   (if subject (hash-set base 'subject (hasheq 'reference (if (regexp-match? #rx"/" subject) subject (string-append "Patient/" subject)))) base))
 
 ;; ---- the operation --------------------------------------------------------------------------
@@ -178,4 +205,25 @@
   ;; the Measurement Period is whole days, end inclusive, in the evaluation's zone (0 = UTC)
   (define mp (measurement-period "2021-01-01" "2021-12-31" 0))
   (check-equal? (moment->string (cql-interval-low mp)) "@2021-01-01T00:00:00.000Z")
-  (check-equal? (moment->string (cql-interval-high mp)) "@2021-12-31T23:59:59.999Z"))
+  (check-equal? (moment->string (cql-interval-high mp)) "@2021-12-31T23:59:59.999Z")
+  ;; … or an Interval<Date> when the library declares it so
+  (define mpd (measurement-period "2025-01-01" "2025-12-31" #f #:date? #t))
+  (check-equal? (moment->string (cql-interval-low mpd)) "@2025-01-01")
+  (check-equal? (moment->string (cql-interval-high mpd)) "@2025-12-31")
+  ;; the period parameter by its declared name, without case, and its type
+  (define (pp src) (call-with-values (lambda () (period-parameter (ok-value (parse-cql src)))) list))
+  (check-equal? (pp "library H\nparameter \"Measurement period\" Interval<Date>") '("Measurement period" #t))
+  (check-equal? (pp "library E\nparameter \"Measurement Period\" Interval<DateTime>") '("Measurement Period" #f))
+  (check-equal? (pp "library N\ndefine X: 1") '("Measurement Period" #f))
+  ;; a report group per Measure.group, with its id and code, each scored on its own counts
+  (define two-groups
+    (hasheq 'url "http://example.org/Measure/M"
+            'group (list (hasheq 'id "all" 'population '()) (hasheq 'id "medicare" 'code (hasheq 'text "Medicare") 'population '()))))
+  (define rep (measure-report two-groups
+                              (list (hash "initial-population" 4 "denominator" 4 "denominator-exclusion" 1 "numerator" 2)
+                                    (hash "initial-population" 2 "denominator" 2 "numerator" 1))
+                              "2025-01-01" "2025-12-31" #f))
+  (check-equal? (map (lambda (g) (hash-ref g 'id)) (hash-ref rep 'group)) '("all" "medicare"))
+  (check-equal? (hash-ref (cadr (hash-ref rep 'group)) 'code) (hasheq 'text "Medicare"))
+  (check-equal? (map (lambda (g) (hash-ref (hash-ref g 'measureScore) 'value)) (hash-ref rep 'group))
+                (list (/ 2.0 3) 0.5)))

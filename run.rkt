@@ -6,7 +6,8 @@
 ;;;   (define rl (load-runtime-library ast #:resolver r #:data (resources->data rs)
 ;;;                                    #:valuesets (valuesets->terminology vss)))
 ;;;   (rlib-value rl "Initial Population")            ; one definition
-;;;   (measure-populations measure-json rl)           ; proportion scoring for one patient
+;;;   (measure-populations measure-json rl)           ; proportion scoring for one patient (first group)
+;;;   (measure-group-populations measure-json rl)     ; … for every Measure.group
 ;;;
 ;;; Data: a Resources is (listof jsexpr), all for one context patient (the retrieve source returns a
 ;;; type's resources from it). Terminology: value set url -> its expansion (system, code) pairs.
@@ -32,6 +33,7 @@
   [resources->data      (->* ((listof hash?)) (#:patient-context? boolean?) procedure?)]
   [valuesets->terminology (-> (listof hash?) procedure?)]
   [measure-populations  (-> hash? rlib? (hash/c string? exact-nonnegative-integer?))]
+  [measure-group-populations (-> hash? rlib? (listof (hash/c string? exact-nonnegative-integer?)))]
   [read-json-files      (-> path-string? (listof hash?))]
   ;; evaluate-library : the library over these resources -> define-name -> value (every define)
   [evaluate-library     (->* (cql-library? (listof hash?))
@@ -126,13 +128,24 @@
              #:when (hash? j))
     j))
 
-;; measure-populations : Measure jsexpr rlib -> (hash code -> 0|1)   one patient, proportion scoring
-;; (patient-based): IP; denominator ⊆ IP; exclusion ⊆ denominator; numerator ⊆ denominator minus
-;; exclusions; exception ⊆ denominator minus exclusions and numerator
+;; measure-group-populations : Measure jsexpr rlib -> (listof (hash code -> 0|1))   one patient, one
+;; hash per Measure.group (a measure may have several: BCS-E's general and Medicare groups share
+;; population codes with different criteria)
+(define (measure-group-populations measure rl)
+  (for/list ([g (in-list (hash-ref measure 'group '()))]) (group-populations g rl)))
+
+;; measure-populations : Measure jsexpr rlib -> (hash code -> 0|1)   the first group's populations
 (define (measure-populations measure rl)
+  (match (hash-ref measure 'group '())
+    [(cons g _) (group-populations g rl)]
+    ['() (hash)]))
+
+;; group-populations : Measure.group jsexpr rlib -> (hash code -> 0|1)   one patient, proportion
+;; scoring (patient-based): IP; denominator ⊆ IP; exclusion ⊆ denominator; numerator ⊆ denominator
+;; minus exclusions; exception ⊆ denominator minus exclusions and numerator
+(define (group-populations g rl)
   (define crit
-    (for*/hash ([g (in-list (hash-ref measure 'group '()))]
-                [p (in-list (hash-ref g 'population '()))])
+    (for/hash ([p (in-list (hash-ref g 'population '()))])
       (values (hash-ref (car (hash-ref (hash-ref p 'code) 'coding)) 'code)
               (hash-ref (hash-ref p 'criteria) 'expression))))
   (define (holds? code) (let ([e (hash-ref crit code #f)]) (and e (truthy? (rlib-value rl e)))))
