@@ -39,6 +39,9 @@
                                  (#:subject (or/c string? #f) #:valuesets procedure? #:offset (or/c exact-integer? #f))
                                  hash?)]
           [measurement-period (->* (string? string? (or/c exact-integer? #f)) (#:date? boolean?) any/c)]
+          ;; the report from population counts (one hash per Measure.group), for other evaluators of
+          ;; the same measure (cql-to-sql's SQL) to build reports identically
+          [measure-report (-> hash? (listof hash?) string? string? (or/c string? #f) hash?)]
           [period-offset (-> string? (or/c exact-integer? #f))]))
 
 (define current-measure-offset (make-parameter 0))
