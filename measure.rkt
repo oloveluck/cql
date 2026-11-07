@@ -77,6 +77,7 @@
   (define hit (or (findf (lambda (l) (equal? (hash-ref l 'version #f) version)) libs) (and (pair? libs) (car libs))))
   (and hit (parse-library hit)))
 
+
 ;; ---- terminology ----------------------------------------------------------------------------
 ;; the packages' ValueSets as a lookup, once per package list
 (define package-valuesets (make-hash))
@@ -133,10 +134,14 @@
   (define (valuesets url) (or (source-vs url) (pkg-vs url) (extra-vs url)))
   (define-values (mp-name mp-date?) (period-parameter lib))
   (define mp (measurement-period start end offset #:date? mp-date?))
+  ;; include-resolver memoised for this evaluation, over which the data source does not change:
+  ;; without it every patient re-read every Library from the source, base64-decoded it and re-hashed
+  ;; its CQL, for every include
+  (define resolver (caching-resolver include-resolver))
   (define (populations pid)
     (define cache (make-hash))
     (define (data type) (hash-ref! cache type (lambda () ((data-source-of-patient ds) type pid))))
-    (define rl (load-runtime-library lib #:resolver include-resolver #:data data
+    (define rl (load-runtime-library lib #:resolver resolver #:data data
                                      #:valuesets valuesets #:parameters (hash mp-name mp) #:offset offset))
     (with-handlers ([cql-error? (lambda (e) (operation-error "processing" "Patient/~a: ~a" pid (cql-error-string e)))])
       (measure-group-populations measure rl)))

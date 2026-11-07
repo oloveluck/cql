@@ -23,6 +23,7 @@
 
 (require racket/contract racket/list racket/string racket/file racket/match json
          (only-in cql/parser/parse parse-cql parse-cql-expr)
+         (only-in cql/parser/ast cql-library-defs cql-def? cql-def-name)
          (only-in cql/compile compile-expr)
          (only-in cql/interp eval-elm make-ienv)
          (only-in cql/error cql-error? cql-error-string)
@@ -31,7 +32,11 @@
          (only-in fhir/result/result ok? ok-value))
 
 (provide (struct-out case-result)
-         (contract-out [run-measure-corpus (-> path-string? (listof case-result?))]))
+         (contract-out [run-measure-corpus (-> path-string? (listof case-result?))]
+                       ;; measure-corpus-definitions : root -> (listof (cons case (hash define -> Outcome)))
+                       ;; every definition of each case's measure library evaluated over the case's data;
+                       ;; an Outcome is (list 'value v) or (list 'error message) — the evaluator differential
+                       [measure-corpus-definitions (-> path-string? (listof pair?))]))
 
 (struct case-result (measure case expected actual error) #:transparent)
 
@@ -62,8 +67,37 @@
             (make-ienv))))
 
 (define (run-measure-corpus root)
-  (define (res n _v) (let ([g (build-path root "cql" (format "~a.cql" n))])
-                       (and (file-exists? g) (let ([r (parse-cql (file->string g))]) (and (ok? r) (ok-value r))))))
+  (for/list ([c (in-list (corpus-cases root))])
+    (match-define (list m case-name expected rl-thunk measure) c)
+    (define actual-or-error
+      (with-handlers ([cql-error? (lambda (e) (cql-error-string e))]
+                      [exn:fail? (lambda (e) (exn-message e))])
+        (measure-populations measure (rl-thunk))))
+    (if (string? actual-or-error)
+        (case-result m case-name expected #f actual-or-error)
+        (case-result m case-name expected actual-or-error #f))))
+
+(define (measure-corpus-definitions root)
+  (for/list ([c (in-list (corpus-cases root))])
+    (match-define (list m case-name _expected rl-thunk _measure) c)
+    (define rl (rl-thunk))
+    (define lib (corpus-library root m))
+    (cons (string-append m "/" case-name)
+          (for/hash ([d (in-list (cql-library-defs lib))] #:when (cql-def? d))
+            (define name (format "~a" (cql-def-name d)))
+            (values name (with-handlers ([cql-error? (lambda (e) (list 'error (cql-error-string e)))]
+                                         [exn:fail? (lambda (e) (list 'error (exn-message e)))])
+                           (list 'value (rlib-value rl name))))))))
+
+;; corpus-library : root measure-name -> cql-library|#f
+(define (corpus-library root n)
+  (let ([g (build-path root "cql" (format "~a.cql" n))])
+    (and (file-exists? g) (let ([r (parse-cql (file->string g))]) (and (ok? r) (ok-value r))))))
+
+;; corpus-cases : root -> (listof (list measure case expected (-> rlib) measure-json))   each case,
+;; with a thunk that loads its runtime library (under the current evaluator)
+(define (corpus-cases root)
+  (define res (caching-resolver (lambda (n _v) (corpus-library root n))))   ; each library read and parsed once
   (define tx (valuesets->terminology (read-json-files (build-path root "valueset"))))
   (for*/list ([mfile (in-list (sort (map path->string (directory-list (build-path root "measure"))) string<?))]
               [m (in-value (path->string (path-replace-extension mfile #"")))]
@@ -76,14 +110,9 @@
     (define expected (if mr (expected-from-report mr) (expected-from-name c)))
     (define year (or (and mr (string->number (substring (hash-ref (hash-ref mr 'period) 'start) 0 4)))
                      (hash-ref fallback-years m #f)))
-    (define actual-or-error
-      (with-handlers ([cql-error? (lambda (e) (cql-error-string e))]
-                      [exn:fail? (lambda (e) (exn-message e))])
-        (define rl (load-runtime-library lib #:resolver res
-                                         #:data (resources->data (read-json-files dir) #:patient-context? #f)
-                                         #:valuesets tx #:offset evaluation-offset
-                                         #:parameters (if year (hash "Measurement Period" (measurement-period year)) (hash))))
-        (measure-populations measure rl)))
-    (if (string? actual-or-error)
-        (case-result m c expected #f actual-or-error)
-        (case-result m c expected actual-or-error #f))))
+    (define (rl)
+      (load-runtime-library lib #:resolver res
+                            #:data (resources->data (read-json-files dir) #:patient-context? #f)
+                            #:valuesets tx #:offset evaluation-offset
+                            #:parameters (if year (hash "Measurement Period" (measurement-period year)) (hash))))
+    (list m c expected rl measure)))

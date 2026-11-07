@@ -26,6 +26,11 @@
 
 (provide
  (contract-out
+  ;; caching-resolver : resolver -> resolver   the same answers, each (name, version) resolved once.
+  ;; For one evaluation over many patients, where the libraries do not change: a resolver typically
+  ;; reads a file or a data source and parses it, which otherwise happens for every include of every
+  ;; patient. A resolution that raises is not stored.
+  [caching-resolver (-> procedure? procedure?)]
   [load-runtime-library (->* (cql-library?)
                              (#:resolver procedure? #:data procedure? #:valuesets procedure? #:parameters hash?
                               #:offset (or/c exact-integer? #f))
@@ -80,6 +85,11 @@
                  (make-rlib elm includes rt all-params))))
   (build lib))
 
+;; caching-resolver : (name version -> cql-library|#f) -> (name version -> cql-library|#f)
+(define (caching-resolver resolver)
+  (define memo (make-hash))
+  (lambda (name version) (hash-ref! memo (cons name version) (lambda () (resolver name version)))))
+
 ;; compiled ELM by library AST (parse-cql memoises ASTs by source text, so the same CQL is the same
 ;; object): evaluating a measure for many patients compiles each library once
 (define compiled-libraries (make-weak-hasheq))
@@ -117,7 +127,9 @@
                     [c (in-list (hash-ref inc 'concept '()))])
           (cons (hash-ref inc 'system #f) (hash-ref c 'code #f))))
       (values (hash-ref v 'url) (for/hash ([p (in-list (if (pair? from-expansion) from-expansion from-compose))]) (values p #t)))))
-  (lambda (url) (hash-ref idx (car (string-split url "|")) #f)))
+  ;; by url (a |version is ignored), memoised: membership asks for every value set of every patient
+  (define by-url (make-hash))
+  (lambda (url) (hash-ref! by-url url (lambda () (hash-ref idx (car (string-split url "|")) #f)))))
 
 ;; read-json-files : dir -> (listof jsexpr)   every *.json under dir (MeasureReports excluded)
 (define (read-json-files dir)
@@ -197,4 +209,9 @@
   (check-true (hash-ref (tx "http://x/vs2|1.0") (cons "http://x/cs" "b") #f))
   (check-false (hash-ref (tx "http://x/vs2") (cons "http://x/cs" "a") #f))
   (check-false (tx "http://x/none"))
-  (check-true (truthy? (list 1))) (check-false (truthy? '())) (check-false (truthy? #f)))
+  (check-true (truthy? (list 1))) (check-false (truthy? '())) (check-false (truthy? #f))
+  ;; a caching resolver asks the underlying one once per (name, version)
+  (define asked 0)
+  (define r (caching-resolver (lambda (n v) (set! asked (add1 asked)) (and (eq? n 'A) 'library-a))))
+  (check-equal? (list (r 'A "1") (r 'A "1") (r 'B "1") (r 'B "1")) '(library-a library-a #f #f))
+  (check-equal? asked 2))

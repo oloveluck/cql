@@ -7,7 +7,10 @@
 ;;; dispatching binary/n-ary/unary operators on their ELM type string. It reuses the FHIRPath System
 ;;; primitives (decimal, quantity, temporal, equality) and adds CQL's three-valued null handling.
 ;;; This interpreter is what drives the conformance harness (compile a CQL expression -> ELM -> run ->
-;;; compare to the expected value).
+;;; compare to the expected value). It runs ELM two ways with one semantics: `eval-elm`, the tree
+;;; walker and the reference, and `compile-elm`, a closure compiler that turns each node into a Racket
+;;; closure once, so a library evaluated for many patients does no dispatch on its nodes
+;;; (`current-elm-evaluator` chooses; tests/evaluator-test.rkt holds them to identical results).
 ;;;
 ;;; The algebra the operators rest on lives in interp/, one module per concern, each pure and tested
 ;;; on its own: base.rkt (the error, the numeric tower, three-valued negation, interval bounds),
@@ -40,7 +43,11 @@
          "interp/base.rkt" "interp/temporal.rkt" "interp/arith.rkt" "interp/compare.rkt" "interp/interval.rkt")
 
 (provide (contract-out
-          [eval-elm    (-> elm-expr? ienv? cql-value?)]  ; run one ELM expression node -> a CQL value
+          [eval-elm    (-> elm-expr? ienv? cql-value?)]  ; run one ELM expression node -> a CQL value (the tree walker)
+          [eval-elm/compiled (-> elm-expr? ienv? cql-value?)] ; the same, through the node's compiled closure
+          [run-elm     (-> elm-expr? ienv? cql-value?)]  ; the same, by the evaluator current-elm-evaluator names
+          [compile-elm (-> elm-expr? procedure?)]        ; ELM node -> (Env -> CqlValue), compiled once per node
+          [current-elm-evaluator (parameter/c (or/c 'compiled 'tree))]
           [run-library (-> elm-library? hash?)]     ; def-name(string) -> interpreted CqlValue
           [make-ienv   (->* () (#:defs hash? #:operands hash?) ienv?)]
           [make-rlib   (-> elm-library? hash? (or/c runtime? #f) hash? rlib?)]
@@ -61,45 +68,75 @@
 ;; A Runtime is what a library runs against: `data` : type-name -> (listof resource jsexpr) (the
 ;; retrieve source, already scoped to the context patient) and `valueset` : url -> (hash (cons system
 ;; code) -> #t) | #f (the expansion of a value set; #f = not available, an error when needed).
-(struct runtime (data valueset offset))   ; offset: minutes|#f, see current-evaluation-offset
+;; offset: minutes|#f, see current-evaluation-offset. memo: a cache of what depends only on the
+;; runtime, whose data and terminology do not change during an evaluation: a retrieve's resources, a
+;; code-filtered retrieve, a value set's members and its code-only index (`runtime-memo-ref`).
+(struct runtime (data valueset offset memo) #:constructor-name make-runtime-struct #:omit-define-syntaxes)
+;; runtime : (type -> resources) (url -> members|#f) offset -> Runtime   with an empty memo
+(define (runtime data valueset offset) (make-runtime-struct data valueset offset (make-hash)))
+;; runtime-memo-ref : Runtime Any (-> Any) -> Any   the memoised value under key (computed once; a
+;; computation that raises stores nothing, so the error recurs exactly as it would uncached)
+(define (runtime-memo-ref rt key compute) (hash-ref! (runtime-memo rt) key compute))
 
 ;; An Rlib is a compiled library ready to run: its definitions (memoised promises), functions (by
 ;; name, overloads in order), parameters, terminology definitions, and the Rlibs of its includes.
-(struct rlib (name defs funcs params terms includes rt))
+;; first-funcs: name -> the first overload (the function table an expression in the library sees),
+;; built once instead of per call; overloads: (cons name signature) -> the overload that signature
+;; picks (value-independent, so memoised).
+(struct rlib (name defs funcs params terms includes rt first-funcs overloads))
 
 ;; make-rlib : elm-library (hash alias -> rlib) runtime (hash name -> value) -> rlib
 ;; parameter values given by name override the library's defaults (the evaluation's parameters)
+;; A LibTables is what make-rlib takes from an ELM library that is the same for every evaluation of
+;; it: the functions by name (overloads in declaration order), the first overload of each, the
+;; expression definitions, and the static terms (its code systems and value sets, immutable objects
+;; in a table make-rlib copies). Built once per library (make-rlib runs per patient; FHIRHelpers alone
+;; has dozens of overloads, and rebuilding the table per patient was half of a measure's run time).
+(struct libtables (funcs first-funcs defs static-terms))
+(define library-tables-cache (make-ephemeron-hasheq))
+;; library-tables : elm-library -> LibTables
+(define (library-tables lib)
+  (hash-ref! library-tables-cache lib
+             (lambda ()
+               (define statements (elm-library-statements lib))
+               (define fs (filter elm-function-def? statements))
+               ;; name -> overloads in declaration order
+               (define funcs (for/fold ([h (hash)]) ([s (in-list (reverse fs))])
+                               (hash-update h (elm-function-def-name s) (lambda (l) (cons s l)) '())))
+               (define static-terms (make-hash))   ; never mutated: make-rlib copies it
+               (for ([c (in-list (elm-library-codesystems lib))])
+                 (hash-set! static-terms (elm-codesystem-def-name c)
+                            (cql-obj "CodeSystem" (hash 'id (elm-codesystem-def-id c) 'version (or (elm-codesystem-def-version c) cql-null)))))
+               (for ([v (in-list (elm-library-valuesets lib))])
+                 (hash-set! static-terms (elm-valueset-def-name v)
+                            (cql-obj "ValueSet" (hash 'id (elm-valueset-def-id v) 'version (or (elm-valueset-def-version v) cql-null)))))
+               (libtables funcs (for/hash ([(k v) (in-hash funcs)]) (values k (car v))) (filter elm-def? statements) static-terms))))
+
 (define (make-rlib lib includes rt overrides)
   (define now (current-moment))
-  (define funcs (for/fold ([h (hash)]) ([s (in-list (elm-library-statements lib))] #:when (elm-function-def? s))
-                  (hash-update h (elm-function-def-name s) (lambda (l) (append l (list s))) '())))
-  (define defs (make-hash)) (define params (make-hash)) (define terms (make-hash))
-  (define rl (rlib (elm-library-id lib) defs funcs params terms includes rt))
-  (define (env) (ienv defs (hash) (for/hash ([(k v) (in-hash funcs)]) (values k (car v))) now rl rt))
-  (for ([s (in-list (elm-library-statements lib))] #:when (elm-def? s))
-    (hash-set! defs (elm-def-name s) (delay-value (lambda () (eval-elm (elm-def-expression s) (env))))))
+  (match-define (libtables funcs first-funcs def-statements static-terms) (library-tables lib))
+  (define defs (make-hash)) (define params (make-hash)) (define terms (hash-copy static-terms))
+  (define rl (rlib (elm-library-id lib) defs funcs params terms includes rt first-funcs (make-hash)))
+  (define run (elm-runner))   ; the evaluator, chosen once for the library
+  (define (env) (ienv defs (hash) first-funcs now rl rt))
+  (for ([s (in-list def-statements)])
+    (hash-set! defs (elm-def-name s) (delay-value (lambda () (run (elm-def-expression s) (env))))))
   (for ([p (in-list (elm-library-parameters lib))])
     (define n (elm-parameter-def-name p))
     (hash-set! params n (delay-value (lambda ()
                                        (cond [(hash-has-key? overrides n) (hash-ref overrides n)]
-                                             [(elm-parameter-def-default p) (eval-elm (elm-parameter-def-default p) (env))]
+                                             [(elm-parameter-def-default p) (run (elm-parameter-def-default p) (env))]
                                              [else cql-null])))))
-  (for ([c (in-list (elm-library-codesystems lib))])
-    (hash-set! terms (elm-codesystem-def-name c)
-               (cql-obj "CodeSystem" (hash 'id (elm-codesystem-def-id c) 'version (or (elm-codesystem-def-version c) cql-null)))))
-  (for ([v (in-list (elm-library-valuesets lib))])
-    (hash-set! terms (elm-valueset-def-name v)
-               (cql-obj "ValueSet" (hash 'id (elm-valueset-def-id v) 'version (or (elm-valueset-def-version v) cql-null)))))
   (for ([c (in-list (elm-library-codes lib))])
     (hash-set! terms (elm-code-def-name c)
                (delay-value (lambda ()
-                              (define cs (eval-elm (elm-code-def-codesystem* c) (env)))
+                              (define cs (run (elm-code-def-codesystem* c) (env)))
                               (cql-code (elm-code-def-id c) (obj-field cs 'id) (obj-field cs 'version) (elm-code-def-display c))))))
   (for ([c (in-list (elm-library-concepts lib))])
     (hash-set! terms (elm-concept-def-name c)
                (delay-value (lambda ()
                               (cql-concept (for/list ([r (in-list (elm-concept-def-codes c))])
-                                             (eval-elm (elm-term-ref "CodeRef" (elm-term-ref-name r) (elm-term-ref-library r)) (env)))
+                                             (run (elm-term-ref "CodeRef" (elm-term-ref-name r) (elm-term-ref-library r)) (env)))
                                            (elm-concept-def-display c))))))
   rl)
 (define (elm-code-def-codesystem* c)
@@ -119,7 +156,7 @@
         [(not here) (fail (format "no library context for ~a" alias))]
         [else (hash-ref (rlib-includes here) alias (lambda () (fail (format "unknown library ~a" alias))))]))
 (define (lib-env rl env)
-  (ienv (rlib-defs rl) (hash) (for/hash ([(k v) (in-hash (rlib-funcs rl))]) (values k (car v))) (ienv-now env) rl (ienv-rt env)))
+  (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (ienv-now env) rl (ienv-rt env)))
 
 ;; ---- library driver --------------------------------------------------------
 (define (run-library lib)
@@ -130,9 +167,10 @@
   (define now (current-moment))
   (define base (ienv (make-hash) (hash) funcs now #f #f))
   (define (env) (ienv (ienv-defs base) (ienv-operands base) funcs now #f #f))
+  (define run (elm-runner))
   (for ([s (in-list (elm-library-statements lib))] #:when (elm-def? s))
     (hash-set! (ienv-defs base) (elm-def-name s)
-               (delay-value (lambda () (eval-elm (elm-def-expression s) (env))))))
+               (delay-value (lambda () (run (elm-def-expression s) (env))))))
   (for/hash ([s (in-list (elm-library-statements lib))] #:when (elm-def? s))
     (values (elm-def-name s) (force-value (hash-ref (ienv-defs base) (elm-def-name s))))))
 
@@ -207,16 +245,9 @@
     [(elm-in-valueset kind code vs)
      (define c (eval-elm code env))
      (define v (eval-elm vs env))
-     (cond [(or (cql-null? c) (cql-null? v)) (if (equal? kind "AnyInValueSet") #f cql-null)]
-           [(regexp-match? #rx"^Any" kind) (and (list? c) (ormap (lambda (x) (in-vocabulary? x v env)) c))]
-           [else (in-vocabulary? c v env)])]
+     (in-valueset-apply kind c v env)]
     [(elm-precision-op op prec operands)
-     (define vals (for/list ([o (in-list operands)]) (eval-elm o env)))
-     (define p (string->symbol (string-downcase prec)))
-     (match* (op vals)
-       [("CalculateAgeAt" (list b at)) (between-op 'duration p b at)]
-       [("CalculateAge" (list b)) (between-op 'duration p b (component-from 'date (ienv-now env)))]
-       [(_ _) (fail (format "unsupported ~a" op))])]
+     (precision-apply op prec (for/list ([o (in-list operands)]) (eval-elm o env)) env)]
     [(elm-operand-ref name) (hash-ref (ienv-operands env) name (lambda () (fail (format "unbound operand ~a" name))))]
     [(elm-function-ref name lib operands sig)
      (define args (map (lambda (o) (eval-elm o env)) operands))
@@ -224,30 +255,278 @@
          (call-library-function (target-lib env lib) name args sig env)
          (eval-function name args env))]
     [(elm-is operand type) (eval-is (eval-elm operand env) type)]
-    [(elm-as operand type _strict)
-     ;; As is a pass-through, EXCEPT `null as List<T>` which becomes the LIST-TYPED null: Length sees
-     ;; it as empty (0) and scalar membership is false, while list-list inclusion stays null
-     (define v (eval-elm operand env))
-     (cond [(and (cql-null? v) (elm-list-type? type)) cql-null-list]
-           ;; a FHIR value is cast by its model type: the member it is, else null (strict: an error)
-           [(and (fhir-node? v) (type-name-of type))
-            => (lambda (tn) (cond [(fhir-is? v tn) v]
-                                  [(not (regexp-match? #rx"^{http://hl7.org/fhir}" tn)) v]
-                                  [_strict (fail (format "cannot cast ~a as ~a" (fhir-node-type v) tn))]
-                                  [else cql-null]))]
-           [else v])]
+    [(elm-as operand type strict) (as-value (eval-elm operand env) type strict)]
     [(elm-to operand to-type) (convert-to (eval-elm operand env) to-type)]
     [_ (fail (format "cannot evaluate ELM node: ~s" node))]))
 (define (type-name-of t) (cond [(string? t) t] [(elm-named-type? t) (elm-named-type-name t)] [else #f]))
 
+;; in-valueset-apply : kind CqlValue CqlValue Env -> Boolean|Null   InValueSet / AnyInValueSet
+(define (in-valueset-apply kind c v env)
+  (cond [(or (cql-null? c) (cql-null? v)) (if (equal? kind "AnyInValueSet") #f cql-null)]
+        [(regexp-match? #rx"^Any" kind) (and (list? c) (ormap (lambda (x) (in-vocabulary? x v env)) c))]
+        [else (in-vocabulary? c v env)]))
+
+;; precision-apply : op precision (Listof CqlValue) Env -> CqlValue   CalculateAge[At] in a precision
+(define (precision-apply op prec vals env)
+  (define p (string->symbol (string-downcase prec)))
+  (match* (op vals)
+    [("CalculateAgeAt" (list b at)) (between-op 'duration p b at)]
+    [("CalculateAge" (list b)) (between-op 'duration p b (component-from 'date (ienv-now env)))]
+    [(_ _) (fail (format "unsupported ~a" op))]))
+
+;; as-value : CqlValue type-spec strict? -> CqlValue
+;; As is a pass-through, EXCEPT `null as List<T>` which becomes the LIST-TYPED null: Length sees
+;; it as empty (0) and scalar membership is false, while list-list inclusion stays null
+(define (as-value v type strict)
+  (cond [(and (cql-null? v) (elm-list-type? type)) cql-null-list]
+        ;; a FHIR value is cast by its model type: the member it is, else null (strict: an error)
+        [(and (fhir-node? v) (type-name-of type))
+         => (lambda (tn) (cond [(fhir-is? v tn) v]
+                               [(not (regexp-match? #rx"^{http://hl7.org/fhir}" tn)) v]
+                               [strict (fail (format "cannot cast ~a as ~a" (fhir-node-type v) tn))]
+                               [else cql-null]))]
+        [else v]))
+
+;; ---- the closure compiler --------------------------------------------------
+;; A Compiled is (Env -> CqlValue): an ELM node translated ONCE into a Racket closure. Running it
+;; again (for every patient, every query row, every function call) does no dispatch on the node:
+;; the `match` over the variant, the operator-registry lookup, a literal's parse and a property
+;; path's split all happened when it was compiled. `compile-node` is the same structural recursion
+;; as `eval-elm`, one clause per variant, and each clause computes what that clause of `eval-elm`
+;; computes, in the same order. The tree walker stays the reference: tests/evaluator-test.rkt holds
+;; the two to identical values and identical errors over the conformance suites.
+;;
+;; Two rules keep it exactly the tree walker's semantics:
+;; - errors stay where they were. Compiling never raises: whatever the tree walker raises when it
+;;   reaches a node (an unknown operator, a bad literal) is raised by the node's closure when it
+;;   runs, so an untaken branch still raises nothing;
+;; - only what reads nothing at run time is computed ahead: literals and quantities (no clock, no
+;;   evaluation offset, no data, no parameters). Everything else is computed when the closure runs.
+;; Queries, function bodies and the operators' own algebra are shared with the tree walker (the query
+;; engine and the library-function calls take the evaluator as an argument).
+
+;; current-elm-evaluator : 'compiled | 'tree   which evaluator libraries and run-elm use (the
+;; environment variable CQL_ELM_EVALUATOR=tree selects the tree walker for a whole process)
+(define current-elm-evaluator
+  (make-parameter (if (equal? (getenv "CQL_ELM_EVALUATOR") "tree") 'tree 'compiled)))
+
+;; elm-runner : -> (ELM Env -> CqlValue)   the evaluator current-elm-evaluator names
+(define (elm-runner) (if (eq? (current-elm-evaluator) 'tree) eval-elm eval-elm/compiled))
+
+;; run-elm : ELM Env -> CqlValue   one node by the current evaluator
+(define (run-elm node env) ((elm-runner) node env))
+
+;; compiled-nodes : node -> Compiled. Ephemeron-keyed: a closure refers to its node, so a weak table
+;; would keep every entry alive; with ephemerons an entry goes when its ELM tree does.
+(define compiled-nodes (make-ephemeron-hasheq))
+
+;; compile-elm : ELM -> Compiled   memoised per node
+(define (compile-elm node)
+  (or (hash-ref compiled-nodes node #f)
+      (let ([c (compile-node node)])
+        (hash-set! compiled-nodes node c)
+        c)))
+
+;; eval-elm/compiled : ELM Env -> CqlValue
+(define (eval-elm/compiled node env) ((compile-elm node) env))
+
+;; constant : (-> CqlValue) -> Compiled   a value that reads nothing at run time, computed now; when
+;; computing it raises (a `fail`, which raises a cql-error value, or any exception), the closure
+;; computes it again when it runs, so it raises then, and only if it is reached
+(define (constant compute)
+  (with-handlers ([(lambda (e) (not (exn:break? e))) (lambda (_) (lambda (env) (compute)))])
+    (define v (compute))
+    (lambda (env) v)))
+
+;; compile-int / compile-num : ELM|#f -> (Env -> integer|real|#f)   `ci` and `cnum`, compiled
+(define (compile-int x)
+  (if x
+      (let ([c (compile-elm x)]) (lambda (env) (let ([v (c env)]) (if (cql-null? v) #f (->int-val v)))))
+      (lambda (env) #f)))
+(define (compile-num x)
+  (if x
+      (let ([c (compile-elm x)]) (lambda (env) (let ([v (c env)]) (if (cql-null? v) #f (num->real v)))))
+      (lambda (env) #f)))
+
+;; compile-all : (Listof ELM) -> (Env -> (Listof CqlValue))   evaluated left to right, as `map` does
+(define (compile-all nodes)
+  (define cs (map compile-elm nodes))
+  (lambda (env) (for/list ([c (in-list cs)]) (c env))))
+
+;; compile-node : ELM -> Compiled   the template, clause for clause with eval-elm
+(define (compile-node node)
+  (match node
+    [(elm-literal vt v) (constant (lambda () (eval-literal vt v)))]
+    [(elm-null _) (lambda (env) cql-null)]
+    [(elm-quantity v unit) (constant (lambda () (make-quantity (or (parse-decimal v) (integer->decimal 0)) (or unit "1"))))]
+    [(elm-ratio n d)
+     (define cn (compile-elm n)) (define cd (compile-elm d))
+     (lambda (env) (let* ([a (cn env)] [b (cd env)]) (cql-ratio a b)))]
+    [(elm-date y mo d)
+     (define cy (compile-int y)) (define cmo (compile-int mo)) (define cd (compile-int d))
+     (lambda (env) (build-date (cy env) (cmo env) (cd env)))]
+    [(elm-time h mi s ms)
+     (define ch (compile-int h)) (define cmi (compile-int mi)) (define cs (compile-int s)) (define cms (compile-int ms))
+     (lambda (env) (build-time (ch env) (cmi env) (cs env) (cms env)))]
+    [(elm-datetime y mo d h mi s ms tz)
+     (define cy (compile-int y)) (define cmo (compile-int mo)) (define cd (compile-int d)) (define ch (compile-int h))
+     (define cmi (compile-int mi)) (define cs (compile-int s)) (define cms (compile-int ms)) (define ctz (compile-num tz))
+     (define hour? (and h #t))
+     (lambda (env)
+       (build-datetime (cy env) (cmo env) (cd env) (ch env) (cmi env) (cs env) (cms env)
+                       (or (ctz env)
+                           ;; no offset written: the evaluation's (read when it runs, never folded)
+                           (let ([o (current-evaluation-offset)]) (and o hour? (/ o 60))))))]
+    [(elm-component prec operand)
+     (define c (compile-elm operand))
+     (lambda (env) (component-from prec (c env)))]
+    [(elm-between kind prec a b)
+     (define ca (compile-elm a)) (define cb (compile-elm b))
+     (lambda (env) (let* ([x (ca env)] [y (cb env)]) (between-op kind prec x y)))]
+    [(elm-timing op prec a b)
+     (define ca (compile-elm a)) (define cb (compile-elm b))
+     (lambda (env) (let* ([x (ca env)] [y (cb env)]) (timing-op-eval op prec x y)))]
+    [(elm-query sources lets rels where ret ret-distinct sort agg)
+     (lambda (env) (run-query sources lets rels where ret ret-distinct sort agg env eval-elm/compiled))]
+    [(elm-instance class-type elems)
+     (define fields (for/list ([te (in-list elems)]) (cons (elm-tuple-elem-name te) (compile-elm (elm-tuple-elem-value te)))))
+     (lambda (env) (build-instance class-type (for/list ([f (in-list fields)]) (cons (car f) ((cdr f) env)))))]
+    [(elm-nary op operands _rt) (compile-op op operands)]
+    [(elm-unary op operand _rt) (compile-op op (list operand))]
+    [(elm-interval low high lc hc)
+     (define cl (and low (compile-elm low))) (define ch (and high (compile-elm high)))
+     ;; a closed flag may be an expression (a promoted interval reads the original's flags)
+     (define (flag x) (if (boolean? x) (lambda (env) x)
+                          (let ([c (compile-elm x)]) (lambda (env) (let ([v (c env)]) (and (boolean? v) v))))))
+     (define fl (flag lc)) (define fh (flag hc))
+     (lambda (env)
+       (let* ([l (and cl (cl env))] [h (and ch (ch env))] [lcv (fl env)] [hcv (fh env)])
+         (make-interval-value l h lcv hcv)))]
+    [(elm-list elems) (compile-all elems)]
+    [(elm-tuple elems)
+     (define fields (for/list ([te (in-list elems)]) (cons (elm-tuple-elem-name te) (compile-elm (elm-tuple-elem-value te)))))
+     (lambda (env) (cql-tuple (for/hash ([f (in-list fields)]) (values (car f) ((cdr f) env)))))]
+    [(elm-if c t e)
+     (define cc (compile-elm c)) (define ct (compile-elm t)) (define ce (compile-elm e))
+     (lambda (env) (if (eq? (cc env) #t) (ct env) (ce env)))]   ; false or null -> else
+    [(elm-case comparand items els) (compile-case comparand items els)]
+    [(elm-property #f path scope)
+     (define acc (property-accessor path))
+     (lambda (env) (acc (lookup-operand scope env)))]
+    [(elm-property src path _scope)
+     (define cs (compile-elm src)) (define acc (property-accessor path))
+     (lambda (env) (acc (cs env)))]
+    [(elm-alias-ref name) (lambda (env) (lookup-operand name env))]
+    [(elm-minmax _which _vt boundary) (compile-elm boundary)]
+    [(elm-query-let-ref name) (lambda (env) (lookup-operand name env))]
+    [(elm-identifier-ref "$this") (lambda (env) (current-sort-row))]
+    [(elm-identifier-ref name) (lambda (env) (eval-property (current-sort-row) name))]
+    [(elm-expression-ref name #f)
+     (lambda (env) (force-value (hash-ref (ienv-defs env) name (lambda () (fail (format "unknown reference ~a" name))))))]
+    [(elm-expression-ref name lib) (lambda (env) (rlib-value (target-lib env lib) name))]
+    [(elm-parameter-ref name lib)
+     (lambda (env)
+       (define rl (target-lib env lib))
+       (if rl
+           (force-value (hash-ref (rlib-params rl) name (lambda () (fail (format "unknown parameter ~a" name)))))
+           (fail (format "parameter ~a has no value" name))))]
+    [(elm-term-ref kind name lib)
+     (lambda (env)
+       (define rl (target-lib env lib))
+       (if rl
+           (force-value (hash-ref (rlib-terms rl) name (lambda () (fail (format "unknown ~a ~a" kind name)))))
+           (fail (format "~a ~a needs a library" kind name))))]
+    [(elm-code code sys display)
+     (define ccs (compile-elm (elm-term-ref "CodeSystemRef" (elm-term-ref-name sys) (elm-term-ref-library sys))))
+     (lambda (env)
+       (define cs (ccs env))
+       (cql-code code (obj-field cs 'id) (obj-field cs 'version) display))]
+    [(elm-concept codes display)
+     (define cc (compile-all codes))
+     (lambda (env) (cql-concept (cc env) display))]
+    [(? elm-retrieve?)
+     (define codes (elm-retrieve-codes node))
+     (define cw (and codes (compile-elm codes)))
+     (lambda (env) (retrieve node (and cw (lambda () (cw env))) env))]
+    [(elm-in-valueset kind code vs)
+     (define cc (compile-elm code)) (define cv (compile-elm vs))
+     (lambda (env) (let* ([c (cc env)] [v (cv env)]) (in-valueset-apply kind c v env)))]
+    [(elm-precision-op op prec operands)
+     (define cs (compile-all operands))
+     (lambda (env) (precision-apply op prec (cs env) env))]
+    [(elm-operand-ref name)
+     (lambda (env) (hash-ref (ienv-operands env) name (lambda () (fail (format "unbound operand ~a" name)))))]
+    [(elm-function-ref name lib operands sig)
+     (define cs (compile-all operands))
+     (lambda (env)
+       (define args (cs env))
+       (if (ienv-lib env)
+           (call-library-function (target-lib env lib) name args sig env eval-elm/compiled)
+           (eval-function name args env eval-elm/compiled)))]
+    [(elm-is operand type)
+     (define c (compile-elm operand))
+     (lambda (env) (eval-is (c env) type))]
+    [(elm-as operand type strict)
+     (define c (compile-elm operand))
+     (lambda (env) (as-value (c env) type strict))]
+    [(elm-to operand to-type)
+     (define c (compile-elm operand))
+     (lambda (env) (convert-to (c env) to-type))]
+    ;; anything else: the tree walker, which raises its own error for a node it cannot evaluate
+    [_ (lambda (env) (eval-elm node env))]))
+
+;; compile-op : op-name (Listof ELM) -> Compiled   the registry entry looked up once. An eager
+;; operator gets its operands' values (left to right); And/Or/Implies get the first value and a thunk
+;; for the second, over the same logic as the tree walker's; any other lazy operator gets its raw
+;; operands, as in apply-op. An unknown operator fails when it runs, before its operands, as apply-op.
+(define (compile-op name operands)
+  (define o (hash-ref OPS name #f))
+  (cond
+    [(not o) (lambda (env) (fail (format "unsupported operator ~a" name)))]
+    [(and (op-lazy? o) (= 2 (length operands)) (lazy-logic name))
+     => (lambda (logic)
+          (define ca (compile-elm (car operands))) (define cb (compile-elm (cadr operands)))
+          (lambda (env) (logic (ca env) (lambda () (cb env)))))]
+    [(op-lazy? o) (define impl (op-impl o)) (lambda (env) (impl operands env))]
+    [else
+     (define impl (op-impl o))
+     (match (map compile-elm operands)
+       ['() (lambda (env) (impl '() env))]
+       [(list a) (lambda (env) (impl (list (a env)) env))]
+       [(list a b) (lambda (env) (let* ([x (a env)] [y (b env)]) (impl (list x y) env)))]
+       [cs (lambda (env) (impl (for/list ([c (in-list cs)]) (c env)) env))])]))
+
+;; lazy-logic : op-name -> (CqlValue (-> CqlValue) -> Boolean|Null) | #f   the lazy operators whose
+;; registered implementation is the three-valued logic over two operands
+(define (lazy-logic name)
+  (case name [("And") and-values] [("Or") or-values] [("Implies") implies-values] [else #f]))
+
+;; compile-case : ELM|#f (Listof elm-case-item) ELM|#f -> Compiled   eval-case, compiled
+(define (compile-case comparand items els)
+  (define ccmp (and comparand (compile-elm comparand)))
+  (define arms (for/list ([it (in-list items)])
+                 (cons (compile-elm (elm-case-item-when it)) (compile-elm (elm-case-item-then it)))))
+  (define cels (and els (compile-elm els)))
+  (lambda (env)
+    (define cmp (and ccmp (ccmp env)))
+    (let loop ([as arms])
+      (cond
+        [(null? as) (if cels (cels env) cql-null)]
+        [else (define w ((car (car as)) env))
+              (define hit (if ccmp (cql-eq? cmp w) (eq? w #t)))
+              (if hit ((cdr (car as)) env) (loop (cdr as)))]))))
+
 ;; ---- functions with overloads -----------------------------------------------
 ;; call-library-function : rlib name args signature env -> value   the overload whose operand types
 ;; are the call's signature, else the first whose types the argument values fit
-(define (call-library-function rl name args sig env)
+;; run evaluates the body (the tree walker, or the compiled evaluator). The overload a signature picks
+;; does not depend on the argument values, so it is memoised in the rlib.
+(define (call-library-function rl name args sig env [run eval-elm])
   (define cands (hash-ref (rlib-funcs rl) name (lambda () (fail (format "unknown function ~a" name)))))
   (define (types f) (map elm-operand-def-type (elm-function-def-operands f)))
   (define f (or (and (null? (cdr cands)) (car cands))
-                (and sig (for/first ([c (in-list cands)] #:when (equal? (types c) sig)) c))
+                (and sig (hash-ref! (rlib-overloads rl) (cons name sig)
+                                    (lambda () (for/first ([c (in-list cands)] #:when (equal? (types c) sig)) c))))
                 (for/first ([c (in-list cands)]
                             #:when (and (= (length (types c)) (length args)) (andmap value-fits? args (types c))))
                   c)
@@ -257,7 +536,7 @@
   (define env* (struct-copy ienv (lib-env rl env)
                             [operands (for/fold ([h (hash)]) ([o (in-list (elm-function-def-operands f))] [a (in-list args)])
                                         (hash-set h (elm-operand-def-name o) a))]))
-  (eval-elm body env*))
+  (run body env*))
 
 ;; value-fits? : value type-spec -> boolean   (null fits anything)
 (define (value-fits? v t)
@@ -277,20 +556,31 @@
 ;; eval-retrieve : elm-retrieve env -> (listof FhirNode)   the data source's resources of the type,
 ;; filtered by the code property against the terminology (a value set: membership; codes: ~)
 (define (eval-retrieve r env)
+  (retrieve r (and (elm-retrieve-codes r) (lambda () (eval-elm (elm-retrieve-codes r) env))) env))
+
+;; retrieve : elm-retrieve (or #f (-> CqlValue)) Env -> (listof FhirNode)   `want` evaluates the
+;; retrieve's codes (#f: none). The runtime's data and terminology are fixed, so a type's resources
+;; and a code-filtered retrieve are memoised per runtime: the same retrieve in many definitions
+;; reads and filters once.
+(define (retrieve r want env)
   (define rt (or (ienv-rt env) (fail "a retrieve needs a data source")))
   (define type (simple-name (elm-retrieve-data-type r)))
-  (define all (map resource->node ((runtime-data rt) type)))
+  (define all (runtime-memo-ref rt (cons 'retrieve type) (lambda () (map resource->node ((runtime-data rt) type)))))
   (cond
-    [(not (elm-retrieve-codes r)) all]
+    [(not want) all]
     [else
-     (define want (eval-elm (elm-retrieve-codes r) env))
-     (define path (string-split (elm-retrieve-code-property r) "."))
-     (filter (lambda (n)
-               (define have (codes-of (navigate-path n path)))
-               (cond [(cql-obj? want) (ormap (lambda (c) (in-vocabulary? c want env)) have)]
-                     [(list? want) (for*/or ([c (in-list have)] [w (in-list want)]) (code-match? c w))]
-                     [else #f]))
-             all)]))
+     (define w (want))
+     (define prop (elm-retrieve-code-property r))
+     (runtime-memo-ref
+      rt (list 'retrieve type prop w)
+      (lambda ()
+        (define path (string-split prop "."))
+        (filter (lambda (n)
+                  (define have (codes-of (navigate-path n path)))
+                  (cond [(cql-obj? w) (ormap (lambda (c) (in-vocabulary? c w env)) have)]
+                        [(list? w) (for*/or ([c (in-list have)] [x (in-list w)]) (code-match? c x))]
+                        [else #f]))
+                all)))]))
 (define (navigate-path v steps)
   (for/fold ([v v]) ([s (in-list steps)])
     (cond [(list? v) (append-map (lambda (x) (let ([r (navigate-path x (list s))]) (if (list? r) r (list r)))) v)]
@@ -323,12 +613,15 @@
 (define (in-vocabulary? c vs env)
   (define rt (or (ienv-rt env) (fail "terminology membership needs a terminology source")))
   (define url (obj-field vs 'id))
-  (define members ((runtime-valueset rt) url))
+  (define members (runtime-memo-ref rt (cons 'valueset url) (lambda () ((runtime-valueset rt) url))))
   (unless members (fail (format "value set ~a is not available" url)))
   (for/or ([x (in-list (codes-of c))])
     (if (cql-code-system x)
         (hash-ref members (cons (cql-code-system x) (cql-code-code x)) #f)
-        (for/or ([k (in-hash-keys members)]) (equal? (cdr k) (cql-code-code x))))))
+        ;; a code without a system matches a member with that code in any system
+        (hash-ref (runtime-memo-ref rt (cons 'valueset-codes url)
+                                    (lambda () (for/hash ([k (in-hash-keys members)]) (values (cdr k) #t))))
+                  (cql-code-code x) #f))))
 
 ;; query aliases and lets live in the operand table (OperandRef, AliasRef and QueryLetRef all read it)
 (define (lookup-operand name env)
@@ -630,24 +923,25 @@
 ;; operand (false for And, true for Or, false-antecedent for Implies), so an error or expensive
 ;; computation in the unreached branch never fires. Result is CQL three-valued.
 ;; and-lazy : ELM ELM Env -> Boolean|Null
-(define (and-lazy a b env)
-  (define av (eval-elm a env))
-  (cond [(eq? av #f) #f]
-        [else (define bv (eval-elm b env))
-              (cond [(eq? bv #f) #f] [(and (eq? av #t) (eq? bv #t)) #t] [else cql-null])]))
-
-;; or-lazy : ELM ELM Env -> Boolean|Null
-(define (or-lazy a b env)
-  (define av (eval-elm a env))
-  (cond [(eq? av #t) #t]
-        [else (define bv (eval-elm b env))
-              (cond [(eq? bv #t) #t] [(and (eq? av #f) (eq? bv #f)) #f] [else cql-null])]))
-
+(define (and-lazy a b env) (and-values (eval-elm a env) (lambda () (eval-elm b env))))
+(define (or-lazy a b env) (or-values (eval-elm a env) (lambda () (eval-elm b env))))
 ;; implies-lazy : ELM ELM Env -> Boolean|Null   (false antecedent => true, without evaluating b)
-(define (implies-lazy a b env)
-  (define av (eval-elm a env))
+(define (implies-lazy a b env) (implies-values (eval-elm a env) (lambda () (eval-elm b env))))
+
+;; and-values / or-values / implies-values : CqlValue (-> CqlValue) -> Boolean|Null   the logic itself,
+;; given the first operand's value and a thunk for the second (called only when it can decide);
+;; shared by the tree walker above and the compiled evaluator
+(define (and-values av next)
+  (cond [(eq? av #f) #f]
+        [else (define bv (next))
+              (cond [(eq? bv #f) #f] [(and (eq? av #t) (eq? bv #t)) #t] [else cql-null])]))
+(define (or-values av next)
+  (cond [(eq? av #t) #t]
+        [else (define bv (next))
+              (cond [(eq? bv #t) #t] [(and (eq? av #f) (eq? bv #f)) #f] [else cql-null])]))
+(define (implies-values av next)
   (cond [(eq? av #f) #t]
-        [else (define bv (eval-elm b env))
+        [else (define bv (next))
               (cond [(eq? bv #t) #t] [(and (eq? av #t) (eq? bv #f)) #f] [else cql-null])]))
 
 ;; coalesce : (Listof CqlValue) -> CqlValue   first non-null argument; the single-LIST form
@@ -756,8 +1050,10 @@
 ;; ---- query engine ----------------------------------------------------------
 ;; run-query : sources lets where ret ret-distinct sort agg Env -> CqlValue
 ;; sources/lets are (Listof (cons string elm)); agg is (list name distinct? starting-elm body-elm)|#f.
-(define (run-query sources lets rels where ret ret-distinct sort agg env)
-  (define srcs (map (lambda (s) (cons (car s) (eval-elm (cdr s) env))) sources))
+;; ev : (ELM Env -> CqlValue) evaluates the query's parts: the tree walker by default, the compiled
+;; evaluator from a compiled query (one query engine, so both evaluators share its semantics)
+(define (run-query sources lets rels where ret ret-distinct sort agg env [ev eval-elm])
+  (define srcs (map (lambda (s) (cons (car s) (ev (cdr s) env))) sources))
   (cond
     [(ormap (lambda (s) (cql-null? (cdr s))) srcs) cql-null]
     [else
@@ -765,31 +1061,31 @@
      (define scalar-single? (and (= 1 (length srcs)) (not (list? (cdr (car srcs))))))
      (define elem-lists (map (lambda (s) (if (list? (cdr s)) (cdr s) (list (cdr s)))) srcs))
      (define rows (query-cartesian aliases elem-lists))
-     (define row-envs (map (lambda (row) (apply-lets (row-env env row) lets)) rows))
-     (define related (filter (lambda (e) (andmap (lambda (r) (relationship-holds? r e)) rels)) row-envs))
-     (define kept (if where (filter (lambda (e) (eq? (eval-elm where e) #t)) related) related))
+     (define row-envs (map (lambda (row) (apply-lets (row-env env row) lets ev)) rows))
+     (define related (filter (lambda (e) (andmap (lambda (r) (relationship-holds? r e ev)) rels)) row-envs))
+     (define kept (if where (filter (lambda (e) (eq? (ev where e) #t)) related) related))
      (cond
-       [agg (run-aggregate agg aliases kept env)]
+       [agg (run-aggregate agg aliases kept env ev)]
        [else
-        (define results (map (lambda (e) (row-result ret aliases e)) kept))
+        (define results (map (lambda (e) (row-result ret aliases e ev)) kept))
         (define r1 (if (eq? ret-distinct #t) (dedup results) results))
-        (define r2 (if sort (sort-by-items r1 sort env) r1))
+        (define r2 (if sort (sort-by-items r1 sort env ev) r1))
         (if scalar-single? (if (pair? r2) (car r2) cql-null) r2)])]))
 
 ;; relationship-holds? : elm-relationship Env -> boolean   with: some related row satisfies such-that ;
 ;; without: none does
-(define (relationship-holds? r env)
-  (define src (eval-elm (elm-relationship-expression r) env))
+(define (relationship-holds? r env [ev eval-elm])
+  (define src (ev (elm-relationship-expression r) env))
   (define items (cond [(cql-null? src) '()] [(list? src) src] [else (list src)]))
   (define any? (for/or ([v (in-list items)])
-                 (eq? #t (eval-elm (elm-relationship-such-that r)
-                                   (row-env env (hash (elm-relationship-alias r) v))))))
+                 (eq? #t (ev (elm-relationship-such-that r)
+                             (row-env env (hash (elm-relationship-alias r) v))))))
   (if (eq? (elm-relationship-kind r) 'with) any? (not any?)))
 
 ;; sort-by-items : (Listof CqlValue) (Listof elm-sort-by) Env -> (Listof CqlValue)
 ;; a single ByDirection sorts the values themselves; ByColumn/ByExpression sort by a key per row
 ;; (stable, keys compared in order)
-(define (sort-by-items xs items env)
+(define (sort-by-items xs items env [ev eval-elm])
   (match items
     [(list (elm-sort-by 'direction dir _)) (sort-values xs (string->symbol dir))]
     [_
@@ -797,7 +1093,7 @@
        (parameterize ([current-sort-row x])
          (match b
            [(elm-sort-by 'column _ path) (eval-property x path)]
-           [(elm-sort-by 'expression _ e) (eval-elm e env)]
+           [(elm-sort-by 'expression _ e) (ev e env)]
            [(elm-sort-by 'direction _ _) x])))
      (sort xs (lambda (a b)
                 (let loop ([bs items])
@@ -813,11 +1109,11 @@
                   (car lists))))
 (define (row-env base row)
   (struct-copy ienv base [operands (for/fold ([h (ienv-operands base)]) ([(k v) (in-hash row)]) (hash-set h k v))]))
-(define (apply-lets env lets)
+(define (apply-lets env lets [ev eval-elm])
   (for/fold ([e env]) ([l (in-list lets)])
-    (struct-copy ienv e [operands (hash-set (ienv-operands e) (car l) (eval-elm (cdr l) e))])))
-(define (row-result ret aliases e)
-  (cond [ret (eval-elm ret e)]
+    (struct-copy ienv e [operands (hash-set (ienv-operands e) (car l) (ev (cdr l) e))])))
+(define (row-result ret aliases e [ev eval-elm])
+  (cond [ret (ev ret e)]
         [(= 1 (length aliases)) (hash-ref (ienv-operands e) (car aliases))]
         [else (cql-tuple (for/hash ([a (in-list aliases)]) (values (string->symbol a) (hash-ref (ienv-operands e) a))))]))
 
@@ -827,11 +1123,11 @@
 ;; precedes @2012-10-05T10, per the reference implementation).
 (define (sort-values xs dir)
   (sort xs (lambda (a b) (define c (total-compare a b)) (if (eq? dir 'desc) (> c 0) (< c 0)))))
-(define (run-aggregate agg aliases kept env)
+(define (run-aggregate agg aliases kept env [ev eval-elm])
   (define name (car agg)) (define adist (cadr agg)) (define start-elm (caddr agg)) (define body (cadddr agg))
   (define rows (if adist (dedup-rows kept aliases) kept))
-  (define start (if start-elm (eval-elm start-elm env) cql-null))
-  (foldl (lambda (e acc) (eval-elm body (struct-copy ienv e [operands (hash-set (ienv-operands e) name acc)])))
+  (define start (if start-elm (ev start-elm env) cql-null))
+  (foldl (lambda (e acc) (ev body (struct-copy ienv e [operands (hash-set (ienv-operands e) name acc)])))
          start rows))
 
 ;; dedup row-envs by their alias-value tuple (for `aggregate distinct`)
@@ -857,10 +1153,20 @@
             (if hit (eval-elm (elm-case-item-then it) env) (loop (cdr its)))])))
 
 ;; ---- navigation / functions / types ---------------------------------------
-(define (eval-property v path)
+(define (eval-property v path) ((property-accessor path) v))
+
+;; property-accessor : path -> (CqlValue -> CqlValue)   a dotted path (`birthDate.value`) navigates
+;; step by step; the path is split once, here, not on every access (the compiled evaluator keeps
+;; the accessor; eval-property builds it per call)
+(define (property-accessor path)
+  (if (regexp-match? #rx"[.]" path)
+      (let ([steps (string-split path ".")])
+        (lambda (v) (for/fold ([x v]) ([p (in-list steps)]) (property-step x p))))
+      (lambda (v) (property-step v path))))
+
+;; property-step : CqlValue step -> CqlValue   one step of a property path
+(define (property-step v path)
   (cond [(cql-null? v) cql-null]
-        ;; a dotted path (`birthDate.value`) navigates step by step
-        [(regexp-match? #rx"[.]" path) (for/fold ([x v]) ([p (in-list (string-split path "."))]) (eval-property x p))]
         [(fhir-node? v) (fhir-property v path)]
         [(cql-tuple? v) (hash-ref (cql-tuple-fields v) (string->symbol path) cql-null)]
         [(cql-code? v) (or (case path [("code") (cql-code-code v)] [("system") (cql-code-system v)]
@@ -870,7 +1176,7 @@
         [(cql-interval? v) (case path [("low") (or (cql-interval-low v) cql-null)] [("high") (or (cql-interval-high v) cql-null)]
                              [("lowClosed") (cql-interval-low-closed? v)] [("highClosed") (cql-interval-high-closed? v)] [else cql-null])]
         [else cql-null]))          ; slice-1: property on non-tuples is undecidable -> null
-(define (eval-function name args env)
+(define (eval-function name args env [run eval-elm])
   (define f (hash-ref (ienv-funcs env) name (lambda () (fail (format "unknown function ~a" name)))))
   (define ops (elm-function-def-operands f))
   (define env* (struct-copy ienv env
@@ -878,14 +1184,16 @@
                                         (hash-set h (elm-operand-def-name o) a))]))
   (define body (elm-function-def-expression f))
   (when (eq? body (quote external)) (fail (format "external function ~a has no implementation" name)))
-  (eval-elm body env*))
+  (run body env*))
 (define (eval-is v type*)
   (define type (if (string? type*) (elm-named-type type*) type*))
   (cond [(cql-null? v) #f]
         [(and (fhir-node? v) (elm-named-type? type)) (fhir-is? v (elm-named-type-name type))]
         [(elm-named-type? type) (value-is-type? v (elm-named-type-name type))]
         [else #f]))
-(define (simple-name qn) (let ([m (regexp-match #rx"}([^}]+)$" qn)]) (if m (cadr m) qn)))
+(define simple-names (make-weak-hash))   ; qualified name -> simple name (a pure function, memoised)
+(define (simple-name qn)
+  (hash-ref! simple-names qn (lambda () (let ([m (regexp-match #rx"}([^}]+)$" qn)]) (if m (cadr m) qn)))))
 (define (value-is-type? v qn)
   (define t (simple-name qn))
   (case t
@@ -973,5 +1281,51 @@
   (check-equal? (hash-ref results "B") 14)
   ;; in `sort by`, a fluent function without a target applies to the row ($this)
   (define sorted (run-library (ok-value (compile-library (ok-value (parse-cql "define fluent function Neg(x Integer): -x\ndefine S: ({3, 1, 2}) v sort by Neg() asc"))))))
-  (check-equal? (hash-ref sorted "S") '(3 2 1)))
+  (check-equal? (hash-ref sorted "S") '(3 2 1))
+
+  ;; ---- the closure compiler ----
+  ;; the compiled evaluator gives the tree walker's value (tests/evaluator-test.rkt does this for
+  ;; every expression of the HL7 suite and every definition of the two library corpora)
+  (define (node s) (ok-value (compile-expr (ok-value (parse-cql-expr s)))))
+  (for ([s (in-list '("1 + 2" "3.0 + 0.14" "'a' & null" "true and null" "false and (1 / 0 = 1)" "null or true"
+                      "if 1 < 2 then 'yes' else 'no'" "case 2 when 1 then 'a' when 2 then 'b' else 'c' end"
+                      "{1, 2} union {2, 3}" "5 in Interval[1, 10]" "Tuple { a: 1, b: 'x' }.b"
+                      "(from ({1, 2, 3}) X where X > 1 return X * 10)" "({3, 1, 2}) v sort desc"
+                      "@2012-01-01T10:00 + 1 day" "Interval[@2012-01-01, @2012-12-31] overlaps Interval[@2012-06-01, @2013-01-01]"))])
+    (define n (node s)) (define env (make-ienv))
+    (check-equal? (eval-elm/compiled n env) (eval-elm n env) s))
+  ;; compiling never raises: an error is raised when (and only if) the node runs, as the tree walker
+  ;; does — an untaken branch with a bad literal or an unknown operator evaluates fine
+  (define bad-literal (elm-literal "Decimal" "not-a-number"))
+  (define unknown-op (elm-unary "NoSuchOperator" (elm-literal "Integer" "1") #f))
+  (check-equal? (eval-elm/compiled (elm-if (elm-literal "Boolean" "true") (elm-literal "Integer" "1") bad-literal) (make-ienv)) 1)
+  (check-equal? (eval-elm/compiled (elm-if (elm-literal "Boolean" "false") unknown-op (elm-literal "Integer" "2")) (make-ienv)) 2)
+  (check-exn cql-error? (lambda () (eval-elm/compiled bad-literal (make-ienv))))
+  (check-exn cql-error? (lambda () (eval-elm/compiled unknown-op (make-ienv))))
+  ;; a node is compiled once
+  (define n1 (node "1 + 2"))
+  (check-eq? (compile-elm n1) (compile-elm n1))
+  ;; run-library and libraries take the evaluator current-elm-evaluator names; both agree
+  (define lib2 (ok-value (compile-library (ok-value (parse-cql "define A: 3 + 4\ndefine B: A * 2\ndefine C: (from ({1,2}) X return X + B)")))))
+  (check-equal? (parameterize ([current-elm-evaluator 'tree]) (run-library lib2))
+                (parameterize ([current-elm-evaluator 'compiled]) (run-library lib2)))
+
+  ;; ---- per-runtime memo ----
+  ;; a retrieve reads its type's resources once per runtime, however many definitions retrieve it
+  (define reads 0)
+  (define rt (runtime (lambda (type) (set! reads (add1 reads)) (list (hasheq 'resourceType type 'id "1"))) (lambda (u) #f) #f))
+  (define lib3 (ok-value (compile-library (ok-value (parse-cql "using FHIR version '4.0.1'\ncontext Patient\ndefine A: [Condition]\ndefine B: [Condition]")))))
+  (define rl3 (make-rlib lib3 (hash) rt (hash)))
+  (check-equal? (length (rlib-value rl3 "A")) 1)
+  (check-equal? (length (rlib-value rl3 "B")) 1)
+  (check-equal? reads 1 "Condition is read once for the two definitions")
+  ;; value set membership: a system-less code matches by code alone, through the memoised index
+  (define vs-members (hash (cons "http://s" "a") #t (cons "http://s" "b") #t))
+  (define rt2 (runtime (lambda (_t) '()) (lambda (u) (and (equal? u "http://vs") vs-members)) #f))
+  (define env2 (struct-copy ienv (make-ienv) [rt rt2]))
+  (define vs (cql-obj "ValueSet" (hash 'id "http://vs" 'version cql-null)))
+  (check-true (in-vocabulary? (cql-code "a" #f #f #f) vs env2))
+  (check-false (in-vocabulary? (cql-code "z" #f #f #f) vs env2))
+  (check-true (in-vocabulary? (cql-code "b" "http://s" #f #f) vs env2))
+  (check-false (in-vocabulary? (cql-code "b" "http://other" #f #f) vs env2)))
 

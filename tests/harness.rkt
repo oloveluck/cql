@@ -11,7 +11,7 @@
 (require racket/contract racket/list xml
          (only-in "../parser/parse.rkt" parse-cql-expr)
          (only-in "../compile.rkt" compile-expr)
-         (only-in "../interp.rkt" eval-elm make-ienv test-equal?)
+         (only-in "../interp.rkt" run-elm make-ienv test-equal?)
          (only-in "../value.rkt" cql-null? render)
          (only-in "../error.rkt" cql-error?)
          (only-in fhir/result/result ok? ok-value err-error))
@@ -44,7 +44,7 @@
        (define cr (compile-expr (ok-value pr)))
        (cond
          [(not (ok? cr)) (values #f (err-error cr))]
-         [else (values (eval-elm (ok-value cr) (make-ienv)) #f)])])))
+         [else (values (run-elm (ok-value cr) (make-ienv)) #f)])])))
 
 ;; ---- run a suite ----------------------------------------------------------
 ;; -> (values passed total failures skipped). `total` counts only attempted (expression) tests;

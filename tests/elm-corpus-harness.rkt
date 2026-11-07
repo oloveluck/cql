@@ -28,6 +28,9 @@
  (struct-out lib-result)
  (contract-out
   [check-elm-corpus (-> path-string? (listof lib-result?))]
+  ;; corpus-libraries : dir -> (listof (list package name cql-library resolver))   every corpus library
+  ;; that parses, with the resolver its includes use (the evaluator differential runs them)
+  [corpus-libraries (-> path-string? (listof list?))]
   [normalize-elm (->* (any/c) (any/c) any/c)]))
 
 (struct lib-result (package name parse-ok? compile-ok? error defs-total defs-present defs-equal mismatches)
@@ -143,3 +146,11 @@
               [f (in-list (sort (directory-list (build-path dir pkg) #:build? #t) string<? #:key path->string))]
               #:when (regexp-match? #rx"[.]cql$" (path->string f)))
     (check-library pkg f (path-replace-extension f #".elm.json"))))
+
+(define (corpus-libraries dir)
+  (for*/list ([pkg (in-list (sort (map path->string (directory-list dir)) string<?))]
+              #:when (directory-exists? (build-path dir pkg))
+              [f (in-list (sort (directory-list (build-path dir pkg) #:build? #t) string<? #:key path->string))]
+              #:when (regexp-match? #rx"[.]cql$" (path->string f))
+              [lib (in-value (parse-file f))] #:when lib)
+    (list pkg (path->string (path-replace-extension (file-name-from-path f) #"")) lib (package-resolver (build-path dir pkg)))))

@@ -41,6 +41,32 @@ operators, `if`/`case`. Layers:
   later `def-op!` wins): the dead first copies are gone.
   Key semantic bridge: CQL is single-value-with-`null` (three-valued And/Or/Xor/Implies; null-propagating
   arithmetic/comparison), not FHIRPath's always-collection model.
+- **Two evaluators, one semantics** (interp.rkt): `eval-elm` is the tree walker and the reference;
+  `compile-elm` is a closure compiler, the same structural recursion with each clause returning a
+  `(Env -> CqlValue)` closure, cached per node in an ephemeron table. Libraries (`make-rlib`,
+  `run-library`) and `run-elm` use the evaluator `current-elm-evaluator` names — `'compiled` by
+  default, `CQL_ELM_EVALUATOR=tree` for a process. Two rules keep them identical: compiling never
+  raises (an unknown operator or a bad literal raises when its closure RUNS, so an untaken branch
+  raises nothing), and only literals and quantities are computed ahead (nothing that reads the clock,
+  the evaluation offset, data or parameters). The query engine, library-function calls and the
+  operators' algebra are shared (they take the evaluator as an argument; and/or/implies share
+  `and-values`/`or-values`/`implies-values`). `tests/evaluator-test.rkt` compares every result, not pass
+  counts: 3590 HL7 suite expressions and outputs, 565 ELM-corpus definitions over no data, 2051 eCQM
+  definitions over the 76 patients — 0 differ.
+- **What depends only on the library or the runtime is computed once** (behaviour-preserving; the
+  outcome of every eCQM, ELM-corpus and suite result was checked identical to the previous commit):
+  per library (`library-tables`): the function table by name, the first overloads, the definitions,
+  the static code system and value set terms (make-rlib used to rebuild them for every patient with a
+  quadratic `append`); per runtime (`runtime-memo-ref`): a type's retrieved resources, a code-filtered
+  retrieve, a value set's members and its code-only index; per rlib: the overload a signature picks;
+  per evaluation: includes (`caching-resolver` in run.rkt — `evaluate-measure` and the eCQM harness use
+  it; a resolver that re-read and re-parsed every include for every patient was 90% of a measure's
+  time); the property path split, `simple-name`, the terminology lookup by url.
+  Measured on the 76 eCQM patients with the data read up front (engine only): the previous commit took
+  3.3 ms/patient with includes re-read per patient and 0.9 with them cached; now 0.47. The closure compiler alone is ~2x on the isolated eval loop,
+  ~5% on the eCQMs (their time is retrieval, FHIR navigation and terminology, not dispatch), and
+  5-8% slower on the HL7 suite end to end, where each expression is compiled to be run once.
+  `tests/bench.rkt` times all three under both evaluators.
 - `#lang cql` (`cql/lang/reader.rkt` + `cql/base.rkt`): a `.cql` file is one library; the reader
   parses it and emits `(cql-library-form <ast>)`; the custom `#%module-begin` compiles to ELM and
   provides `library` (CQL AST), `elm` (ELM AST), `elm-json`, and `results` (define-name → interpreted

@@ -240,7 +240,21 @@ The evaluation request's timezone offset. A DateTime with a time and no offset t
 @defmodule[cql/interp]
 
 @defproc[(run-library [lib elm-library?]) hash?]{Every definition evaluated with no data: name to value.}
-@defproc[(eval-elm [node elm-expr?] [env ienv?]) cql-value?]{One ELM node in an environment.}
+@defproc[(eval-elm [node elm-expr?] [env ienv?]) cql-value?]{One ELM node in an environment, by the
+tree walker: a structural recursion over the node. It is the reference semantics.}
+@defproc[(eval-elm/compiled [node elm-expr?] [env ienv?]) cql-value?]{The same, through the node's
+compiled closure (@racket[compile-elm]). It gives the same value or raises the same error as
+@racket[eval-elm] everywhere; @tt{tests/evaluator-test.rkt} holds the two to it over the HL7 suite and
+both library corpora.}
+@defproc[(compile-elm [node elm-expr?]) procedure?]{The node as a closure from an environment to a
+value, compiled once per node and cached. Compiling never raises: an error is raised when the
+closure runs, as the tree walker would raise it, so an untaken branch raises nothing.}
+@defproc[(run-elm [node elm-expr?] [env ienv?]) cql-value?]{One node by the evaluator
+@racket[current-elm-evaluator] names.}
+@defparam[current-elm-evaluator evaluator (or/c 'compiled 'tree)]{Which evaluator libraries
+(@racket[make-rlib], @racket[run-library]) and @racket[run-elm] use. The default is
+@racket['compiled]; the environment variable @tt{CQL_ELM_EVALUATOR=tree} selects the tree walker for
+a process.}
 The semantics the operators rest on are the @tt{cql/interp/} modules — @tt{temporal} (durations,
 boundaries, date arithmetic), @tt{arith}, @tt{compare} (ordering, equality, equivalence) and
 @tt{interval} (relations, membership, set operations, expand/collapse) — each pure and tested alone.
@@ -276,6 +290,9 @@ Compiles the library and, once each, the libraries it includes (found by @racket
 apply to its includes.}
 @defproc[(resources->data [resources (listof hash?)] [#:patient-context? patient-context? boolean? #t]) procedure?]{Resources (Bundles unwrapped) as a retrieve source, by type.}
 @defproc[(valuesets->terminology [valuesets (listof hash?)]) procedure?]{ValueSets with expansions (else enumerated compose concepts) as the membership function @racket[runtime] takes.}
+@defproc[(caching-resolver [resolver procedure?]) procedure?]{The resolver, each (name, version)
+resolved once. Use it to evaluate many patients against libraries that do not change: a resolver
+that reads and parses a file or a data source otherwise does so for every include of every patient.}
 @defproc[(measure-populations [measure hash?] [rl rlib?]) (hash/c string? exact-nonnegative-integer?)]{
 One patient's proportion-measure populations (initial-population, denominator, exclusions, numerator,
 exception), each 0 or 1.}
