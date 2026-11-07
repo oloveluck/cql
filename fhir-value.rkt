@@ -20,6 +20,7 @@
 
 (provide (contract-out
           [fhir-property  (-> fhir-node? string? any/c)]
+          [choice-key     (-> string? string? symbol?)]   ; "value" "FHIR.Quantity" -> 'valueQuantity
           [fhir-is?       (-> fhir-node? string? boolean?)]
           [resource->node (-> hash? fhir-node?)]
           [fhir-model     (-> model?)]))
@@ -32,6 +33,8 @@
 
 (define (local t) (let ([m (regexp-match #rx"[.]([^.]+)$" t)]) (if m (cadr m) t)))
 (define (cap s) (if (string=? s "") s (string-append (string-upcase (substring s 0 1)) (substring s 1))))
+;; choice-key : element-name member-type -> symbol   the JSON key of a choice element's member
+(define (choice-key name member) (string->symbol (string-append name (cap (local member)))))
 
 ;; fhir-property : FhirNode string -> CqlValue
 (define (fhir-property n name)
@@ -46,7 +49,7 @@
        [#f (let ([v (hash-ref j (string->symbol name) #f)]) (if v (wrap "Any" v) cql-null))]
        [(? choice-ctype?)
         (or (for/or ([c (in-list (choice-members t))])
-              (define v (hash-ref j (string->symbol (string-append name (cap (local c)))) #f))
+              (define v (hash-ref j (choice-key name c) #f))
               (and v (wrap c v)))
             cql-null)]
        [(? list-ctype?)

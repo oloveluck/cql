@@ -38,6 +38,7 @@
                   moment-kind moment-year moment-month moment-day moment-hour moment-minute moment-second
                   moment-frac moment-tzmin moment-prec moment-plus moment-add-ms)
          "fhir-value.rkt"
+         (only-in "code-path.rkt" resolve-code-path code-path-codes)
          ;; the interpreter's algebra, each a module of its own: the numeric base and errors, the
          ;; temporal semantics, arithmetic, comparison and equality, intervals
          "interp/base.rkt" "interp/temporal.rkt" "interp/arith.rkt" "interp/compare.rkt" "interp/interval.rkt")
@@ -48,6 +49,9 @@
           [run-elm     (-> elm-expr? ienv? cql-value?)]  ; the same, by the evaluator current-elm-evaluator names
           [compile-elm (-> elm-expr? procedure?)]        ; ELM node -> (Env -> CqlValue), compiled once per node
           [current-elm-evaluator (parameter/c (or/c 'compiled 'tree))]
+          ;; generic-codes : a resource and a code property -> its codes by the generic navigation (the
+          ;; reference a retrieve's CodePath is held to, tests/code-path-test.rkt)
+          [generic-codes (-> fhir-node? string? (listof cql-code?))]
           [run-library (-> elm-library? hash?)]     ; def-name(string) -> interpreted CqlValue
           [make-ienv   (->* () (#:defs hash? #:operands hash?) ienv?)]
           [make-rlib   (-> elm-library? hash? (or/c runtime? #f) hash? rlib?)]
@@ -68,15 +72,37 @@
 ;; A Runtime is what a library runs against: `data` : type-name -> (listof resource jsexpr) (the
 ;; retrieve source, already scoped to the context patient) and `valueset` : url -> (hash (cons system
 ;; code) -> #t) | #f (the expansion of a value set; #f = not available, an error when needed).
-;; offset: minutes|#f, see current-evaluation-offset. memo: a cache of what depends only on the
-;; runtime, whose data and terminology do not change during an evaluation: a retrieve's resources, a
-;; code-filtered retrieve, a value set's members and its code-only index (`runtime-memo-ref`).
-(struct runtime (data valueset offset memo) #:constructor-name make-runtime-struct #:omit-define-syntaxes)
-;; runtime : (type -> resources) (url -> members|#f) offset -> Runtime   with an empty memo
-(define (runtime data valueset offset) (make-runtime-struct data valueset offset (make-hash)))
-;; runtime-memo-ref : Runtime Any (-> Any) -> Any   the memoised value under key (computed once; a
-;; computation that raises stores nothing, so the error recurs exactly as it would uncached)
-(define (runtime-memo-ref rt key compute) (hash-ref! (runtime-memo rt) key compute))
+;; offset: minutes|#f, see current-evaluation-offset. The rest is what depends only on the runtime,
+;; whose data and terminology do not change during an evaluation, each computed once:
+;;   typed        : type-name -> (listof FhirNode)              a type's resources, typed once
+;;   retrieves    : (cons type code-property) -> (hasheq codes-value -> (listof FhirNode))
+;;                  a code-filtered retrieve, by the codes value's identity (a ValueSetRef's value is
+;;                  the library's term object, shared by every evaluation of it: a missed identity is
+;;                  only a recomputation, never a wrong answer)
+;;   vocabularies : url -> Vocabulary | #f                       a value set's members (#f: unavailable)
+;; A Vocabulary is (vocabulary members codes): members is (hash (cons system code) -> #t); codes is a
+;; thunk for the code-only index (code -> #t), built the first time a code without a system is tested.
+;; A computation that raises stores nothing, so its error recurs exactly as it would uncached.
+(struct runtime (data valueset offset typed retrieves vocabularies)
+  #:constructor-name make-runtime-struct #:omit-define-syntaxes)
+(struct vocabulary (members codes))
+;; runtime : (type -> resources) (url -> members|#f) offset -> Runtime   with empty caches
+(define (runtime data valueset offset) (make-runtime-struct data valueset offset (make-hash) (make-hash) (make-hash)))
+
+;; runtime-resources : Runtime type-name -> (listof FhirNode)
+(define (runtime-resources rt type)
+  (hash-ref! (runtime-typed rt) type (lambda () (map resource->node ((runtime-data rt) type)))))
+;; runtime-vocabulary : Runtime url -> Vocabulary | #f
+(define (runtime-vocabulary rt url)
+  (hash-ref! (runtime-vocabularies rt) url
+             (lambda ()
+               (define members ((runtime-valueset rt) url))
+               (and members
+                    (vocabulary members (delay-value (lambda () (for/hash ([k (in-hash-keys members)]) (values (cdr k) #t)))))))))
+;; runtime-retrieve : Runtime type code-property codes-value (-> (listof FhirNode)) -> (listof FhirNode)
+(define (runtime-retrieve rt type property w compute)
+  (define by-codes (hash-ref! (runtime-retrieves rt) (cons type property) make-hasheq))
+  (hash-ref! by-codes w compute))
 
 ;; An Rlib is a compiled library ready to run: its definitions (memoised promises), functions (by
 ;; name, overloads in order), parameters, terminology definitions, and the Rlibs of its includes.
@@ -559,28 +585,36 @@
   (retrieve r (and (elm-retrieve-codes r) (lambda () (eval-elm (elm-retrieve-codes r) env))) env))
 
 ;; retrieve : elm-retrieve (or #f (-> CqlValue)) Env -> (listof FhirNode)   `want` evaluates the
-;; retrieve's codes (#f: none). The runtime's data and terminology are fixed, so a type's resources
-;; and a code-filtered retrieve are memoised per runtime: the same retrieve in many definitions
-;; reads and filters once.
+;; retrieve's codes (#f: none). A type's resources and a code-filtered retrieve are computed once per
+;; runtime: the same retrieve in many definitions reads and filters once.
 (define (retrieve r want env)
   (define rt (or (ienv-rt env) (fail "a retrieve needs a data source")))
   (define type (simple-name (elm-retrieve-data-type r)))
-  (define all (runtime-memo-ref rt (cons 'retrieve type) (lambda () (map resource->node ((runtime-data rt) type)))))
+  (define all (runtime-resources rt type))
   (cond
     [(not want) all]
     [else
      (define w (want))
-     (define prop (elm-retrieve-code-property r))
-     (runtime-memo-ref
-      rt (list 'retrieve type prop w)
-      (lambda ()
-        (define path (string-split prop "."))
-        (filter (lambda (n)
-                  (define have (codes-of (navigate-path n path)))
-                  (cond [(cql-obj? w) (ormap (lambda (c) (in-vocabulary? c w env)) have)]
-                        [(list? w) (for*/or ([c (in-list have)] [x (in-list w)]) (code-match? c x))]
-                        [else #f]))
-                all)))]))
+     (define property (elm-retrieve-code-property r))
+     (runtime-retrieve rt type property w (lambda () (filter (code-filter type property w env) all)))]))
+
+;; code-filter : type code-property codes-value Env -> (FhirNode -> Boolean)   whether a resource's
+;; codes at the property match the codes value: a value set by membership, a list of codes by `~`.
+;; The codes are read along the property's CodePath (code-path.rkt: resolved once against the model)
+;; and, where there is none or a resource's JSON is not of its declared shape, by the generic
+;; navigation, which is the reference the CodePath reads the same codes as.
+(define (code-filter type property w env)
+  (define steps (string-split property "."))
+  (define path (resolve-code-path (string-append "FHIR." type) property))
+  (define (codes n)
+    (define c (and path (code-path-codes path (fhir-node-json n))))
+    (if (list? c) c (codes-of (navigate-path n steps))))
+  (define matches?
+    (cond [(cql-obj? w) (lambda (have) (ormap (lambda (c) (in-vocabulary? c w env)) have))]
+          [(list? w) (lambda (have) (for*/or ([c (in-list have)] [x (in-list w)]) (code-match? c x)))]
+          [else (lambda (_have) #f)]))
+  (lambda (n) (matches? (codes n))))
+(define (generic-codes n property) (codes-of (navigate-path n (string-split property "."))))
 (define (navigate-path v steps)
   (for/fold ([v v]) ([s (in-list steps)])
     (cond [(list? v) (append-map (lambda (x) (let ([r (navigate-path x (list s))]) (if (list? r) r (list r)))) v)]
@@ -613,15 +647,12 @@
 (define (in-vocabulary? c vs env)
   (define rt (or (ienv-rt env) (fail "terminology membership needs a terminology source")))
   (define url (obj-field vs 'id))
-  (define members (runtime-memo-ref rt (cons 'valueset url) (lambda () ((runtime-valueset rt) url))))
-  (unless members (fail (format "value set ~a is not available" url)))
+  (define v (or (runtime-vocabulary rt url) (fail (format "value set ~a is not available" url))))
   (for/or ([x (in-list (codes-of c))])
     (if (cql-code-system x)
-        (hash-ref members (cons (cql-code-system x) (cql-code-code x)) #f)
+        (hash-ref (vocabulary-members v) (cons (cql-code-system x) (cql-code-code x)) #f)
         ;; a code without a system matches a member with that code in any system
-        (hash-ref (runtime-memo-ref rt (cons 'valueset-codes url)
-                                    (lambda () (for/hash ([k (in-hash-keys members)]) (values (cdr k) #t))))
-                  (cql-code-code x) #f))))
+        (hash-ref ((vocabulary-codes v)) (cql-code-code x) #f))))
 
 ;; query aliases and lets live in the operand table (OperandRef, AliasRef and QueryLetRef all read it)
 (define (lookup-operand name env)

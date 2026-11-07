@@ -54,16 +54,33 @@ operators, `if`/`case`. Layers:
   counts: 3590 HL7 suite expressions and outputs, 565 ELM-corpus definitions over no data, 2051 eCQM
   definitions over the 76 patients — 0 differ.
 - **What depends only on the library or the runtime is computed once** (behaviour-preserving; the
-  outcome of every eCQM, ELM-corpus and suite result was checked identical to the previous commit):
+  outcome of every eCQM, ELM-corpus and suite result was checked identical to 29b6bf8's):
   per library (`library-tables`): the function table by name, the first overloads, the definitions,
   the static code system and value set terms (make-rlib used to rebuild them for every patient with a
-  quadratic `append`); per runtime (`runtime-memo-ref`): a type's retrieved resources, a code-filtered
-  retrieve, a value set's members and its code-only index; per rlib: the overload a signature picks;
+  quadratic `append`); per runtime (typed caches in the `runtime` struct): a type's resources, a
+  code-filtered retrieve (by type and property, then the codes value's identity — a ValueSetRef's value
+  is the library's shared term object; a missed identity only recomputes), a value set's `vocabulary`
+  (members, and the code-only index built lazily); per rlib: the overload a signature picks;
   per evaluation: includes (`caching-resolver` in run.rkt — `evaluate-measure` and the eCQM harness use
   it; a resolver that re-read and re-parsed every include for every patient was 90% of a measure's
   time); the property path split, `simple-name`, the terminology lookup by url.
-  Measured on the 76 eCQM patients with the data read up front (engine only): the previous commit took
-  3.3 ms/patient with includes re-read per patient and 0.9 with them cached; now 0.47. The closure compiler alone is ~2x on the isolated eval loop,
+- **A retrieve's code property is resolved once against the model** (`code-path.rkt`): the data type and
+  the code property fix the path's shape through the ModelInfo, so `resolve-code-path` builds a CodePath
+  — a Reader per step (`field` key many?, `choice` of member keys, `coding`, `bare`) — and
+  `code-path-codes` reads a resource's codes from its JSON with no model lookups or per-value type tests.
+  The generic navigation (`navigate-path` + `codes-of` over `fhir-property`, exported as `generic-codes`)
+  is the reference: no CodePath where the model does not fix the shape (an element it lacks, a System
+  type, a `value` step — e.g. DeviceUseStatement.device.code through a Reference), and 'unshaped for a
+  resource whose JSON the generic navigation would type differently (a value with its own
+  `resourceType`, an object where a Coding's string element is declared, another resource type); both
+  read generically. `choice-key` (fhir-value.rkt) is the one definition of a choice member's JSON key.
+  `tests/code-path-test.rkt`: 65 (type, property) pairs (every retrievable class's primaryCodePath and
+  every code-filtered retrieve in the eCQM and ELM-corpus libraries), 64 resolved, over the eCQM data and
+  the R4 IG examples in fhir-spec plus mutants of each resource's code element (null, scalars, lists,
+  resourceType-bearing values, malformed codings): 19472 compared, 0 differ.
+  Measured on the 76 eCQM patients with the data read up front (engine only): the engine before this work (29b6bf8)
+  took 3.3 ms/patient with includes re-read per patient and 0.9 with them cached; 0.47 with the caches above,
+  0.32 with CodePaths. The closure compiler alone is ~2x on the isolated eval loop,
   ~5% on the eCQMs (their time is retrieval, FHIR navigation and terminology, not dispatch), and
   5-8% slower on the HL7 suite end to end, where each expression is compiled to be run once.
   `tests/bench.rkt` times all three under both evaluators.
