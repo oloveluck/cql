@@ -1,0 +1,1028 @@
+{
+ "calculation_method": "PATIENT",
+ "cms_id": "CMS160v7",
+ "composite": false,
+ "hqmf_set_id": "A4B9763C-847E-4E02-BB7E-ACC596E90E2C",
+ "main_cql_library": "DepressionUtilizationofthePHQ9Tool",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "160",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "160"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "0712",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "0712"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Copyright MN Community Measurement, 2018. All rights reserved.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Copyright MN Community Measurement, 2018. All rights reserved."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "This measure is \"re-tooled\" from the existing NQF # 712 measure. eMeasure development was a collaboration between MN Community Measurement and Telligen with technical assistance provided by Telligen.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "This measure is \"re-tooled\" from the existing NQF # 712 measure. eMeasure development was a collaboration between MN Community Measurement and Telligen with technical assistance provided by Telligen."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "Ages 12 to 17\nAges 18 and older",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Ages 12 to 17\nAges 18 and older"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "Adults:\nDepression is a common and treatable mental disorder. The Centers for Disease Control and Prevention states that an estimated 6.6% of the U.S. adult population (14.8 million people) experiences a major depressive disorder during any given 12-month period. Additionally, dysthymia accounts for an additional 3.3 million Americans. In 2006 and 2008, an estimated 9.1% of U.S. adults reported symptoms for current depression (Centers for Disease Control and Prevention, 2010).\n\nPersons with a current diagnosis of depression and a lifetime diagnosis of depression or anxiety were significantly more likely than persons without these conditions to have cardiovascular disease, diabetes, asthma and obesity and to be a current smoker, to be physically inactive and to drink heavily (Strine, 2008).\n \nPeople who suffer from depression have lower incomes, lower educational attainment and fewer days working each year, leading to seven fewer weeks of work per year, a loss of 20% in potential income and a lifetime loss for each family who has a depressed family member of $300,000 (Smith, 2010). \n\nThe cost of depression (lost productivity and increased medical expense) in the United States is $83 billion each year (Greenberg, 2003). \n\n \nAdolescents and Adults:\nThe Centers for Disease Control and Prevention states that during 2009-2012 an estimated 7.6% of the U.S. population aged 12 and over had depression, including 3% of Americans with severe depressive symptoms. Almost 43% of persons with severe depressive symptoms reported serious difficulties in work, home and social activities, yet only 35% reported having contact with a mental health professional in the past year.\nDepression is associated with higher mortality rates in all age groups. People who are depressed are 30 times more likely to take their own lives than people who are not depressed and five times more likely to abuse drugs. Depression is the leading cause of medical disability for people aged 14 - 44. Depressed people lose 5.6 hours of productive work every week when they are depressed, fifty percent of which is due to absenteeism and short-term disability.\n\nAdolescents:\nIn 2014, an estimated 2.8 million adolescents age 12 to 17 in the United States had at least one major depressive episode in the past year. This represented 11.4% of the U.S. population. The same survey found that only 41.2 percent of those who had a Major Depressive Episode received treatment in the past year. The 2013 Youth Risk Behavior Survey of students grades 9 to 12 indicated that during the past 12 months 39.1% (F) and 20.8% (M) indicated feeling sad or hopeless almost every day for at least 2 weeks, planned suicide attempt 16.9% (F) and 10.3% (M), with attempted suicide 10.6% (F) and 5.4% (M). Adolescent-onset depression is associated with chronic depression in adulthood. Many mental health conditions (anxiety, bipolar, depression, eating disorders, and substance abuse) are evident by age 14. The 12-month prevalence of MDEs increased from 8.7% in 2005 to 11.3% in 2014 in adolescents and from 8.8% to 9.6% in young adults (both P < .001). The increase was larger and statistically significant only in the age range of 12 to 20 years. The trends remained significant after adjustment for substance use disorders and sociodemographic factors. Mental health care contacts overall did not change over time; however, the use of specialty mental health providers increased in adolescents and young adults, and the use of prescription medications and inpatient hospitalizations increased in adolescents. In 2015, 9.7% of adolescents in MN who were screened for depression or other mental health conditions, screened positively.\n\nPlease note that this process measure for administration of the PHQ-9 or PHQ-9M depression tool, a PROM that is validated for both the assessment and diagnosis of depression as well as for monitoring ongoing outcomes of treatment, is a PAIRED process measure with RELATED measures of depression remission (PHQ-9/PHQ-9M < 5) and depression response (PHQ-9/PHQ-9M is improved by > 50%) at six and twelve months.  To quote a NQF Behavioral Steering Committee member as these measures were initially endorsed \"the best way to avoid being measured is to never give the PHQ-9\".  This process measure allows an understanding of the use of the tool in the target population, promotes frequent and follow-up contact with patients whose score indicates a need for treatment and serves as a catalyst in a collaborative care model for patients with major depression or dysthymia.  It is estimated that up to 90% of patients diagnosed with depression and anxiety are treated solely in primary care (National Institute for Health and Care Excellence, 2011).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Adults:\nDepression is a common and treatable mental disorder. The Centers for Disease Control and Prevention states that an estimated 6.6% of the U.S. adult population (14.8 million people) experiences a major depressive disorder during any given 12-month period. Additionally, dysthymia accounts for an additional 3.3 million Americans. In 2006 and 2008, an estimated 9.1% of U.S. adults reported symptoms for current depression (Centers for Disease Control and Prevention, 2010).\n\nPersons with a current diagnosis of depression and a lifetime diagnosis of depression or anxiety were significantly more likely than persons without these conditions to have cardiovascular disease, diabetes, asthma and obesity and to be a current smoker, to be physically inactive and to drink heavily (Strine, 2008).\n \nPeople who suffer from depression have lower incomes, lower educational attainment and fewer days working each year, leading to seven fewer weeks of work per year, a loss of 20% in potential income and a lifetime loss for each family who has a depressed family member of $300,000 (Smith, 2010). \n\nThe cost of depression (lost productivity and increased medical expense) in the United States is $83 billion each year (Greenberg, 2003). \n\n \nAdolescents and Adults:\nThe Centers for Disease Control and Prevention states that during 2009-2012 an estimated 7.6% of the U.S. population aged 12 and over had depression, including 3% of Americans with severe depressive symptoms. Almost 43% of persons with severe depressive symptoms reported serious difficulties in work, home and social activities, yet only 35% reported having contact with a mental health professional in the past year.\nDepression is associated with higher mortality rates in all age groups. People who are depressed are 30 times more likely to take their own lives than people who are not depressed and five times more likely to abuse drugs. Depression is the leading cause of medical disability for people aged 14 - 44. Depressed people lose 5.6 hours of productive work every week when they are depressed, fifty percent of which is due to absenteeism and short-term disability.\n\nAdolescents:\nIn 2014, an estimated 2.8 million adolescents age 12 to 17 in the United States had at least one major depressive episode in the past year. This represented 11.4% of the U.S. population. The same survey found that only 41.2 percent of those who had a Major Depressive Episode received treatment in the past year. The 2013 Youth Risk Behavior Survey of students grades 9 to 12 indicated that during the past 12 months 39.1% (F) and 20.8% (M) indicated feeling sad or hopeless almost every day for at least 2 weeks, planned suicide attempt 16.9% (F) and 10.3% (M), with attempted suicide 10.6% (F) and 5.4% (M). Adolescent-onset depression is associated with chronic depression in adulthood. Many mental health conditions (anxiety, bipolar, depression, eating disorders, and substance abuse) are evident by age 14. The 12-month prevalence of MDEs increased from 8.7% in 2005 to 11.3% in 2014 in adolescents and from 8.8% to 9.6% in young adults (both P < .001). The increase was larger and statistically significant only in the age range of 12 to 20 years. The trends remained significant after adjustment for substance use disorders and sociodemographic factors. Mental health care contacts overall did not change over time; however, the use of specialty mental health providers increased in adolescents and young adults, and the use of prescription medications and inpatient hospitalizations increased in adolescents. In 2015, 9.7% of adolescents in MN who were screened for depression or other mental health conditions, screened positively.\n\nPlease note that this process measure for administration of the PHQ-9 or PHQ-9M depression tool, a PROM that is validated for both the assessment and diagnosis of depression as well as for monitoring ongoing outcomes of treatment, is a PAIRED process measure with RELATED measures of depression remission (PHQ-9/PHQ-9M < 5) and depression response (PHQ-9/PHQ-9M is improved by > 50%) at six and twelve months.  To quote a NQF Behavioral Steering Committee member as these measures were initially endorsed \"the best way to avoid being measured is to never give the PHQ-9\".  This process measure allows an understanding of the use of the tool in the target population, promotes frequent and follow-up contact with patients whose score indicates a need for treatment and serves as a catalyst in a collaborative care model for patients with major depression or dysthymia.  It is estimated that up to 90% of patients diagnosed with depression and anxiety are treated solely in primary care (National Institute for Health and Care Excellence, 2011)."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "Adults: \nSource: Institute for Clinical Systems Improvement (ICSI) Health Care Guideline for Adult Depression in Primary Care (Trangle, 2016)\n\nMajor depression is a treatable cause of pain, suffering, disability and death, yet primary care clinicians detect major depression in only one-third to one-half of their patients with major depression (Williams Jr, 2002; Schonfeld, 1997).\n\nUsual care for depression in the primary care setting has resulted in only about half of depressed adults getting treated (Kessler, 2005) and only 20-40% showing substantial improvement over 12 months (Unutzer, 2002; Katon, 1999).\n\nRecommendations and algorithm notations supporting depression assessment and monitoring of depression outcomes according to ICSI's Health Care Guideline:\n\nRecommendation:  Clinicians should establish and maintain follow-up with patients.  Appropriate, reliable follow-up is highly correlated with improved response and remission scores.  It is also correlated with the improved safety and efficacy of medications and helps prevent relapse. \n\nProactive follow-up contacts (in person, telephone) based on the collaborative care model have been shown to significantly lower depression severity (Unutzer, 2002).  In the available clinical effectiveness trials conducted in real clinical practice settings, even the addition of a care manager leads to modest remission rates (Trivedi, 2006-; Unutzer, 2002).  Interventions are critical to educating the patient regarding the importance of preventing relapse, safety and efficacy of medications, and management of potential side effects.  Establish and maintain initial follow-up contact intervals (office, phone, other) (Hunkeler, 2000; Simon, 2000).\n \nPHQ-9 as monitor and management tool.  The PHQ-9 is an effective management tool, as well, and should be used routinely for subsequent visits to monitor treatment outcomes and severity. It can also help the clinician decide if/how to modify the treatment plan (Duffy, 2008; Lowe, 2004).  Using a measurement-based approach to depression care, PHQ-9 results and side effect evaluation should be combined with treatment algorithms to drive patients toward remission.  A five-point drop in PHQ-9 score is considered the minimal clinically significant difference (Trivedi, 2009). \n\nEvery time that the PHQ-9 is assessed, suicidality is assessed, as well. If the suicidality was indeed of high risk, urgent referral to crisis specialty health care is advised. In case of low suicide risk, the patient can proceed with treatment in the primary care practice (Huijbregts, 2013).\n\nAdult Depression in Primary Care - Guideline Aims \n- Increase the percentage of patients with major depression or persistent depressive disorder who have improvement in outcomes from treatment for major depression or persistent depressive disorder. \n- Increase the percentage of patients with major depression or persistent depressive disorder who have follow-up to assess for outcomes from treatment.\n- Improve communication between the primary care physician and the mental health care clinician (if patient is co-managed).\n\nAdolescents:\nSource: American Academy of Child and Adolescent Psychiatry Practice Parameter for the Assessment and Treatment of Children and Adolescents with Depressive Disorders (2007)\nhttp://www.jaacap.com/article/S0890-8567(09)62053-0/pdf\n\nRecommendations:\nRecommendations supporting depression outcomes and duration of treatment according to AACAP guideline:\n- Treatment of depressive disorders should always include an acute and continuation phase; some children may also require maintenance treatment. The main goal of the acute phase is to achieve response and ultimately full symptomatic remission (definitions below).\n- Each phase of treatment should include psychoeducation, supportive management, and family and school involvement\n- Education, support, and case management appear to be sufficient treatment for the management of depressed children and adolescents with an uncomplicated or brief depression or with mild psychosocial impairment\n- For children and adolescents who do not respond to supportive psychotherapy or who have more complicated depressions, a trial with specific types of psychotherapy and/or antidepressants is indicated\n\nDefinitions:\nResponse: No symptoms or a significant reduction in depressive symptoms for at least 2 weeks\nRemission: A period of at least 2 weeks and <2months with no or few depressive symptoms \nRecovery: Absence of significant symptoms of depression (eg, no more than 1 to 2 symptoms) for greater than 2 months \nRelapse: A DSM episode of depression during the period of remission\nRecurrence: The emergence of symptoms of depression during the period of recovery (a new episode)\n\nSources:  \nGuidelines for Adolescent Depression in Primary Care (GLAD-PC) (2018) http://pediatrics.aappublications.org/content/141/3/e20174081\nGuidelines for adolescent depression in primary care (GLAD-PC): II. Treatment and ongoing management\nhttp://pediatrics.aappublications.org/content/141/3/e20174082\n\nRecommendations supporting depression outcomes and duration of treatment according to GLAD-PC:\nRecommendations for Ongoing Management of Depression:\n- Mild depression: consider a period of active support and monitoring before starting other evidence based treatment\n- Moderate or severe major clinical depression or complicating factors: \n  -- consultation with mental health specialist with agreed upon roles \n  -- evidence based treatment (CBT or IPT and/or antidepressant SSRI)\n- Monitor for adverse effects during antidepressant therapy\n  -- clinical worsening, suicidality, unusual changes in behavior\n- Systematic and regular tracking of goals and outcomes\n  -- improvement in functioning status and resolution of depressive symptoms \nRegardless of the length of treatment, all patients should be monitored on a monthly basis for 6 to 12 months after the full resolution of symptoms",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Adults: \nSource: Institute for Clinical Systems Improvement (ICSI) Health Care Guideline for Adult Depression in Primary Care (Trangle, 2016)\n\nMajor depression is a treatable cause of pain, suffering, disability and death, yet primary care clinicians detect major depression in only one-third to one-half of their patients with major depression (Williams Jr, 2002; Schonfeld, 1997).\n\nUsual care for depression in the primary care setting has resulted in only about half of depressed adults getting treated (Kessler, 2005) and only 20-40% showing substantial improvement over 12 months (Unutzer, 2002; Katon, 1999).\n\nRecommendations and algorithm notations supporting depression assessment and monitoring of depression outcomes according to ICSI's Health Care Guideline:\n\nRecommendation:  Clinicians should establish and maintain follow-up with patients.  Appropriate, reliable follow-up is highly correlated with improved response and remission scores.  It is also correlated with the improved safety and efficacy of medications and helps prevent relapse. \n\nProactive follow-up contacts (in person, telephone) based on the collaborative care model have been shown to significantly lower depression severity (Unutzer, 2002).  In the available clinical effectiveness trials conducted in real clinical practice settings, even the addition of a care manager leads to modest remission rates (Trivedi, 2006-; Unutzer, 2002).  Interventions are critical to educating the patient regarding the importance of preventing relapse, safety and efficacy of medications, and management of potential side effects.  Establish and maintain initial follow-up contact intervals (office, phone, other) (Hunkeler, 2000; Simon, 2000).\n \nPHQ-9 as monitor and management tool.  The PHQ-9 is an effective management tool, as well, and should be used routinely for subsequent visits to monitor treatment outcomes and severity. It can also help the clinician decide if/how to modify the treatment plan (Duffy, 2008; Lowe, 2004).  Using a measurement-based approach to depression care, PHQ-9 results and side effect evaluation should be combined with treatment algorithms to drive patients toward remission.  A five-point drop in PHQ-9 score is considered the minimal clinically significant difference (Trivedi, 2009). \n\nEvery time that the PHQ-9 is assessed, suicidality is assessed, as well. If the suicidality was indeed of high risk, urgent referral to crisis specialty health care is advised. In case of low suicide risk, the patient can proceed with treatment in the primary care practice (Huijbregts, 2013).\n\nAdult Depression in Primary Care - Guideline Aims \n- Increase the percentage of patients with major depression or persistent depressive disorder who have improvement in outcomes from treatment for major depression or persistent depressive disorder. \n- Increase the percentage of patients with major depression or persistent depressive disorder who have follow-up to assess for outcomes from treatment.\n- Improve communication between the primary care physician and the mental health care clinician (if patient is co-managed).\n\nAdolescents:\nSource: American Academy of Child and Adolescent Psychiatry Practice Parameter for the Assessment and Treatment of Children and Adolescents with Depressive Disorders (2007)\nhttp://www.jaacap.com/article/S0890-8567(09)62053-0/pdf\n\nRecommendations:\nRecommendations supporting depression outcomes and duration of treatment according to AACAP guideline:\n- Treatment of depressive disorders should always include an acute and continuation phase; some children may also require maintenance treatment. The main goal of the acute phase is to achieve response and ultimately full symptomatic remission (definitions below).\n- Each phase of treatment should include psychoeducation, supportive management, and family and school involvement\n- Education, support, and case management appear to be sufficient treatment for the management of depressed children and adolescents with an uncomplicated or brief depression or with mild psychosocial impairment\n- For children and adolescents who do not respond to supportive psychotherapy or who have more complicated depressions, a trial with specific types of psychotherapy and/or antidepressants is indicated\n\nDefinitions:\nResponse: No symptoms or a significant reduction in depressive symptoms for at least 2 weeks\nRemission: A period of at least 2 weeks and <2months with no or few depressive symptoms \nRecovery: Absence of significant symptoms of depression (eg, no more than 1 to 2 symptoms) for greater than 2 months \nRelapse: A DSM episode of depression during the period of remission\nRecurrence: The emergence of symptoms of depression during the period of recovery (a new episode)\n\nSources:  \nGuidelines for Adolescent Depression in Primary Care (GLAD-PC) (2018) http://pediatrics.aappublications.org/content/141/3/e20174081\nGuidelines for adolescent depression in primary care (GLAD-PC): II. Treatment and ongoing management\nhttp://pediatrics.aappublications.org/content/141/3/e20174082\n\nRecommendations supporting depression outcomes and duration of treatment according to GLAD-PC:\nRecommendations for Ongoing Management of Depression:\n- Mild depression: consider a period of active support and monitoring before starting other evidence based treatment\n- Moderate or severe major clinical depression or complicating factors: \n  -- consultation with mental health specialist with agreed upon roles \n  -- evidence based treatment (CBT or IPT and/or antidepressant SSRI)\n- Monitor for adverse effects during antidepressant therapy\n  -- clinical worsening, suicidality, unusual changes in behavior\n- Systematic and regular tracking of goals and outcomes\n  -- improvement in functioning status and resolution of depressive symptoms \nRegardless of the length of treatment, all patients should be monitored on a monthly basis for 6 to 12 months after the full resolution of symptoms"
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "Higher scores indicate better quality",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Higher scores indicate better quality"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Trangle M, Gursky J, Haight R, Hardwig J, Hinnenkamp T, Kessler D, Mack N, Myszkowski M. Institute for Clinical Systems Improvement. Adult Depression in Primary Care. Updated March 2016. https://www.icsi.org/guidelines__more/catalog_guidelines_and_more/catalog_guidelines/catalog_behavioral_health_guidelines/depression/",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Trangle M, Gursky J, Haight R, Hardwig J, Hinnenkamp T, Kessler D, Mack N, Myszkowski M. Institute for Clinical Systems Improvement. Adult Depression in Primary Care. Updated March 2016. https://www.icsi.org/guidelines__more/catalog_guidelines_and_more/catalog_guidelines/catalog_behavioral_health_guidelines/depression/"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Gonzolez O, Berry JT, McKnight-Eily LR, et al. Centers for Disease Control and Prevention. Current Depression Among Adults United States, 2006 and 2008. MMWR 2010;59(38);1229-1235. https://www.cdc.gov/mmwr/preview/mmwrhtml/mm5938a2.htm",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Gonzolez O, Berry JT, McKnight-Eily LR, et al. Centers for Disease Control and Prevention. Current Depression Among Adults United States, 2006 and 2008. MMWR 2010;59(38);1229-1235. https://www.cdc.gov/mmwr/preview/mmwrhtml/mm5938a2.htm"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Strine TW, Mokdad AH, Balluz LS, et al. Depression and anxiety in the United States: findings from the 2006 Behavioral Risk Factor Surveillance System. Psychiatr Serv 2008;59:1383-90. http://ps.psychiatryonline.org/doi/abs/10.1176/ps.2008.59.12.1383",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Strine TW, Mokdad AH, Balluz LS, et al. Depression and anxiety in the United States: findings from the 2006 Behavioral Risk Factor Surveillance System. Psychiatr Serv 2008;59:1383-90. http://ps.psychiatryonline.org/doi/abs/10.1176/ps.2008.59.12.1383"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Smith JP, Smith GC. Long-term economic costs of psychological problems during childhood. Soc Sci Med 2010;71:110-115. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2887689/",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Smith JP, Smith GC. Long-term economic costs of psychological problems during childhood. Soc Sci Med 2010;71:110-115. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2887689/"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Greenberg PE, Kessler RC, Birnbaum HG, et al. The economic burden of depression in the United States: how did it change between 1990 and 2000? J Clin Psychiatry 2003;64(10):1465-1475.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Greenberg PE, Kessler RC, Birnbaum HG, et al. The economic burden of depression in the United States: how did it change between 1990 and 2000? J Clin Psychiatry 2003;64(10):1465-1475."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Kendrick T, Pilling S, et al. National Institute for Health and Care Excellence. Clinical guideline CG123. Common mental health problems; identification and pathways to care. May 2011. https://www.nice.org.uk/guidance/cg123/chapter/introduction",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Kendrick T, Pilling S, et al. National Institute for Health and Care Excellence. Clinical guideline CG123. Common mental health problems; identification and pathways to care. May 2011. https://www.nice.org.uk/guidance/cg123/chapter/introduction"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Williams Jr JW, Noel PH, Cordes JA, et al. Is this patient clinically depressed? JAMA 2002;287:1160-70.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Williams Jr JW, Noel PH, Cordes JA, et al. Is this patient clinically depressed? JAMA 2002;287:1160-70."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Schonfeld WH, Verboncoeur CJ, Fifer SK, et al. The functioning and well-being of patients with unrecognized anxiety disorders and major depressive disorder. J Affect Disord 1997;43:105-19.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Schonfeld WH, Verboncoeur CJ, Fifer SK, et al. The functioning and well-being of patients with unrecognized anxiety disorders and major depressive disorder. J Affect Disord 1997;43:105-19."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Kessler RC, Chiu WT, Demler O, Walters EE. Prevalence, severity, and comorbidity of 12-month DSM-IV disorders in the national comorbidity survey replication. Arch Gen Psychiatry 2005;62:617-27.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Kessler RC, Chiu WT, Demler O, Walters EE. Prevalence, severity, and comorbidity of 12-month DSM-IV disorders in the national comorbidity survey replication. Arch Gen Psychiatry 2005;62:617-27."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Unutzer J, Katon W, Callahan CM, et al. Collaborative care management of late-life depression in the primary care setting: a randomized controlled trial. JAMA 2002;288:2836-45.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Unutzer J, Katon W, Callahan CM, et al. Collaborative care management of late-life depression in the primary care setting: a randomized controlled trial. JAMA 2002;288:2836-45."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Katon W, Von Korff M, Lin E, et al. Stepped collaborative care for primary care patients with persistent symptoms of depression: a randomized trial. Arch Gen Psychiatry 1999;56:1109-15.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Katon W, Von Korff M, Lin E, et al. Stepped collaborative care for primary care patients with persistent symptoms of depression: a randomized trial. Arch Gen Psychiatry 1999;56:1109-15."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Trivedi MH, Rush AJ, Wisniewski SR, et al. Evaluation of outcomes with citalopram for depression using measurement-based care in STAR*D: implications for clinical practice. Am J Psychiatry 2006;163:28-40.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Trivedi MH, Rush AJ, Wisniewski SR, et al. Evaluation of outcomes with citalopram for depression using measurement-based care in STAR*D: implications for clinical practice. Am J Psychiatry 2006;163:28-40."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Hunkeler EM, Meresman JF, Hargreaves WA, et al. Efficacy of nurse telehealth care and peer support in augmenting treatment of depression in primary care. Arch Fam Med 2000;9:700-08.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Hunkeler EM, Meresman JF, Hargreaves WA, et al. Efficacy of nurse telehealth care and peer support in augmenting treatment of depression in primary care. Arch Fam Med 2000;9:700-08."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Simon GE, Van Korff M, Rutter C, Wagner E. Randomised trial of monitoring, feedback, and management of care by telephone to improve treatment of depression in primary care. BMJ 2000;320:550-54.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Simon GE, Van Korff M, Rutter C, Wagner E. Randomised trial of monitoring, feedback, and management of care by telephone to improve treatment of depression in primary care. BMJ 2000;320:550-54."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Duffy FF, Chung H, Trivedi M, et al. Systematic use of patient-rated depression severity monitoring: is it helpful and feasible in clinical psychiatry? Psychiatric Serv 2008;59:1148-54.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Duffy FF, Chung H, Trivedi M, et al. Systematic use of patient-rated depression severity monitoring: is it helpful and feasible in clinical psychiatry? Psychiatric Serv 2008;59:1148-54."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Lowe B, Unutzer J, Callahan CM, et al. Monitoring depression treatment outcomes with the patient health questionnaire-9. Med Care 2004;42:1194-1201.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Lowe B, Unutzer J, Callahan CM, et al. Monitoring depression treatment outcomes with the patient health questionnaire-9. Med Care 2004;42:1194-1201."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Trivedi MH. Tools and strategies for ongoing assessment of depression: a measurement-based approach to remission. J Clin Psychiatry 2009;70:26-31.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Trivedi MH. Tools and strategies for ongoing assessment of depression: a measurement-based approach to remission. J Clin Psychiatry 2009;70:26-31."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Huijbregts KML, de Jong FJ, van Marwijk HWJ, et al. A target-driven collaborative care model for major depressive disorder is effective in primary care in the Netherlands: a randomized clinical trial from the depression initiative. J Affect Dis 2013;146:328-37.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Huijbregts KML, de Jong FJ, van Marwijk HWJ, et al. A target-driven collaborative care model for major depressive disorder is effective in primary care in the Netherlands: a randomized clinical trial from the depression initiative. J Affect Dis 2013;146:328-37."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Kroenke K, Spitzer RL, Williams JBW. The PHQ-9: validity of a brief depression severity measure. J Gen Intern Med 2001;16:606-13. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1495268/",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Kroenke K, Spitzer RL, Williams JBW. The PHQ-9: validity of a brief depression severity measure. J Gen Intern Med 2001;16:606-13. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1495268/"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Birmaher B, Brent D. Practice parameter for the assessment and treatment of children and adolescents with depressive disorders. J Am Acad Child Adoles Psychiatry 2007;46(11)1503-1526. http://www.jaacap.com/article/S0890-8567(09)62053-0/pdf",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Birmaher B, Brent D. Practice parameter for the assessment and treatment of children and adolescents with depressive disorders. J Am Acad Child Adoles Psychiatry 2007;46(11)1503-1526. http://www.jaacap.com/article/S0890-8567(09)62053-0/pdf"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Zuckerbrot RA, Cheung A, Jensen PS, et al.  Guidelines for adolescent depression in primary care (GLAD-PC): Part I. Practice preparation, identification, assessment, and initial management. Pediatrics March 2018, Volume 141 / Issue 3. http://pediatrics.aappublications.org/content/141/3/e20174081",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Zuckerbrot RA, Cheung A, Jensen PS, et al.  Guidelines for adolescent depression in primary care (GLAD-PC): Part I. Practice preparation, identification, assessment, and initial management. Pediatrics March 2018, Volume 141 / Issue 3. http://pediatrics.aappublications.org/content/141/3/e20174081"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Cheung AH, Zuckerbrot RA, Jensen PS, et al. Guidelines for adolescent depression in primary care (GLAD-PC): Part II. Treatment and ongoing management. Pediatrics March 2018, Volume 141 / Issue 3. http://pediatrics.aappublications.org/content/141/3/e20174082",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Cheung AH, Zuckerbrot RA, Jensen PS, et al. Guidelines for adolescent depression in primary care (GLAD-PC): Part II. Treatment and ongoing management. Pediatrics March 2018, Volume 141 / Issue 3. http://pediatrics.aappublications.org/content/141/3/e20174082"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Pratt LA, Brody DJ. Depression in the U.S. household population, 2009-2012. NCHS data brief, no 172. Hyattsville, MD: National Center for Health Statistics. 2014.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Pratt LA, Brody DJ. Depression in the U.S. household population, 2009-2012. NCHS data brief, no 172. Hyattsville, MD: National Center for Health Statistics. 2014."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Joiner T. Myths about suicide. Cambridge: Harvard University Press; 2010.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Joiner T. Myths about suicide. Cambridge: Harvard University Press; 2010."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Stewart WF, Ricci JA, Chee E, Hahn SR, Morganstein D. Cost of lost productive work time among US workers with depression. JAMA 2003;289:3135-44.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Stewart WF, Ricci JA, Chee E, Hahn SR, Morganstein D. Cost of lost productive work time among US workers with depression. JAMA 2003;289:3135-44."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "National Institute of Mental Health. Prevalence of major depressive episode among adolescents. 2014. https://www.nimh.nih.gov/health/statistics/prevalence/major-depression-among-adolescents.shtml",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "National Institute of Mental Health. Prevalence of major depressive episode among adolescents. 2014. https://www.nimh.nih.gov/health/statistics/prevalence/major-depression-among-adolescents.shtml"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Shain B. Suicide and suicide attempts in adolescents. Pediatrics 2016;138(1):e1-11. http://pediatrics.aappublications.org/content/138/1/e20161420",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Shain B. Suicide and suicide attempts in adolescents. Pediatrics 2016;138(1):e1-11. http://pediatrics.aappublications.org/content/138/1/e20161420"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Lewinsohn PM, Rohde P, Klein DN, Seeley JR. Natural course of adolescent major depressive disorder: I. Continuity into young adulthood. J Am Acad Child Adoles Psychiatry 1999;38(1):56-63.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Lewinsohn PM, Rohde P, Klein DN, Seeley JR. Natural course of adolescent major depressive disorder: I. Continuity into young adulthood. J Am Acad Child Adoles Psychiatry 1999;38(1):56-63."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Giedd JN, Keshavan M, Paus T. Why do many psychiatric disorders emerge during adolescence? Nat Rev Neurosci 2008;9(12):947-57. http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2762785/",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Giedd JN, Keshavan M, Paus T. Why do many psychiatric disorders emerge during adolescence? Nat Rev Neurosci 2008;9(12):947-57. http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2762785/"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Ramin M, Olfson M, Han B. National trends in the prevalence and treatment of depression in adolescents and young adults. Pediatrics 2016;138(6):e20161878. http://pediatrics.aappublications.org/content/early/2016/11/10/peds.2016-1878",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Ramin M, Olfson M, Han B. National trends in the prevalence and treatment of depression in adolescents and young adults. Pediatrics 2016;138(6):e20161878. http://pediatrics.aappublications.org/content/early/2016/11/10/peds.2016-1878"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Minnesota Community Measurement. New measures evaluate rates of obesity counseling for kids, depression screening for teens. Oct 2015. http://www.mncm.org/new-measures-evaluate-rates-of-obesity-counseling-for-kids-depression-screening-for-teens/",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Minnesota Community Measurement. New measures evaluate rates of obesity counseling for kids, depression screening for teens. Oct 2015. http://www.mncm.org/new-measures-evaluate-rates-of-obesity-counseling-for-kids-depression-screening-for-teens/"
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "Completed PHQ-9 or PHQ-9M - The patient must answer ALL nine questions for the score to be valid",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Completed PHQ-9 or PHQ-9M - The patient must answer ALL nine questions for the score to be valid"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "If a patient has a qualifying diagnosis and encounter in more than one of the 4 month periods within the measurement year, the patient must be counted (denominator and numerator) in each qualifying 4 month period.  For example, a patient could be counted in the first and third 4 month periods.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "If a patient has a qualifying diagnosis and encounter in more than one of the 4 month periods within the measurement year, the patient must be counted (denominator and numerator) in each qualifying 4 month period.  For example, a patient could be counted in the first and third 4 month periods."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "TBD",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "TBD"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "Adolescent patients 12 to 17 years of age and adult patients 18 years of age and older with an office visit and the diagnosis of major depression or dysthymia during the four month period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Adolescent patients 12 to 17 years of age and adult patients 18 years of age and older with an office visit and the diagnosis of major depression or dysthymia during the four month period"
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "Equals Initial Population",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Equals Initial Population"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "1: Patients who died\n2: Patients who received hospice or palliative care services\n3: Patients who were permanent nursing home residents \n4: Patients with a diagnosis of bipolar disorder\n5: Patients with a diagnosis of personality disorder\n6: Patients with a diagnosis of schizophrenia or psychotic disorder\n7: Patients with a diagnosis of pervasive developmental disorder",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "1: Patients who died\n2: Patients who received hospice or palliative care services\n3: Patients who were permanent nursing home residents \n4: Patients with a diagnosis of bipolar disorder\n5: Patients with a diagnosis of personality disorder\n6: Patients with a diagnosis of schizophrenia or psychotic disorder\n7: Patients with a diagnosis of pervasive developmental disorder"
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Adolescent patients 12 to 17 years of age and adult patients 18 years of age and older who have a PHQ-9 or PHQ-9M tool administered at least once during the four-month period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Adolescent patients 12 to 17 years of age and adult patients 18 years of age and older who have a PHQ-9 or PHQ-9M tool administered at least once during the four-month period"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "Not applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not applicable"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "0830DDCA-C45E-4D80-B359-E69E2F83D7B2",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Denominator Exclusion 1"
+    },
+    "DENOM": {
+     "hqmf_id": "A52E93B8-A2D1-414E-94D0-90155E8FF81F",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Denominator 1"
+    },
+    "IPP": {
+     "hqmf_id": "D00E7D31-7F59-468D-99C6-631D07715E59",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Initial Population 1"
+    },
+    "NUMER": {
+     "hqmf_id": "539B0A53-F5B0-47CB-887E-392792E9D4ED",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Numerator 1"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "stratifications": [
+    {
+     "hqmf_id": "13406420-1144-4100-9439-ED134656A4FC",
+     "statement": {
+      "hqmf_id": "13406420-1144-4100-9439-ED134656A4FC",
+      "library_name": "DepressionUtilizationofthePHQ9Tool",
+      "statement_name": "Stratification 1_1"
+     },
+     "stratification_id": "PopulationCriteria1 - Stratification 1",
+     "title": "Population 1 Strata 1"
+    },
+    {
+     "hqmf_id": "DD7E5C35-6825-496B-A155-A4CBE9056535",
+     "statement": {
+      "hqmf_id": "DD7E5C35-6825-496B-A155-A4CBE9056535",
+      "library_name": "DepressionUtilizationofthePHQ9Tool",
+      "statement_name": "Stratification 1_2"
+     },
+     "stratification_id": "PopulationCriteria1 - Stratification 2",
+     "title": "Population 1 Strata 2"
+    }
+   ],
+   "title": "Population 1 - Sept thru Dec"
+  },
+  {
+   "population_set_id": "PopulationCriteria2",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "7889D513-C24C-482F-8C9C-FC31F35E3999",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Denominator Exclusion 2"
+    },
+    "DENOM": {
+     "hqmf_id": "1B9C4359-5DF7-4B6D-ACD8-C12175C67EFD",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Denominator 2"
+    },
+    "IPP": {
+     "hqmf_id": "95F5AFA0-CB23-4786-A2E0-0646C0494E4F",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Initial Population 2"
+    },
+    "NUMER": {
+     "hqmf_id": "92D313A7-3A3D-44EC-8A94-103CC0003A30",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Numerator 2"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "stratifications": [
+    {
+     "hqmf_id": "39B15197-7895-4AFC-B4AA-83DABFF66373",
+     "statement": {
+      "hqmf_id": "39B15197-7895-4AFC-B4AA-83DABFF66373",
+      "library_name": "DepressionUtilizationofthePHQ9Tool",
+      "statement_name": "Stratification 2_1"
+     },
+     "stratification_id": "PopulationCriteria2 - Stratification 1",
+     "title": "Population 2 Strata 1"
+    },
+    {
+     "hqmf_id": "0416AB91-F7FF-4432-A5D9-77B27F5AE30C",
+     "statement": {
+      "hqmf_id": "0416AB91-F7FF-4432-A5D9-77B27F5AE30C",
+      "library_name": "DepressionUtilizationofthePHQ9Tool",
+      "statement_name": "Stratification 2_2"
+     },
+     "stratification_id": "PopulationCriteria2 - Stratification 2",
+     "title": "Population 2 Strata 2"
+    }
+   ],
+   "title": "Population 2 - May thru Aug"
+  },
+  {
+   "population_set_id": "PopulationCriteria3",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "DE1952F9-9E35-4493-BA65-3F6CD8904059",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Denominator Exclusion 3"
+    },
+    "DENOM": {
+     "hqmf_id": "2E3A7115-247D-4A0E-918C-AB581E13486A",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Denominator 3"
+    },
+    "IPP": {
+     "hqmf_id": "750B4DDA-EC94-4082-9AB4-86824666D808",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Initial Population 3"
+    },
+    "NUMER": {
+     "hqmf_id": "9FCE046B-5EF9-4A19-9D22-D3A6518EDA51",
+     "library_name": "DepressionUtilizationofthePHQ9Tool",
+     "statement_name": "Numerator 3"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "stratifications": [
+    {
+     "hqmf_id": "1FD9CB54-2485-43C9-A9CB-041E6FE078F0",
+     "statement": {
+      "hqmf_id": "1FD9CB54-2485-43C9-A9CB-041E6FE078F0",
+      "library_name": "DepressionUtilizationofthePHQ9Tool",
+      "statement_name": "Stratification 3_1"
+     },
+     "stratification_id": "PopulationCriteria3 - Stratification 1",
+     "title": "Population 3 Strata 1"
+    },
+    {
+     "hqmf_id": "B4B269AE-AE95-4FFF-AD3A-0C7F62DC0C72",
+     "statement": {
+      "hqmf_id": "B4B269AE-AE95-4FFF-AD3A-0C7F62DC0C72",
+      "library_name": "DepressionUtilizationofthePHQ9Tool",
+      "statement_name": "Stratification 3_2"
+     },
+     "stratification_id": "PopulationCriteria3 - Stratification 2",
+     "title": "Population 3 Strata 2"
+    }
+   ],
+   "title": "Population 3 - Jan thru April"
+  }
+ ],
+ "title": "Depression Utilization of the PHQ-9 Tool"
+}

@@ -1,0 +1,593 @@
+{
+ "calculation_method": "PATIENT",
+ "cms_id": "CMS735v0",
+ "composite": false,
+ "hqmf_set_id": "E075A7F3-D272-4B6C-A677-84C4BC780D4E",
+ "main_cql_library": "StatinTherapy",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eMeasure Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eMeasure Identifier (Measure Authoring Tool)",
+   "value": "735",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "735"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Limited proprietary coding is contained in the measure specifications for convenience. Users of the proprietary code sets should obtain all necessary licenses from the owners of these code sets. Quality Insights, Inc. disclaims all liability for use or accuracy of any Current Procedural Terminology (CPT [R]) or other coding contained in the specifications.\n\nCPT (R) contained in the Measure specifications is copyright 2007-2016 American Medical Association. \n\nLOINC (R) copyright 2004-2016 [2.56] Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms (R) (SNOMED CT [R]) copyright 2004-2016 [2016-09] International Health Terminology Standards Development Organization. All Rights Reserved.\n\nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM].",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Limited proprietary coding is contained in the measure specifications for convenience. Users of the proprietary code sets should obtain all necessary licenses from the owners of these code sets. Quality Insights, Inc. disclaims all liability for use or accuracy of any Current Procedural Terminology (CPT [R]) or other coding contained in the specifications.\n\nCPT (R) contained in the Measure specifications is copyright 2007-2016 American Medical Association. \n\nLOINC (R) copyright 2004-2016 [2.56] Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms (R) (SNOMED CT [R]) copyright 2004-2016 [2016-09] International Health Terminology Standards Development Organization. All Rights Reserved.\n\nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM]."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications.\n\nTHE MEASURES AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications.\n\nTHE MEASURES AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "\"Cardiovascular disease (CVD) is the leading cause of death in the United States, causing approximately 1 of every 7 deaths in the United States in 2011. In 2011, stroke caused approximately 1 of every 20 deaths in the United States and the estimated annual costs for CVD and stroke were $320.1 billion, including $195.6 billion in direct costs (hospital services, physicians and other professionals, prescribed medications, home health care, and other medical durables) and $124.5 billion in indirect costs from lost future productivity (cardiovascular and stroke premature deaths). CVD costs more than any other diagnostic group\" (Mozaffarian et al., 2015).\n\nData collected between 2009 and 2012 indicates that more than 100 million U.S. adults, 20 years or older, had total cholesterol levels equal to 200 mg/dL or more, while almost 31 million had levels 240 mg/dL or more (Mozaffarian et al., 2015). Elevated blood cholesterol is a major risk factor for CVD and statin therapy has been associated with a reduced risk of CVD. Numerous randomized trials have demonstrated that treatment with a statin reduces LDL-C, and reduces the risk of major cardiovascular events by approximately 20 percent (Ference, 2015).  \n\nIn 2013, guidelines on the treatment of blood cholesterol to reduce atherosclerotic cardiovascular risk in adults were published (see Stone et al., 2013 ACC/AHA Guideline on the Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Risk in Adults: a Report of the American College of Cardiology [ACC]/American Heart Association [AHA] Task Force on Practice Guidelines). This guideline was published by an Expert Panel, which synthesized evidence from randomized controlled trials to identify people most likely to benefit from cholesterol-lowering therapy. The ACC/AHA Guideline recommendations are intended to provide a strong evidence-based foundation for the treatment of blood cholesterol for the primary and secondary prevention and treatment of Atherosclerotic Cardiovascular Disease (ASCVD) in adult men and women (21 years of age or older). The document concludes the addition of statin therapy reduces the risk of ASCVD among high-risk individuals, defined as follows: individuals with clinical ASCVD, with LDL-C >= 190 mg/dL, or with diabetes and LDL-C 70-189 mg/dL (Stone et al., 2013).\n\nHowever, one study that surveyed U.S. cardiovascular practices participating in the PINNACLE registry, found that 32.4 percent of patients with an indication for statins under the 2013 ACC/AHA cholesterol guidelines were not currently receiving them (Maddox et al., 2014). Although, systematic evidence review found that statins are safe drugs with low incidence of conditions or diseases attributable to statin use (Law et al., 2006). Overall, the Statin Safety Expert Panel that participated in an NLA Statin Safety Task Force meeting in October 2013 reaffirms the general safety of statin therapy. The panel members concluded that for most patients requiring statin therapy, the potential benefits of statin therapy outweigh the potential risks. In general terms, the benefits of statins to prevent non-fatal myocardial infarction, revascularization, stroke, and CVD mortality, far outweighs any potential harm related to the drug (Jacobson, 2014).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "\"Cardiovascular disease (CVD) is the leading cause of death in the United States, causing approximately 1 of every 7 deaths in the United States in 2011. In 2011, stroke caused approximately 1 of every 20 deaths in the United States and the estimated annual costs for CVD and stroke were $320.1 billion, including $195.6 billion in direct costs (hospital services, physicians and other professionals, prescribed medications, home health care, and other medical durables) and $124.5 billion in indirect costs from lost future productivity (cardiovascular and stroke premature deaths). CVD costs more than any other diagnostic group\" (Mozaffarian et al., 2015).\n\nData collected between 2009 and 2012 indicates that more than 100 million U.S. adults, 20 years or older, had total cholesterol levels equal to 200 mg/dL or more, while almost 31 million had levels 240 mg/dL or more (Mozaffarian et al., 2015). Elevated blood cholesterol is a major risk factor for CVD and statin therapy has been associated with a reduced risk of CVD. Numerous randomized trials have demonstrated that treatment with a statin reduces LDL-C, and reduces the risk of major cardiovascular events by approximately 20 percent (Ference, 2015).  \n\nIn 2013, guidelines on the treatment of blood cholesterol to reduce atherosclerotic cardiovascular risk in adults were published (see Stone et al., 2013 ACC/AHA Guideline on the Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Risk in Adults: a Report of the American College of Cardiology [ACC]/American Heart Association [AHA] Task Force on Practice Guidelines). This guideline was published by an Expert Panel, which synthesized evidence from randomized controlled trials to identify people most likely to benefit from cholesterol-lowering therapy. The ACC/AHA Guideline recommendations are intended to provide a strong evidence-based foundation for the treatment of blood cholesterol for the primary and secondary prevention and treatment of Atherosclerotic Cardiovascular Disease (ASCVD) in adult men and women (21 years of age or older). The document concludes the addition of statin therapy reduces the risk of ASCVD among high-risk individuals, defined as follows: individuals with clinical ASCVD, with LDL-C >= 190 mg/dL, or with diabetes and LDL-C 70-189 mg/dL (Stone et al., 2013).\n\nHowever, one study that surveyed U.S. cardiovascular practices participating in the PINNACLE registry, found that 32.4 percent of patients with an indication for statins under the 2013 ACC/AHA cholesterol guidelines were not currently receiving them (Maddox et al., 2014). Although, systematic evidence review found that statins are safe drugs with low incidence of conditions or diseases attributable to statin use (Law et al., 2006). Overall, the Statin Safety Expert Panel that participated in an NLA Statin Safety Task Force meeting in October 2013 reaffirms the general safety of statin therapy. The panel members concluded that for most patients requiring statin therapy, the potential benefits of statin therapy outweigh the potential risks. In general terms, the benefits of statins to prevent non-fatal myocardial infarction, revascularization, stroke, and CVD mortality, far outweighs any potential harm related to the drug (Jacobson, 2014)."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "This electronic clinical quality measure is intended to align with the 2013 ACC/AHA Guideline on the Treatment of Blood Cholesterol (Stone et al. 2013), which indicates the use of statins as the first line of cholesterol-lowering medication therapy to lower the risk of ASCVD among at-risk populations.\n\nRecommendations for Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Risk in Adults - Statin Treatment:\nSecondary Prevention:\n1. High-intensity statin therapy should be initiated or continued as first-line therapy in women and men <=75 years of age who have clinical ASCVD, unless contraindicated. (Level of Evidence A), (ACC/AHA, 2013)\n\n2. In individuals with clinical ASCVD in whom high-intensity statin therapy would otherwise be used, when high-intensity statin therapy is contraindicated or when characteristics predisposing to statin-associated adverse effects are present, moderate-intensity statin should be used as the second option, if tolerated. (Level of Evidence A), (ACC/AHA, 2013) \n\nPrimary Prevention in Individuals >= 21 Years of Age With LDL-C >=190 mg/dL:\n2. Adults >=21 years of age with primary LDL-C >=190 mg/dL should be treated with statin therapy. (10-year ASCVD risk estimation is not required.) (Level of Evidence B), (ACC/AHA, 2013)\n\nPrimary Prevention in Individuals With Diabetes and LDL-C 70-189 mg/dL:\n1. Moderate-intensity statin therapy should be initiated or continued for adults 40-75 years of age with diabetes. (Level of Evidence A),(ACC/AHA, 2013)",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "This electronic clinical quality measure is intended to align with the 2013 ACC/AHA Guideline on the Treatment of Blood Cholesterol (Stone et al. 2013), which indicates the use of statins as the first line of cholesterol-lowering medication therapy to lower the risk of ASCVD among at-risk populations.\n\nRecommendations for Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Risk in Adults - Statin Treatment:\nSecondary Prevention:\n1. High-intensity statin therapy should be initiated or continued as first-line therapy in women and men <=75 years of age who have clinical ASCVD, unless contraindicated. (Level of Evidence A), (ACC/AHA, 2013)\n\n2. In individuals with clinical ASCVD in whom high-intensity statin therapy would otherwise be used, when high-intensity statin therapy is contraindicated or when characteristics predisposing to statin-associated adverse effects are present, moderate-intensity statin should be used as the second option, if tolerated. (Level of Evidence A), (ACC/AHA, 2013) \n\nPrimary Prevention in Individuals >= 21 Years of Age With LDL-C >=190 mg/dL:\n2. Adults >=21 years of age with primary LDL-C >=190 mg/dL should be treated with statin therapy. (10-year ASCVD risk estimation is not required.) (Level of Evidence B), (ACC/AHA, 2013)\n\nPrimary Prevention in Individuals With Diabetes and LDL-C 70-189 mg/dL:\n1. Moderate-intensity statin therapy should be initiated or continued for adults 40-75 years of age with diabetes. (Level of Evidence A),(ACC/AHA, 2013)"
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "Higher score indicates better quality.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Higher score indicates better quality."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Banach, M., Rizzo, M., Toth, P., et al. (2015). Statin intolerance- an attempt at a\nunified definition. Position paper from an International Lipid Expert Panel. Archives of Medical Science : AMS, 11(1), 1-23. http://doi.org/10.5114/aoms.2015.49807",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Banach, M., Rizzo, M., Toth, P., et al. (2015). Statin intolerance- an attempt at a\nunified definition. Position paper from an International Lipid Expert Panel. Archives of Medical Science : AMS, 11(1), 1-23. http://doi.org/10.5114/aoms.2015.49807"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Ference, B.A. (2015). Statins and the Risk of Developing New-Onset Type 2 Diabetes: Expert Analysis. J Am Coll Cardiol, Mar 10, 2015.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Ference, B.A. (2015). Statins and the Risk of Developing New-Onset Type 2 Diabetes: Expert Analysis. J Am Coll Cardiol, Mar 10, 2015."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Jacobson, T. A. (2014). Executive Summary: NLA Task Force on Statin Safety - 2014 update. Journal of Clinical Lipidology, 8, S1-S4.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Jacobson, T. A. (2014). Executive Summary: NLA Task Force on Statin Safety - 2014 update. Journal of Clinical Lipidology, 8, S1-S4."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Law, M., & Rudnicka, A.R. (2006). Statin Safety: A Systematic Review. Report of the National Lipid Association's Statin Safety Task Force. The American Journal of Cardiology, 97 (8), S52-S60. doi:10.1016/j.amjcard.2005.12.010",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Law, M., & Rudnicka, A.R. (2006). Statin Safety: A Systematic Review. Report of the National Lipid Association's Statin Safety Task Force. The American Journal of Cardiology, 97 (8), S52-S60. doi:10.1016/j.amjcard.2005.12.010"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Maddox, T.M., Borden, W.B., Tang, F. et al. (2014). \"Implications of the 2013 ACC/AHA cholesterol guidelines for adults in contemporary cardiovascular practice: insights from the NCDR Pinnacle registry.\" Journal of American College of Cardiology, 64(21), 2183-2192. doi:10.1016/j.acc.2014.08.041.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Maddox, T.M., Borden, W.B., Tang, F. et al. (2014). \"Implications of the 2013 ACC/AHA cholesterol guidelines for adults in contemporary cardiovascular practice: insights from the NCDR Pinnacle registry.\" Journal of American College of Cardiology, 64(21), 2183-2192. doi:10.1016/j.acc.2014.08.041."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Mozaffarian, D., Benjamin, E.J., Go, A.S., et al. (2015). \"Heart disease and stroke statistics-2015 update: a report from the American Heart Association.\" Circulation, 131, e29-e322. doi:10.1161/CIR.0000000000000152",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Mozaffarian, D., Benjamin, E.J., Go, A.S., et al. (2015). \"Heart disease and stroke statistics-2015 update: a report from the American Heart Association.\" Circulation, 131, e29-e322. doi:10.1161/CIR.0000000000000152"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Stone, N.J., J. Robinson, A.H. Lichtenstein, C.N. Bairey Merz, C.B. Blum, R.H. Eckel, A.C. Goldberg, D. Gordon, D. Levy, D.M. Lloyd-Jones, P. McBride, J.S. Schwartz, S.T. Shero, S.C. Smith Jr., K. Watson, and P.W.F. Wilson. \"2013 ACC/AHA Guideline on the Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Risk in Adults: A Report of the American College of Cardiology/American Heart Association Task Force on Practice Guidelines.\" Full Panel Report Supplement. Circulation, vol. 129, no. 25, Suppl. 2, June 24, 2014, pp. S1-S45. Available at http://circ.ahajournals.org/content/early/2013/11/11/01.cir.0000437738.63853.7a/suppl/DC1.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Stone, N.J., J. Robinson, A.H. Lichtenstein, C.N. Bairey Merz, C.B. Blum, R.H. Eckel, A.C. Goldberg, D. Gordon, D. Levy, D.M. Lloyd-Jones, P. McBride, J.S. Schwartz, S.T. Shero, S.C. Smith Jr., K. Watson, and P.W.F. Wilson. \"2013 ACC/AHA Guideline on the Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Risk in Adults: A Report of the American College of Cardiology/American Heart Association Task Force on Practice Guidelines.\" Full Panel Report Supplement. Circulation, vol. 129, no. 25, Suppl. 2, June 24, 2014, pp. S1-S45. Available at http://circ.ahajournals.org/content/early/2013/11/11/01.cir.0000437738.63853.7a/suppl/DC1."
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "Clinical atherosclerotic cardiovascular disease (ASCVD) includes: \n*  Acute coronary syndromes \n*  History of myocardial infarction \n*  Stable or unstable angina \n*  Coronary or other arterial revascularization \n*  Stroke or transient ischemic attack (TIA) \n*  Peripheral arterial disease of atherosclerotic origin \n\nLipoprotein density cholesterol (LDL-C) result: \n* A fasting or direct LDL-C laboratory test performed and test result documented in the medical record. \n\nStatin therapy:   \n* Administration of one or more of a group of medications that are used to lower plasma lipoprotein levels in the treatment of hyperlipoproteinemia. \n\nStatin Medication Therapy List (NOTE: List does NOT include dosage):\n\n[Generic name] (Brand or trade name) and (-) Medication type, if applicable:\n[Atorvastatin] (Lipitor) - Statin\n[Fluvastatin] (Lescol XL or Lescol) - Statin\n[Lovastatin (Mevinolin)](Mevacor or Altoprev) -Statin\n[Pitavastatin]Livalo\n[Pravastatin Sodium] (Pravachol) - Statin\n[Rosuvastatin Calcium] (Crestor) - Statin\n[Simvastatin] (Zocor) - Statin\n[Amlodipine Besylate/Atorvastatin Calcium] (Caduet) - Combination\n[Ezetimibe/Simvastatin] (Vytorin) - Combination\n[Ezetimibe/Atorvastatin] (Liptruzet) - Combination\n\nSome patients may not be appropriate to prescribe or use statin therapy (see\nexceptions and exclusions for a complete list). \n\n\"Statin intolerance is the inability to tolerate a dose of statin required to reduce a person's CV risk sufficiently from their baseline risk and could result from different statin related side effects including: muscle symptoms, headache, sleep disorders, dyspepsia, nausea, rash, alopecia, erectile dysfunction, gynecomastia, and/or arthritis\" (Banach, et al., 2015).\n\nPatients that experience symptoms such as these may prefer not to take or continue statin therapy and therefore may be exempt from the denominator.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Clinical atherosclerotic cardiovascular disease (ASCVD) includes: \n*  Acute coronary syndromes \n*  History of myocardial infarction \n*  Stable or unstable angina \n*  Coronary or other arterial revascularization \n*  Stroke or transient ischemic attack (TIA) \n*  Peripheral arterial disease of atherosclerotic origin \n\nLipoprotein density cholesterol (LDL-C) result: \n* A fasting or direct LDL-C laboratory test performed and test result documented in the medical record. \n\nStatin therapy:   \n* Administration of one or more of a group of medications that are used to lower plasma lipoprotein levels in the treatment of hyperlipoproteinemia. \n\nStatin Medication Therapy List (NOTE: List does NOT include dosage):\n\n[Generic name] (Brand or trade name) and (-) Medication type, if applicable:\n[Atorvastatin] (Lipitor) - Statin\n[Fluvastatin] (Lescol XL or Lescol) - Statin\n[Lovastatin (Mevinolin)](Mevacor or Altoprev) -Statin\n[Pitavastatin]Livalo\n[Pravastatin Sodium] (Pravachol) - Statin\n[Rosuvastatin Calcium] (Crestor) - Statin\n[Simvastatin] (Zocor) - Statin\n[Amlodipine Besylate/Atorvastatin Calcium] (Caduet) - Combination\n[Ezetimibe/Simvastatin] (Vytorin) - Combination\n[Ezetimibe/Atorvastatin] (Liptruzet) - Combination\n\nSome patients may not be appropriate to prescribe or use statin therapy (see\nexceptions and exclusions for a complete list). \n\n\"Statin intolerance is the inability to tolerate a dose of statin required to reduce a person's CV risk sufficiently from their baseline risk and could result from different statin related side effects including: muscle symptoms, headache, sleep disorders, dyspepsia, nausea, rash, alopecia, erectile dysfunction, gynecomastia, and/or arthritis\" (Banach, et al., 2015).\n\nPatients that experience symptoms such as these may prefer not to take or continue statin therapy and therefore may be exempt from the denominator."
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "Numerator instructions and guidance:\n-Current statin therapy use must be documented in the patient's current medication list or ordered during the measurement period.\n-ONLY statin therapy meets the measure Numerator criteria (NOT other cholesterol lowering medications).\n-Prescription or order does NOT need to be linked to an encounter or visit; it may be called to the pharmacy.\n-Statin medication \"samples\" provided to patients can be documented as \"current statin therapy\" if documented in the medication list in health/medical record.\n-Patients who meet the denominator criteria for inclusion, but are not prescribed or using statin therapy, will NOT meet performance for this measure. \n-Adherence to statin therapy is not calculated in this measure.\n\n\nDenominator Guidance: \nThe denominator covers three distinct populations. Use the following process to prevent counting patients more than once.\n\nDenominator Population 1:  \nPatients aged >= 21 years at the beginning of the measurement period with clinical ASCVD\n\n-If YES, meets Denominator Population 1 risk category\t\t \n-If NO, screen for next risk category\n\nDenominator Population 2: \nPatients aged >= 21 years at the beginning of the measurement period who have ever had a fasting or direct laboratory test result of LDL-C >= 190 mg/dL or were previously diagnosed with or currently have an active diagnosis of familial or pure hypercholesterolemia\n\n-If YES, meets Denominator Population 2 risk category\t\t \n-If NO, screen for next risk category\n\nDenominator Population 3:\nPatients aged 40 to 75 years at the beginning of the measurement period with Type 1 or Type 2 diabetes and with a LDL-C result of 70 -189 mg/dL recorded as the highest fasting or direct laboratory test result in the measurement year or during the two years prior to the beginning of the measurement period\n\n-If YES, meets Denominator Population 3 risk category\n-If NO, patient does NOT meet Denominator criteria and is NOT eligible for measure inclusion\n\nDenominator Guidance for Encounter:\n-In order for the patient to be included in the denominator, the patient must have ONE denominator-eligible visit, defined as follows:\n\n--Outpatient encounter visit type\n--Encounter, performed: initial or established office visit, face-to-face interaction, preventive care services, or annual wellness visit\n\n\nLDL-C Laboratory test result options:\nThe measure can be reported for all patients with a documented fasting or direct LDL-C level recorded as follows:\n\nTo meet Denominator Population 1: \nThere is no LDL-C result required.\n\nTo meet Denominator Population 2:\nIf a patient has ANY previous fasting or direct laboratory result of LDL-C >= 190 mg/dL, report the highest value >= 190 mg/dL.\n\nTo meet Denominator Population 3: \nIf a patient has more than one LDL-C result during the measurement period or during the two years before the start of the measurement period, report the highest level recorded during either time. The Denominator Exception, \"Patients with diabetes who have the most recent fasting or direct LDL-C laboratory test result < 70 mg/dL and are not taking statin therapy\" applies only to Denominator Population 3.\n\nIntensity of statin therapy in primary and secondary prevention:\n\nThe expert panel of the 2013 ACC/AHA Guidelines (Stone et al. 2013) defines recommended intensity of statin therapy on the basis of the average expected LDL-C response to specific statin and dose. Although intensity of statin therapy is important in managing cholesterol, this measure assesses prescription of ANY statin therapy, irrespective of intensity. Assessment of appropriate intensity and dosage documentation added too much complexity to allow inclusion of statin therapy intensity in the measure at this time.\n\nLifestyle modification coaching:\nA healthy lifestyle is important for the prevention of cardiovascular disease. However, lifestyle modification monitoring and documentation added too much complexity to allow its inclusion in the measure at this time.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Numerator instructions and guidance:\n-Current statin therapy use must be documented in the patient's current medication list or ordered during the measurement period.\n-ONLY statin therapy meets the measure Numerator criteria (NOT other cholesterol lowering medications).\n-Prescription or order does NOT need to be linked to an encounter or visit; it may be called to the pharmacy.\n-Statin medication \"samples\" provided to patients can be documented as \"current statin therapy\" if documented in the medication list in health/medical record.\n-Patients who meet the denominator criteria for inclusion, but are not prescribed or using statin therapy, will NOT meet performance for this measure. \n-Adherence to statin therapy is not calculated in this measure.\n\n\nDenominator Guidance: \nThe denominator covers three distinct populations. Use the following process to prevent counting patients more than once.\n\nDenominator Population 1:  \nPatients aged >= 21 years at the beginning of the measurement period with clinical ASCVD\n\n-If YES, meets Denominator Population 1 risk category\t\t \n-If NO, screen for next risk category\n\nDenominator Population 2: \nPatients aged >= 21 years at the beginning of the measurement period who have ever had a fasting or direct laboratory test result of LDL-C >= 190 mg/dL or were previously diagnosed with or currently have an active diagnosis of familial or pure hypercholesterolemia\n\n-If YES, meets Denominator Population 2 risk category\t\t \n-If NO, screen for next risk category\n\nDenominator Population 3:\nPatients aged 40 to 75 years at the beginning of the measurement period with Type 1 or Type 2 diabetes and with a LDL-C result of 70 -189 mg/dL recorded as the highest fasting or direct laboratory test result in the measurement year or during the two years prior to the beginning of the measurement period\n\n-If YES, meets Denominator Population 3 risk category\n-If NO, patient does NOT meet Denominator criteria and is NOT eligible for measure inclusion\n\nDenominator Guidance for Encounter:\n-In order for the patient to be included in the denominator, the patient must have ONE denominator-eligible visit, defined as follows:\n\n--Outpatient encounter visit type\n--Encounter, performed: initial or established office visit, face-to-face interaction, preventive care services, or annual wellness visit\n\n\nLDL-C Laboratory test result options:\nThe measure can be reported for all patients with a documented fasting or direct LDL-C level recorded as follows:\n\nTo meet Denominator Population 1: \nThere is no LDL-C result required.\n\nTo meet Denominator Population 2:\nIf a patient has ANY previous fasting or direct laboratory result of LDL-C >= 190 mg/dL, report the highest value >= 190 mg/dL.\n\nTo meet Denominator Population 3: \nIf a patient has more than one LDL-C result during the measurement period or during the two years before the start of the measurement period, report the highest level recorded during either time. The Denominator Exception, \"Patients with diabetes who have the most recent fasting or direct LDL-C laboratory test result < 70 mg/dL and are not taking statin therapy\" applies only to Denominator Population 3.\n\nIntensity of statin therapy in primary and secondary prevention:\n\nThe expert panel of the 2013 ACC/AHA Guidelines (Stone et al. 2013) defines recommended intensity of statin therapy on the basis of the average expected LDL-C response to specific statin and dose. Although intensity of statin therapy is important in managing cholesterol, this measure assesses prescription of ANY statin therapy, irrespective of intensity. Assessment of appropriate intensity and dosage documentation added too much complexity to allow inclusion of statin therapy intensity in the measure at this time.\n\nLifestyle modification coaching:\nA healthy lifestyle is important for the prevention of cardiovascular disease. However, lifestyle modification monitoring and documentation added too much complexity to allow its inclusion in the measure at this time."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "TBD",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "TBD"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "All patients aged 21 years and older at the beginning of the measurement period with a patient encounter during the measurement period.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "All patients aged 21 years and older at the beginning of the measurement period with a patient encounter during the measurement period."
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "All patients who meet one or more of the following criteria (considered at \"high risk\" for cardiovascular events, under ACC/AHA guidelines):\n\n1)  Patients aged >= 21 years at the beginning of the measurement period with clinical ASCVD diagnosis \n\n2)  Patients aged >= 21 years at the beginning of the measurement period who have ever had a fasting or direct laboratory result of LDL-C >=190 mg/dL or were previously diagnosed with or currently have an active diagnosis of familial or pure hypercholesterolemia \n\n3)  Patients aged 40 to 75 years at the beginning of the measurement period with Type 1 or Type 2 diabetes and with an LDL-C result of 70-189 mg/dL recorded as the highest fasting or direct laboratory test result in the measurement year or during the two years prior to the beginning of the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "All patients who meet one or more of the following criteria (considered at \"high risk\" for cardiovascular events, under ACC/AHA guidelines):\n\n1)  Patients aged >= 21 years at the beginning of the measurement period with clinical ASCVD diagnosis \n\n2)  Patients aged >= 21 years at the beginning of the measurement period who have ever had a fasting or direct laboratory result of LDL-C >=190 mg/dL or were previously diagnosed with or currently have an active diagnosis of familial or pure hypercholesterolemia \n\n3)  Patients aged 40 to 75 years at the beginning of the measurement period with Type 1 or Type 2 diabetes and with an LDL-C result of 70-189 mg/dL recorded as the highest fasting or direct laboratory test result in the measurement year or during the two years prior to the beginning of the measurement period"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "Patients who have a diagnosis of pregnancy\nPatients who are breastfeeding\nPatients who have a diagnosis of rhabdomyolysis",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients who have a diagnosis of pregnancy\nPatients who are breastfeeding\nPatients who have a diagnosis of rhabdomyolysis"
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Patients who are actively using or who receive an order (prescription) for statin therapy at any point during the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients who are actively using or who receive an order (prescription) for statin therapy at any point during the measurement period"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "Patients with adverse effect, allergy, or intolerance to statin medication\nPatients who are receiving palliative care\nPatients with active liver disease or hepatic disease or insufficiency\nPatients with end-stage renal disease (ESRD)\nPatients with diabetes who have the most recent fasting or direct LDL-C laboratory test result < 70 mg/dL and are not taking statin therapy",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients with adverse effect, allergy, or intolerance to statin medication\nPatients who are receiving palliative care\nPatients with active liver disease or hepatic disease or insufficiency\nPatients with end-stage renal disease (ESRD)\nPatients with diabetes who have the most recent fasting or direct LDL-C laboratory test result < 70 mg/dL and are not taking statin therapy"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "E29D10A8-7867-472D-9407-02AF1DDA78DD",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denex"
+    },
+    "DENEXCEP": {
+     "hqmf_id": "2D4B2B28-EC6D-4874-9D56-992B46646DC3",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denexcep"
+    },
+    "DENOM": {
+     "hqmf_id": "FB196C50-2308-4064-88B7-C77746E76B36",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denominator 1"
+    },
+    "IPP": {
+     "hqmf_id": "D75B1F50-E58A-4A79-BB5C-C4EBEB160F96",
+     "library_name": "StatinTherapy",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "41010063-398D-47A2-BB73-27FE326CBACA",
+     "library_name": "StatinTherapy",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "title": "Population Criteria Section"
+  },
+  {
+   "population_set_id": "PopulationCriteria2",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "99615B52-7B7D-42D8-BDA6-780CCA24F042",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denex"
+    },
+    "DENEXCEP": {
+     "hqmf_id": "02C31BA7-C0A1-451D-80EB-4BBC232BAE8F",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denexcep"
+    },
+    "DENOM": {
+     "hqmf_id": "0D665008-2079-41E4-8CD5-B0E372CFD029",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denominator 2"
+    },
+    "IPP": {
+     "hqmf_id": "295F05AE-22D4-451F-94C6-67DA6123C409",
+     "library_name": "StatinTherapy",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "5AED46FE-4EE3-42D2-B7F4-81B8E1B9959A",
+     "library_name": "StatinTherapy",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "title": "Population Criteria Section"
+  },
+  {
+   "population_set_id": "PopulationCriteria3",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "8B6D8852-8068-4A4C-BFB5-794A7E212C2A",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denex"
+    },
+    "DENEXCEP": {
+     "hqmf_id": "F2F08981-F7CA-44DA-987E-E0C218B52642",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denexcep Den3"
+    },
+    "DENOM": {
+     "hqmf_id": "ED665D4E-AEA4-4D19-BEB9-5715D2EE4BC8",
+     "library_name": "StatinTherapy",
+     "statement_name": "Denominator 3"
+    },
+    "IPP": {
+     "hqmf_id": "77B3C349-BC4E-40FA-9E73-DEAA9B32067E",
+     "library_name": "StatinTherapy",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "97A5259A-ADD5-4BCA-928C-3CD1DF357DC8",
+     "library_name": "StatinTherapy",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Statin Therapy"
+}

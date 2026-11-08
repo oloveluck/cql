@@ -45,7 +45,9 @@
    [(eof) (void)]
    [(:or " " "\t" "\r" "\n" "\f") (token 'WS lexeme #:skip? #t)]
    [(:: "//" (:* (:~ "\n"))) (token 'COMMENT lexeme #:skip? #t)]
-   [(:: "/*" (:* (:or (:~ "*") (:: "*" (:~ "/")))) (:* "*") "*/") (token 'COMMENT lexeme #:skip? #t)]
+   ;; a block comment ends at its FIRST `*/` (`/***/` included: a `*` followed by a non-`/` pattern
+   ;; let the longest match run on to a later comment's end, swallowing the definitions between)
+   [(:: "/*" (complement (:: any-string "*/" any-string)) "*/") (token 'COMMENT lexeme #:skip? #t)]
 
    ;; string literal (single-quoted)
    [(:: "'" (:* (:or (:: "\\" any-char) (:~ "'" "\\"))) "'")
@@ -89,6 +91,8 @@
          "Interval" "List" "Tuple" "Code" "Concept")
     (token lexeme lexeme)]
 
+   ;; $this / $index / $total (cql.g4's termExpression), names like any other
+   [(:or "$this" "$index" "$total") (token 'IDENTIFIER (string->symbol lexeme))]
    ;; identifiers (plain and double-quoted delimited)
    [(:: (:or alphabetic "_") (:* (:or alphabetic numeric "_"))) (token 'IDENTIFIER (string->symbol lexeme))]
    [(:: "\"" (:* (:or (:: "\\" any-char) (:~ "\"" "\\"))) "\"")
@@ -123,6 +127,7 @@
   (check-equal? (map car (lex "define X: 1 + 2"))
                 (list 'define 'IDENTIFIER ': 'NUMBER '+ 'NUMBER))
   (check-equal? (map car (lex "defined")) (list 'IDENTIFIER))
+  (check-equal? (map car (lex "/***/ a /* b */ c")) (list 'COMMENT 'IDENTIFIER 'COMMENT 'IDENTIFIER))
   ;; long vs number vs decimal
   (check-equal? (lex "42L") (list (cons 'LONGNUMBER (long-lit "42"))))
   (check-equal? (lex "3.14") (list (cons 'NUMBER "3.14")))

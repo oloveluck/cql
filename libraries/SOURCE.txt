@@ -4,3 +4,9 @@ FHIRHelpers.cql — FHIRHelpers 4.0.1, the Library's text/cql content from the f
 package (https://packages.fhir.org/fhir.cqf.common/4.0.1), the same file as
 tests/vendor/elm-corpus/fhir.cqf.common-4.0.1/FHIRHelpers.cql. Package license Apache-2.0
 (http://www.apache.org/licenses/LICENSE-2.0). Reproduced unmodified.
+
+FHIRHelpers-4.4.000.cql — FHIRHelpers 4.4.000, which the QI-Core 2024 eCQMs include, from
+cqframework/ecqm-content-qicore-2024 (input/cql/FHIRHelpers.cql at commit b982bfa, the same file as
+tests/vendor/qicore-2024/elm-corpus/ecqm-content-qicore-2024/FHIRHelpers.cql). FHIRHelpers is
+cqframework's (Apache-2.0); the repository is CC0. Reproduced unmodified. A library including
+FHIRHelpers version '4.4.000' gets this file; any other version gets FHIRHelpers.cql.

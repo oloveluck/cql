@@ -1,0 +1,449 @@
+{
+ "calculation_method": "PATIENT",
+ "cms_id": "CMSv0",
+ "composite": false,
+ "hqmf_set_id": "0B2D4BCF-EDF6-41C5-BE2A-64ACCDB9DD35",
+ "main_cql_library": "CMS108",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.5.1063",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.5.1063",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED"
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "_id": "609d998eb78902cd9466f5bb",
+   "population_set_id": "PopulationSet_1",
+   "populations": {
+    "DENOM": {
+     "_id": "609d998eb78902cd9466f5be",
+     "hqmf_id": "0635FE70-A0EE-416A-BA19-DFF0ACEF30F4",
+     "library_name": "CMS108",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "_id": "609d998eb78902cd9466f5bd",
+     "hqmf_id": "A43B38F6-F29B-47A4-BD73-CFF85FE93F37",
+     "library_name": "CMS108",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "_id": "609d998eb78902cd9466f5bf",
+     "hqmf_id": "EB98FDEB-E1A7-4E2D-9439-1BD541D4B282",
+     "library_name": "CMS108",
+     "statement_name": "Numerator"
+    },
+    "_id": "609d998eb78902cd9466f5bc"
+   },
+   "supplemental_data_elements": [
+    {
+     "_id": "609d998eb78902cd9466f5c0",
+     "hqmf_id": "C28ADE22-180C-4671-AF44-278238689D91",
+     "library_name": "CMS108",
+     "statement_name": "SDE Ethnicity"
+    },
+    {
+     "_id": "609d998eb78902cd9466f5c1",
+     "hqmf_id": "B25BCCDB-B913-4F1E-A486-64ECDC25E0C5",
+     "library_name": "CMS108",
+     "statement_name": "SDE Payer"
+    },
+    {
+     "_id": "609d998eb78902cd9466f5c2",
+     "hqmf_id": "41B2F95E-DF79-496C-8CEC-C58A4E23B1E2",
+     "library_name": "CMS108",
+     "statement_name": "SDE Race"
+    },
+    {
+     "_id": "609d998eb78902cd9466f5c3",
+     "hqmf_id": "875E52E0-67DA-48DF-89BC-0193082F617F",
+     "library_name": "CMS108",
+     "statement_name": "SDE Sex"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "CMS108"
+}

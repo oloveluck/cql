@@ -1,0 +1,130 @@
+{
+ "calculation_method": "PATIENT",
+ "cms_id": "CMSv0",
+ "composite": false,
+ "hqmf_set_id": "BBAF3788-F8EF-41B0-B525-6C85309E884F",
+ "main_cql_library": "CombinedVTEandBleedingRatio",
+ "measure_attributes": [],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "RATIO",
+ "population_sets": [
+  {
+   "_id": "60d2433eb7b4da5e252cb5cb",
+   "observations": [
+    {
+     "_id": "60d2433eb7b4da5e252cb5d5",
+     "aggregation_type": "SUM",
+     "hqmf_id": "81A3195D-035F-4B43-A2BC-6CC8DA5AA4BD",
+     "observation_function": {
+      "_id": "60d2433eb7b4da5e252cb5d6",
+      "hqmf_id": "81A3195D-035F-4B43-A2BC-6CC8DA5AA4BD",
+      "library_name": "CombinedVTEandBleedingRatio",
+      "statement_name": "Measure Denominator Score"
+     },
+     "observation_parameter": {
+      "_id": "60d2433eb7b4da5e252cb5d7",
+      "hqmf_id": "81A3195D-035F-4B43-A2BC-6CC8DA5AA4BD",
+      "library_name": "CombinedVTEandBleedingRatio",
+      "statement_name": "Denominator"
+     }
+    },
+    {
+     "_id": "60d2433eb7b4da5e252cb5d8",
+     "aggregation_type": "SUM",
+     "hqmf_id": "81F3AE38-EAB3-4B9C-A66F-6F5AED2B9829",
+     "observation_function": {
+      "_id": "60d2433eb7b4da5e252cb5d9",
+      "hqmf_id": "81F3AE38-EAB3-4B9C-A66F-6F5AED2B9829",
+      "library_name": "CombinedVTEandBleedingRatio",
+      "statement_name": "Measure Numerator Score"
+     },
+     "observation_parameter": {
+      "_id": "60d2433eb7b4da5e252cb5da",
+      "hqmf_id": "81F3AE38-EAB3-4B9C-A66F-6F5AED2B9829",
+      "library_name": "CombinedVTEandBleedingRatio",
+      "statement_name": "Numerator"
+     }
+    }
+   ],
+   "population_set_id": "PopulationSet_1",
+   "populations": {
+    "DENEX": {
+     "_id": "60d2433eb7b4da5e252cb5cf",
+     "hqmf_id": "B8A8ED35-BC32-4274-A44D-503178D0C4D0",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "Denominator Exclusion"
+    },
+    "DENOM": {
+     "_id": "60d2433eb7b4da5e252cb5ce",
+     "hqmf_id": "0B406C0E-91A5-43F0-8D40-4C4D6E860887",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "_id": "60d2433eb7b4da5e252cb5cd",
+     "hqmf_id": "BE14DD92-D432-4A78-BFA2-E69936FFA2D9",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "_id": "60d2433eb7b4da5e252cb5d0",
+     "hqmf_id": "BE789040-3DCB-46AF-B0EA-37FF07ECC3CB",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "Numerator"
+    },
+    "_id": "60d2433eb7b4da5e252cb5cc",
+    "_type": "CQM::RatioPopulationMap"
+   },
+   "stratifications": [],
+   "supplemental_data_elements": [
+    {
+     "_id": "60d2433eb7b4da5e252cb5d1",
+     "hqmf_id": "40D32594-D033-4653-95D4-7553F63B57B9",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "SDE Ethnicity"
+    },
+    {
+     "_id": "60d2433eb7b4da5e252cb5d2",
+     "hqmf_id": "85DC7942-DA7A-495C-BBF8-74261A691A3A",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "SDE Payer"
+    },
+    {
+     "_id": "60d2433eb7b4da5e252cb5d3",
+     "hqmf_id": "A2969BBC-A5A8-4EF7-A860-FA6F4C299379",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "SDE Race"
+    },
+    {
+     "_id": "60d2433eb7b4da5e252cb5d4",
+     "hqmf_id": "CEF8998C-9AA0-4670-9E93-C6F26A662C55",
+     "library_name": "CombinedVTEandBleedingRatio",
+     "statement_name": "SDE Sex"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Combined VTE and Bleeding Ratio"
+}

@@ -1,0 +1,52 @@
+{
+ "calculation_method": "EPISODE_OF_CARE",
+ "cms_id": "CMSv0",
+ "composite": false,
+ "hqmf_set_id": "25B51662-1A12-411E-AC9D-22657E11EED8",
+ "main_cql_library": "TestWhenCase",
+ "measure_attributes": [],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "COHORT",
+ "population_sets": [
+  {
+   "_id": "65c4ea736068b11663b74825",
+   "observations": [],
+   "population_set_id": "PopulationSet_1",
+   "populations": {
+    "IPP": {
+     "_id": "65c4ea736068b11663b74827",
+     "hqmf_id": "8507F30A-36AB-4B77-9C71-EB6BF7ECCD30",
+     "library_name": "TestWhenCase",
+     "statement_name": "Initial Population"
+    },
+    "_id": "65c4ea736068b11663b74826",
+    "_type": "CQM::CohortPopulationMap"
+   },
+   "stratifications": [],
+   "supplemental_data_elements": [],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "TestWhenCase"
+}

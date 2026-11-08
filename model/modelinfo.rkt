@@ -96,7 +96,8 @@
   [model-context-type  (-> model? string? (or/c string? #f))]
   [model-context       (-> model? string? (or/c context-info? #f))]
   [model-relationships (-> model? string? string? (listof string?))]
-  [model-resolve-type  (-> model? string? (or/c string? #f))]))
+  [model-resolve-type  (-> model? string? (or/c string? #f))]
+  [find-profile-class  (-> string? (or/c (cons/c model? string?) #f))]))
 
 (struct class-info (name base identifier label primary-code-path retrievable? elements relationships targets searches target) #:transparent)
 (struct context-info (name key-element birth-date-element type) #:transparent)
@@ -175,9 +176,11 @@
     (set! shipped-loaded? #t)
     (for ([e (in-list (call-with-input-file (build-path shipped-dir "models.rktd") read))])
       (match e
-        [(list name version file rep)
+        [(list name version url file rep)
          (define p (delay (load-model (build-path shipped-dir file) #:representation (and rep (build-path shipped-dir rep)))))
-         (hash-set! registry (cons name version) p)]))))
+         (hash-set! registry (cons name version) p)
+         (hash-update! shipped-urls url (lambda (ps) (append ps (list p))) '())]))))
+(define shipped-urls (make-hash))   ; url -> (listof promise), the shipped models with that url
 
 (define current-model-providers (make-parameter '()))
 (define current-model-directories
@@ -225,10 +228,26 @@
 ;; find-model-by-url : url -> model|#f   the model a `{url}Type` name belongs to
 (define by-url (make-hash))
 (define (find-model-by-url url)
+  (load-shipped!)
   (or (hash-ref by-url url #f)
-      (let ([m (for/or ([m (in-list (installed-models))]) (and (equal? (model-url m) url) m))])
+      ;; registered models already made, the shipped ones with that url, then every other source
+      (let ([m (or (for/or ([e (in-hash-values registry)]) (and (model? e) (equal? (model-url e) url) e))
+                   (for/or ([p (in-list (hash-ref shipped-urls url '()))]) (force p))
+                   (for/or ([m (in-list (installed-models))]) (and (equal? (model-url m) url) m)))])
         (when m (hash-set! by-url url m))
         m)))
+
+;; find-profile-class : identifier -> (cons model class-name)|#f   the class of an installed MAPPING
+;; model (one with a target url) whose identifier is this (a retrieve's templateId: the profile it
+;; reads), the newest model first; remembered
+(define by-identifier (make-hash))
+(define (find-profile-class id)
+  (hash-ref! by-identifier id
+             (lambda ()
+               (for*/first ([m (in-list (reverse (sort (filter model-target-url (installed-models)) version<? #:key model-version)))]
+                            [ci (in-hash-values (model-classes m))]
+                            #:when (equal? (class-info-identifier ci) id))
+                 (cons m (class-info-name ci))))))
 
 ;; model-required-models : model -> (listof model)   the models it builds on, found in the registry
 (define (model-required-models m)
@@ -267,6 +286,8 @@
   (let loop ([t a])
     (cond [(not t) #f]
           [(equal? t b) #t]
+          ;; a mapping model's class may rest on a System type (QICore.UnitsOfTime on System.String)
+          [(and (string-prefix? t "System.") (equal? (substring t 7) b)) #t]
           [else (define ci (model-class m t)) (and ci (loop (class-info-base ci)))])))
 
 ;; model-conversion : model type-name -> (cons to-CType function-name)|#f   its implicit conversion

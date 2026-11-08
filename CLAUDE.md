@@ -264,9 +264,9 @@ operators, `if`/`case`. Layers:
     conversions, contexts, and now the parts the old loader dropped — `requiredModelInfo` (a model built
     on another: classes, conversions and contexts are looked up through it), `contextRelationship` (the
     Patient compartment: FHIR's Observation relates by `subject` and `performer`; a relationship may
-    name a search, whose path is used without its `where(...)` filters), element `target` mappings (an
-    element with one raises a clear error: mapping expressions are not implemented, and reading
-    nothing would be wrong). `model/modelinfo-xml.rkt` reads any ModelInfo document;
+    name a search, whose path is used without its `where(...)` filters), element `target` mappings
+    (compiled, see "Other models" below; a mapped element read directly from data is still an error,
+    since reading nothing would be wrong). `model/modelinfo-xml.rkt` reads any ModelInfo document;
     `gen-modelinfo.rkt` writes it as a ModelForm `.rktd`. A registry finds models: the shipped files
     (`shipped-model-files`: FHIR 4.0.1, model and representation as a runtime-path pair),
     `register-model!`, `current-model-providers` (made on request — the workspace's), and
@@ -298,3 +298,69 @@ operators, `if`/`case`. Layers:
   diffed); `code-path-test` unchanged (19472 compared, 0 differ); `tests/any-model-test.rkt` (a clinic
   model from logical models and one from a ModelInfo XML in a model directory, each with its own data
   shape); fhir-mcp's workspace test (a model designed in FSH, queried by `using`, explained).
+
+- **Other models: QI-Core, US Core, QDM** (2026-11-08). Shipped (`model/models.rktd`, an index of name,
+  version, url, ModelForm file and representation — a model loads only when asked for, by name or by
+  url): FHIR 4.0.1; QI-Core 4.1.1/5.0.0/6.0.0 and US Core 3.1.1/6.1.0 (the reference translator's
+  ModelInfos, Apache-2.0, `model/SOURCE.txt`); QDM 5.0.2–5.6.
+  - **Mapping models** (a ModelInfo with a targetUrl: QI-Core, US Core). A library is typed by the
+    profiles and its ELM reads the target model, as the reference translator writes it (compile.rkt,
+    "mapping models"): `using` emits the target's url; a retrieve names the target class
+    (`{http://hl7.org/fhir}Observation`) with the profile as templateId; a type in the ELM names the
+    target's class; an element with a `target` mapping (`mapping.rkt` parses the little language:
+    alternatives `Type:term;…`, `Lib.Fn(term)`, `%value`/`%parent` paths, `[cond,…]` filters) is the
+    mapping's ELM — a filter is a Query over `$this` with `Equal(FHIRHelpers.ToString($this.url), …)`
+    (First at each list step of a condition path), a single element over a list is SingletonFrom, a
+    function of a list element maps each item; the same at a sort row (`sort by issued.earliest()`)
+    and over a list's items. A code element that maps a System.ValueSet alternative as well
+    (QI-Core 4.1.1's NotDone profiles) retrieves as `Union(Retrieve in VS, Retrieve ~ VS)`; at run
+    time the `~` half reads the profile's ValueSet alternative — the profile found by templateId among
+    the installed mapping models (`find-profile-class`), its path walked over the FHIR record — and
+    matches the value set's url (interp.rkt `mapped-value-set-reader`). Typing details the corpus
+    drove: a class based on a System type (`QICore.UnitsOfTime` on System.String) is its subtype; a
+    System value promotes into a choice parameter (`ToDateTime(As(x, Date))`); a choice argument whose
+    members either are parameter members or fit not at all is a Case over the members that are
+    (System types only — FHIR members keep the plain cast); a choice compared with a type reads the
+    member that IS it; an aggregate's result has its `starting` value's type.
+    Language features the corpus needed: `$this` in `sort by`; `X in day of Y` (membership with a
+    precision = included-in); a query of sources alone as a closed term (the left operand of `union`);
+    `difference/duration in … between` as terms (not primaries: `… and E.f()` read as `(…).f()`); a
+    block comment ending at its first `*/` (`/***/` swallowed definitions); `convert X to days` =
+    ConvertQuantity(X, 'd') (the interpreter converts through UCUM, calendar words as their units); a
+    System Quantity's `value`/`unit` and a Ratio's parts as properties; DateFrom/TimeFrom without a
+    precision; sort directions kept as written (`ascending`); DateTime's timezone offset promoted to
+    Decimal; model instances equal when of one class with equal data (CQL's structural equality; the
+    FHIR snapshot is unchanged).
+    `tests/qicore-elm-corpus-test.rkt`: 98 libraries of ecqm-content-qicore-2024 (CC0), 98 compile,
+    1854/2144 definitions ELM-equal (was 409 before the mappings). `tests/qicore-measure-test.rkt`: 4
+    eCQMs over 190 MADiE cases, 188 agree (2 named: values exported as concepts where the case
+    describes a percentage). `tests/mapping-model-test.rkt`: NotDone both ways, ConvertQuantity, US Core.
+  - **QDM** (cqm-models JSON). `model/qdm.representation.rktd` declares it, with four representation
+    settings added for it (representation.rkt, all data): `type-prefix` (`_type` = "QDM::Diagnosis";
+    a name that is a System type — QDM::Code — is that System value), `element-keys` (an element's
+    keys in order: `code` under `dataElementCodes` else `code`, `id` else mongoose's `_id`; a
+    single-valued element written as a list is its first item, while a retrieve's code filter sees
+    every item — `node-property-all`, cqm-models' getCode), `code-system-prefix` (bare OIDs read as
+    `urn:oid:`), and `profiles` (a record of class B is the model's NegativeB/PositiveB when
+    `negationRationale` is present/absent — cqm-models' getByProfile). Records answer retrieves of
+    their superclasses. Robustness the data needed: DateTimes with a `+0000` offset; a record of a
+    class the model version lacks, where a System type is declared, read as that type (QDM 5.5's
+    DiagnosisComponent where 5.3 declares a Code; a Code written as an object holding its code object).
+    run.rkt: `valuesets->terminology` takes cqm-models value sets (`{oid, concepts}`, also as one JSON
+    array); `resources->data` takes a cqm-models patient document; `read-json-files` takes an array
+    file's objects. `cqm.rkt`: `cqm-patient-records`, `cqm-measure-period`, `cqm-measure-populations`
+    (proportion, ratio, CV, cohort; patient- or episode-based; strata; CV observations over
+    MSRPOPL−MSRPOPLEX in episode order; ratio observations one per observation per IPP episode, null
+    outside its population). `rlib-call` (interp.rkt) applies a library function to values.
+    `load-runtime-library` translates with `compile-library/partial`: a definition that fails to
+    translate raises its error when evaluated, and the rest of the library runs (the reference
+    translator's recovery leaves Null there; an error is more honest). `raco cql … --parameter
+    "name=<CQL expression>"`.
+    `tests/qdm-elm-corpus-test.rkt`: cqm-execution's 42 fixture libraries (Apache-2.0), 41 compile,
+    555/723 ELM-equal (the reference ELM is from older translators). `tests/qdm-measure-test.rkt`: 33
+    patients of 19 measures; all 31 of cqm-execution's own enabled assertions hold (transcribed with
+    their line numbers); 16/26 agree with the stored expectedValues, the 10 named (QDM 5.3 measures
+    reading principalDiagnosis over 5.5 data — cqm-execution disables those tests; stale observations;
+    a stored stratum the data contradict; a definition the reference translator could not translate).
+  Held to: the FHIR snapshot of every engine outcome (6300) unchanged; the FHIR ELM corpus 770 (+1, the
+  DateFrom precision); the HL7 suite 1820/1823.

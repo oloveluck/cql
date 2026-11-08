@@ -20,7 +20,8 @@
          "parser/ast.rkt"
          "elm/ast.rkt"
          "model/modelinfo.rkt"
-         (only-in "error.rkt" cql-error cql-error? cql-error-diagnostic cql-error-phase cql-error-message)
+         (only-in "mapping.rkt" parse-mapping map-call map-path map-field map-field? map-field-name map-filter)
+         (only-in "error.rkt" cql-error cql-error? cql-error-diagnostic cql-error-phase cql-error-message cql-error-string)
          (only-in fhir/diagnostic diagnostic attached-loc)
          racket/contract
          (only-in fhir/result/result ok err ok? err?)
@@ -36,6 +37,7 @@
   [compile-library (-> cql-library? (or/c ok? err?))]
   ;; every translation error (each positioned at its definition), and the library when there are none
   [compile-library/errors (-> cql-library? (values (or/c elm-library? #f) (listof cql-error?)))]
+  [compile-library/partial (-> cql-library? (values (or/c elm-library? #f) (listof cql-error?)))]
   ;; compile-expr : cql-expression-AST -> (ok elm-expr) | (err cql-error)  (bare-expression entry)
   [compile-expr    (-> any/c (or/c ok? err?))]))
 
@@ -143,12 +145,32 @@
 ;; current-errors : (parameter (box (listof cql-error)) | #f)   where accumulating compiles collect
 (define current-errors (make-parameter #f))
 ;; collecting : thunk default -> value   run one statement's compile; with an accumulating compile, an
-;; error is recorded and `default` stands in
+;; error is recorded and `default` stands in (a procedure default is given the error)
 (define (collecting thunk default)
   (define box* (current-errors))
   (if box*
-      (with-handlers ([cql-error? (lambda (e) (set-box! box* (cons e (unbox box*))) default)]) (thunk))
+      (with-handlers ([cql-error? (lambda (e) (set-box! box* (cons e (unbox box*))) (if (procedure? default) (default e) default))])
+        (thunk))
       (thunk)))
+;; current-partial? : (parameter boolean)   a partial compile keeps a failed definition as one that
+;; raises its translation error when evaluated
+(define current-partial? (make-parameter #f))
+(define (raising-definition name e)
+  (elm-def name "Unfiltered" #f
+           (elm-nary "Message" (list (elm-null #f) (elm-literal "Boolean" "true") (elm-literal "String" "translation")
+                                     (elm-literal "String" "Error") (elm-literal "String" (cql-error-string e)))
+                     #f)))
+
+;; compile-library/partial : cql-library -> (values elm-library|#f (listof cql-error))   every
+;; statement translated; a failing definition becomes one that raises its error when evaluated (the
+;; reference translator's error recovery leaves a Null there), so the rest of the library runs
+(define (compile-library/partial lib)
+  (parameterize ([current-partial? #t])
+    (define collected (box '()))
+    (with-handlers ([cql-error? (lambda (e) (values #f (list e)))])
+      (define lx (make-lctx lib))
+      (parameterize ([current-lctx lx] [compile-memo (make-hasheq)] [current-errors collected])
+        (values (assemble-library lib lx) (reverse (unbox collected)))))))
 
 ;; compile-expr : cql-ast -> (ok elm-node) | (err cql-error)  — a bare expression (harness/CLI)
 (define (compile-expr ast)
@@ -168,7 +190,7 @@
               (lambda (d)
                 (define m (find-model (symbol->string (cql-using-model d)) (cql-using-version d)))
                 (elm-using (if (cql-using-alias d) (symbol->string (cql-using-alias d)) (symbol->string (cql-using-model d)))
-                           (if m (model-url m) (symbol->string (cql-using-model d)))
+                           (if m (or (model-target-url m) (model-url m)) (symbol->string (cql-using-model d)))
                            (cql-using-version d))))))
   (define includes
     (of cql-include?
@@ -207,7 +229,7 @@
            (lambda ()
              (list (elm-def (symbol->string (cql-def-name d)) (hash-ref (lctx-contexts lx) (cql-def-name d) "Unfiltered")
                             (cql-def-access d) (car (def-info lx (cql-def-name d))))))
-           '())]
+           (lambda (e) (if (current-partial?) (list (raising-definition (symbol->string (cql-def-name d)) e)) '())))]
          [(? cql-func?) (collecting (lambda () (list (compile-function-def d lx))) '())]
          [_ '()]))))
   (elm-library (and (cql-library-id lib) (symbol->string (cql-library-id lib))) (cql-library-version lib)
@@ -320,6 +342,9 @@
     [(cql-typeop op operand type) (compile-typeop op operand type env)]
     [(cql-cast operand type) (compile-cast operand type env)]
     [(cql-convert operand type) (compile-convert operand type env)]
+    [(cql-convert-unit operand unit)
+     (define-values (o _t) (sys operand env))
+     (values (elm-nary "ConvertQuantity" (list o (elm-literal "String" unit)) "Quantity") "Quantity")]
     [(cql-index target idx) (compile-index target idx env)]
     [(cql-component prec operand) (compile-component prec operand env)]
     [(cql-between kind prec a b) (compile-between kind prec a b env)]
@@ -505,14 +530,20 @@
 ;; choice-to : elm CType(choice) CType -> (values elm CType)   the choice members that convert to
 ;; `target`: none -> unchanged ; one -> Convert(x as M) ; several -> a Case over `x is M`
 (define (choice-to n t target)
-  (define members (for/list ([c (in-list (choice-members t))]
-                             #:when (let ([k (conversion-cost c target)]) (and k (<= k 1))))
-                    c))
-  (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (ctype->elm-name m) #f) m)]) cn))
+  (define fits (for/list ([c (in-list (choice-members t))]
+                          #:when (let ([k (conversion-cost c target)]) (and k (<= k 1))))
+                 c))
+  ;; a member that IS the target is the one read (a mapped Choice<Quantity, Integer, …> compared with
+  ;; a Quantity: value as Quantity, not a Case that promotes the Integer too)
+  (define exact (filter (lambda (c) (equal? c target)) fits))
+  (define members (if (pair? exact) exact fits))
+  ;; a member's type: a name, or a specifier for an interval or list member (Interval<Quantity>)
+  (define (spec m) (if (string? m) (ctype->elm-name m) (ctype->elm-type m)))
+  (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (spec m) #f) m)]) cn))
   (match members
     ['() (values n t)]
-    [(list m) (to-system (elm-as n (ctype->elm-name m) #f) m)]
-    [ms (values (elm-case #f (for/list ([m (in-list ms)]) (elm-case-item (elm-is n (ctype->elm-name m)) (conv m)))
+    [(list m) (to-system (elm-as n (spec m) #f) m)]
+    [ms (values (elm-case #f (for/list ([m (in-list ms)]) (elm-case-item (elm-is n (spec m)) (conv m)))
                           (elm-null #f))
                 target)]))
 
@@ -569,6 +600,9 @@
        [(hash-ref (lctx-defs lx) name #f) (values (elm-expression-ref s #f) (cdr (def-info lx name)))]
        [(hash-ref (lctx-params lx) name #f) => (lambda (p) (values (elm-parameter-ref s #f) (param-type p)))]
        [(hash-ref (lctx-terms lx) name #f) => (lambda (k) (values (elm-term-ref k s #f) (term-type k)))]
+       [(and (cenv-row env) (eq? name '$this)) (values (elm-identifier-ref s) (cenv-row env))]
+       [(and (cenv-row env) (mapped-element? (cenv-row env) s))
+        (map-property #f #f (cenv-row env) s #:value (elm-identifier-ref s))]
        [(and (cenv-row env) (property-type (cenv-row env) s))
         => (lambda (t) (values (elm-identifier-ref s) t))]
        [(and (cenv-this env) (property-type (cdr (local-ref env (string->symbol (cenv-this env)))) s))
@@ -821,22 +855,131 @@
   (define m (or (lctx-model (L)) (fail "a retrieve needs a data model (`using`)")))
   (define qname (or (model-resolve-type m (symbol->string type)) (fail (format "unknown model type ~a" type))))
   (define-values (codes ct) (if term (compile term env) (values #f #f)))
-  (values (retrieve-node qname
-                         (and term (or (and path (symbol->string path))
-                                       (class-info-primary-code-path (model-class m qname))))
-                         (and term (cond [cmp (symbol->string cmp)]
-                                         [(member ct '("ValueSet" "CodeSystem")) "in"]
-                                         [else "~"]))
-                         ;; a single (non-list, non-ValueSet) terminology becomes a list
-                         (and term (if (or (list-ctype? ct) (member ct '("ValueSet" "CodeSystem")))
-                                       codes
-                                       (elm-unary "ToList" codes #f))))
+  (define code-property (and term (or (and path (symbol->string path))
+                                      (class-info-primary-code-path (model-class m qname)))))
+  (define comparator (and term (cond [cmp (symbol->string cmp)]
+                                     [(member ct '("ValueSet" "CodeSystem")) "in"]
+                                     [else "~"])))
+  ;; a single (non-list, non-ValueSet) terminology becomes a list
+  (define codes* (and term (if (or (list-ctype? ct) (member ct '("ValueSet" "CodeSystem")))
+                               codes
+                               (elm-unary "ToList" codes #f))))
+  (values (if (and (not cmp) (equal? ct "ValueSet") (valueset-alternative? m qname code-property))
+              ;; the element maps a ValueSet as well (QI-Core's NotDone profiles: the value set the
+              ;; action was not done for): those records match by `~`, the others by `in`
+              (elm-nary "Union" (list (retrieve-node qname code-property "in" codes*)
+                                      (retrieve-node qname code-property "~" codes*))
+                        #f)
+              (retrieve-node qname code-property comparator codes*))
           (list-ctype qname)))
+;; valueset-alternative? : model class path -> boolean   the element's mapping has a System.ValueSet
+;; alternative
+(define (valueset-alternative? m qname path)
+  (define target (and (mapping-model? m) path (not (regexp-match? #rx"[.]" path)) (model-element-target m qname path)))
+  (and target (for/or ([alt (in-list (parse-mapping target))]) (equal? (car alt) "System.ValueSet"))))
 (define (retrieve-node qname code-property comparator codes)
   (define m (lctx-model (L)))
-  (elm-retrieve (format "{~a}~a" (model-url m) (local-name qname))
+  (elm-retrieve (if (mapping-model? m)
+                    (format "{~a}~a" (model-target-url m) (physical-name m qname))
+                    (format "{~a}~a" (model-url m) (local-name qname)))
                 (class-info-identifier (model-class m qname)) code-property comparator codes))
 (define (local-name q) (let ([m (regexp-match #rx"[.]([^.]+)$" q)]) (if m (cadr m) q)))
+
+;; ---- mapping models ------------------------------------------------------------------------
+;; A library using a mapping model (QI-Core, US Core: a ModelInfo with a targetUrl) is typed by that
+;; model's classes, and its ELM reads the target model's data, as the reference translator writes it:
+;; a retrieve names the target class (the profile is its templateId), a type in the ELM names the
+;; target class, and an element with a `target` mapping (mapping.rkt) is the mapping's ELM — %value
+;; the target element read from the source, %parent the source; a filter is a query over $this whose
+;; conditions compare the elements' System values (First at each list along a condition's path), and
+;; whose remaining steps are one dotted property returned; a single element over a list of matches is
+;; SingletonFrom it; a function of a list element maps every item. Types under the mapping are the
+;; target model's; the property's type is the mapping model's declared one.
+(define (mapping-model? m) (and m (model-target-url m) #t))
+(define target-models (make-weak-hasheq))
+(define (target-model m)
+  (hash-ref! target-models m (lambda () (or (find-model-by-url (model-target-url m))
+                                            (fail (format "~a ~a reads ~a, and no model with that url is installed"
+                                                          (model-name m) (model-version m) (model-target-url m)))))))
+(define (strip-ns q) (let ([x (regexp-match #rx"^[^.]+[.](.*)$" q)]) (if x (cadr x) q)))
+;; physical-name : model class -> the target model's class, unqualified ("Observation" for a profile
+;; whose target is Observation; "Encounter.Participant" for a nested class)
+(define (physical-name m cls)
+  (define ci (model-class m cls))
+  (or (and ci (class-info-target ci)) (strip-ns cls)))
+(define (physical-class m cls) (string-append (model-name (target-model m)) "." (physical-name m cls)))
+
+;; mapped-element? : CType name -> boolean   an element of a mapping model's class with a mapping
+(define (mapped-element? t name)
+  (define m (lctx-model (L)))
+  (and (mapping-model? m) (string? t) (model-class m t) (model-element-target m t name) #t))
+
+;; map-property : source-elm|#f alias|#f class name [#:value elm] -> (values elm CType)
+;; #:value is the element as read already (a `sort by` row's IdentifierRef, a list item's
+;; `$this.p`), #:parent what %parent reads
+(define (map-property src alias cls name #:value [value #f] #:parent [parent #f])
+  (define m (lctx-model (L)))
+  (define tm (target-model m))
+  (define decl (or (property-type cls name) "Any"))
+  (define term (cdr (car (parse-mapping (model-element-target m cls name)))))
+  (define phys (physical-class m cls))
+  (define vnode (cond [value] [alias (elm-property #f name alias)] [else (elm-property src name #f)]))
+  (define vtype (or (model-element-type tm phys name) "Any"))
+  (define pnode (cond [parent] [alias (elm-alias-ref alias)] [else src]))
+  (define-values (n _t many?) (map-term term tm vnode vtype pnode phys decl))
+  (values (if (and many? (not (list-ctype? decl))) (elm-unary "SingletonFrom" n #f) n) decl))
+
+(define (elem* t) (if (list-ctype? t) (ctype-element t) t))
+
+;; map-term : Term model value-elm value-type parent-elm parent-type decl -> (values elm CType many?)
+(define (map-term t tm vnode vtype pnode ptype decl)
+  (match t
+    [(map-call name arg)
+     (define-values (a at many?) (map-term arg tm vnode vtype pnode ptype decl))
+     (define fn (or (regexp-match #rx"^(.*)[.]([^.]+)$" name) (fail (format "a mapping calls ~a, not a library function" name))))
+     (define alias (or (include-alias-for (string->symbol (cadr fn)))
+                       (fail (format "reading this element needs ~a: include it (the mapping is ~a)" (cadr fn) name))))
+     (define (call x xt) (elm-function-ref (caddr fn) alias (list x) (let ([s (ctype->elm-type xt)]) (and s (list s)))))
+     (cond [(and many? (list-ctype? decl))
+            (values (elm-query (list (cons "$this" a)) '() '() #f (call (elm-alias-ref "$this") (elem* at)) 'all #f #f) decl #t)]
+           [many? (values (call (elm-unary "SingletonFrom" a #f) (elem* at)) decl #f)]
+           [else (values (call a at) decl #f)])]
+    [(map-path root steps)
+     (define-values (n0 t0) (if (eq? root 'value) (values vnode vtype) (values pnode ptype)))
+     (walk-steps tm n0 t0 (list-ctype? t0) steps)]))
+
+;; walk-steps : model elm CType many? steps -> (values elm CType many?)
+(define (walk-steps tm n t many? steps)
+  (match steps
+    ['() (values n t many?)]
+    [(cons (map-field f) rest)
+     (define et (or (and (string? (elem* t)) (model-element-type tm (elem* t) f)) "Any"))
+     (walk-steps tm (elm-property n f #f) et (or many? (list-ctype? et)) rest)]
+    [(cons (map-filter conds) rest)
+     (define item (elem* t))
+     (define where (for/fold ([w #f]) ([c (in-list conds)])
+                     (define e (condition->elm tm item c))
+                     (if w (elm-nary "And" (list w e) "Boolean") e)))
+     (define-values (fields after) (splitf-at rest map-field?))
+     (define rt (for/fold ([x item]) ([f (in-list fields)])
+                  (or (and (string? (elem* x)) (model-element-type tm (elem* x) (map-field-name f))) "Any")))
+     (define ret (and (pair? fields) (elm-property (elm-alias-ref "$this") (string-join (map map-field-name fields) ".") #f)))
+     (walk-steps tm (elm-query (list (cons "$this" n)) '() '() where ret 'all #f #f) (list-ctype (elem* rt)) #t after)]))
+
+;; condition->elm : model item-class (cons path text) -> elm   path's System value = text
+(define (condition->elm tm item c)
+  (match-define (cons path text) c)
+  (define-values (n t)
+    (for/fold ([n #f] [t item]) ([p (in-list path)])
+      (define et (or (and (string? (elem* t)) (model-element-type tm (elem* t) p)) "Any"))
+      (values (if n (elm-property (if (list-ctype? t) (elm-unary "First" n #f) n) p #f) (elm-property #f p "$this")) et)))
+  (elm-nary "Equal" (list (target-to-system tm n (elem* t)) (elm-literal "String" text)) "Boolean"))
+;; target-to-system : model elm type -> elm   through the target model's conversion (FHIRHelpers.ToString)
+(define (target-to-system tm n t)
+  (define conv (and (string? t) (model-conversion tm t)))
+  (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
+  (define alias (and fn (include-alias-for (string->symbol (cadr fn)))))
+  (if alias (elm-function-ref (caddr fn) alias (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))) n))
 
 ;; ---- queries ---------------------------------------------------------------
 ;; sources/lets bind aliases with their element types; relationships, where, return and aggregate
@@ -869,12 +1012,17 @@
         (values #f (if single? (elem (third (car srcs)))
                        (tuple-ctype (for/list ([s (in-list srcs)]) (cons (string->symbol (format "~a" (first s))) (elem (third s)))))))))
   (define ret-distinct (and (cql-query-ret q) (cql-return-distinct? (cql-query-ret q))))
-  (define agg
-    (and (cql-query-agg q)
-         (let* ([a (cql-query-agg q)] [envA (cenv-bind env2 'acc (list (cons (cql-agg-name a) "Any")))])
-           (list (symbol->string (cql-agg-name a)) (cql-agg-distinct? a)
-                 (and (cql-agg-starting a) (compile1 (cql-agg-starting a) env2))
-                 (compile1 (cql-agg-body a) envA)))))
+  ;; the accumulator has the starting value's type (`starting (null as List<Interval<Date>>)`), and
+  ;; so does the result; with no typed start, the body's
+  (define-values (agg agg-t)
+    (match (cql-query-agg q)
+      [#f (values #f #f)]
+      [a
+       (define-values (sn st) (if (cql-agg-starting a) (compile (cql-agg-starting a) env2) (values #f "Any")))
+       (define envA (cenv-bind env2 'acc (list (cons (cql-agg-name a) st))))
+       (define-values (bn bt) (compile (cql-agg-body a) envA))
+       (values (list (symbol->string (cql-agg-name a)) (cql-agg-distinct? a) sn bn)
+               (if (equal? st "Any") bt st))]))
   (define sort
     (match (cql-query-sort q)
       [#f #f]
@@ -890,7 +1038,7 @@
   (define scalar? (and single? (not (list-ctype? (third (car srcs))))))
   (values (elm-query (for/list ([s (in-list srcs)]) (cons (symbol->string (first s)) (second s)))
                      let-elms rels where ret ret-distinct sort agg)
-          (cond [agg "Any"] [scalar? ret-t] [else (list-ctype ret-t)])))
+          (cond [agg agg-t] [scalar? ret-t] [else (list-ctype ret-t)])))
 
 ;; ---- control flow ----------------------------------------------------------
 ;; an untyped `null` branch takes the type of the other branches, as an explicit As (the reference
@@ -981,18 +1129,27 @@
     [(include-alias? env target) (compile-qualified-ref (cql-ref-name target) name)]
     [(and (cql-ref? target) (match (local-ref env (cql-ref-name target)) [(cons 'alias _) #t] [_ #f]))
      (define t (cdr (local-ref env (cql-ref-name target))))
-     (values (elm-property #f (symbol->string name) (symbol->string (cql-ref-name target)))
-             (or (property-type t (symbol->string name)) "Any"))]
+     (if (mapped-element? t (symbol->string name))
+         (map-property #f (symbol->string (cql-ref-name target)) t (symbol->string name))
+         (values (elm-property #f (symbol->string name) (symbol->string (cql-ref-name target)))
+                 (or (property-type t (symbol->string name)) "Any")))]
     [else
      (define-values (tn tt) (compile target env))
      (define pt (or (property-type tt (symbol->string name)) "Any"))
      (cond
+       [(mapped-element? tt (symbol->string name)) (map-property tn #f tt (symbol->string name))]
        ;; a property of a LIST of model values flattens, as the reference translator writes it:
        ;; ($this in list where $this.p is not null return all $this.p)
        [(and (list-ctype? tt) (string? (ctype-element tt)) (regexp-match? #rx"[.]" (ctype-element tt)))
         (define p (elm-property (elm-alias-ref "$this") (symbol->string name) #f))
+        ;; (an item's mapped element is returned through its mapping: FHIRHelpers.ToValue($this.bounds))
+        (define ret (if (mapped-element? (ctype-element tt) (symbol->string name))
+                        (let-values ([(n _t) (map-property #f #f (ctype-element tt) (symbol->string name)
+                                                           #:value p #:parent (elm-alias-ref "$this"))])
+                          n)
+                        p))
         (define q (elm-query (list (cons "$this" tn)) '() '()
-                             (elm-unary "Not" (elm-unary "IsNull" p "Boolean") "Boolean") p 'all #f #f))
+                             (elm-unary "Not" (elm-unary "IsNull" p "Boolean") "Boolean") ret 'all #f #f))
         (define el (property-type (ctype-element tt) (symbol->string name)))
         (if (list-ctype? el)
             (values (elm-unary "Flatten" q #f) el)
@@ -1064,7 +1221,10 @@
 
 ;; temporal constructors take positional args -> canonical ELM Date/DateTime/Time nodes
 (define (compile-constructor name args env)
-  (define ns (for/list ([a (in-list args)]) (let-values ([(n _t) (compile a env)]) n)))
+  (define nts (for/list ([a (in-list args)]) (let-values ([(n t) (compile a env)]) (cons n t))))
+  ;; DateTime's timezone offset is a Decimal: an Integer one is promoted (ToDecimal), as the reference does
+  (define ns (for/list ([nt (in-list nts)] [i (in-naturals)])
+               (if (and (eq? name 'DateTime) (= i 7)) (promote (car nt) (cdr nt) "Decimal") (car nt))))
   (define (arg i) (and (< i (length ns)) (list-ref ns i)))
   (case name
     [(Date) (values (elm-date (arg 0) (arg 1) (arg 2)) "Date")]
@@ -1193,8 +1353,13 @@
      (cond [(choice-ctype? from)
             (let ([ks (map (lambda (f) (conversion-cost f to)) (choice-members from))])
               (cond [(andmap values ks) 0] [(ormap values ks) 1] [else #f]))]
-           [(compound-ctype? from) #f]
-           [else (for/or ([c (in-list (choice-members to))]) (let ([k (conversion-cost from c)]) (and k (= k 0) 0)))])]
+           ;; an interval or list argument fits a choice with that very member (QI-Core's period,
+           ;; an Interval<DateTime>, into toInterval's Choice<…, Interval<DateTime>, …>)
+           [(compound-ctype? from) (and (for/or ([c (in-list (choice-members to))]) (and (compound-ctype? c) (eqv? 0 (conversion-cost from c)))) 0)]
+           [(for/or ([c (in-list (choice-members to))]) (eqv? 0 (conversion-cost from c))) 0]
+           ;; a System value promotes to a member (a Date into earliest's Choice<DateTime, …>)
+           [(promoted-member from to) 1]
+           [else #f])]
     ;; a choice argument to a parameter of one of its member types: an implicit As (cost 1); to a
     ;; type a member CONVERTS to: As then the conversion (cost 2) — ToConcept(m as CodeableConcept)
     [(and (choice-ctype? from) (string? to) (for/or ([c (in-list (choice-members from))]) (eqv? 0 (conversion-cost c to))))
@@ -1209,16 +1374,45 @@
     [(and (equal? to "Tuple") (tuple-ctype? from)) 0]
     [else #f]))
 
+;; exact-overlap : CType(choice) CType(choice) -> (listof CType)|#f   the members of `from` that are
+;; members of `to`, in order, when every other member fits not at all and they are System types
+(define (exact-overlap from to)
+  (define ks (for/list ([c (in-list (choice-members from))]) (cons c (conversion-cost c to))))
+  (define (system? t) (if (string? t) (not (regexp-match? #rx"[.]" t)) (and (ctype-element t) (system? (ctype-element t)))))
+  (and (andmap (lambda (k) (memv (cdr k) '(0 #f))) ks)
+       (let ([ms (for/list ([k (in-list ks)] #:when (eqv? (cdr k) 0)) (car k))])
+         (and (pair? ms) (andmap system? ms) ms))))
+
+;; promoted-member : CType CType -> CType|#f   the member of choice `to` a System `from` promotes to
+(define (promoted-member from to)
+  (and (string? from)
+       (for/first ([c (in-list (choice-members to))] #:when (and (string? c) (hash-ref promotions (cons from c) #f))) c)))
+
 ;; coerce : elm CType CType -> elm   apply the implicit conversions conversion-cost counted
 (define (coerce n from to)
   (define m (lctx-model (L)))
   (cond
     ;; a value passed to a choice-typed parameter is cast to the whole choice
     ;; a choice argument only partly inside a choice parameter is cast to the parameter's choice
+    ;; …when its members either ARE parameter members or do not fit at all (System types under a
+    ;; mapping: FHIRHelpers.ToValue's Choice<DateTime, Interval<DateTime>, Timing, DateTime> into
+    ;; Choice<DateTime, Quantity, …>), a Case over the members that are: when x is M then x as M as
+    ;; the parameter's choice, else null — the reference translator's form
+    [(and (choice-ctype? to) (choice-ctype? from) (eqv? (conversion-cost from to) 1)
+          (exact-overlap from to))
+     => (lambda (ms)
+          (define (spec m) (if (string? m) (ctype->elm-name m) (ctype->elm-type m)))
+          (define whole (ctype->elm-type to))
+          (elm-case #f (for/list ([m (in-list ms)])
+                         (elm-case-item (elm-is n (spec m)) (elm-as (elm-as n (spec m) #f) whole #f)))
+                    (elm-null #f)))]
     [(and (choice-ctype? to) (choice-ctype? from) (eqv? (conversion-cost from to) 1))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
+    ;; a value promoted to a member: ToDateTime(As(x, Date)), as the reference writes it
+    [(and (choice-ctype? to) (string? from) (eqv? (conversion-cost from to) 1) (promoted-member from to))
+     => (lambda (member) (promote (elm-as n (ctype->elm-name from) #f) from member))]
     ;; (a member type is widened; a choice argument already fits as it is)
-    [(and (choice-ctype? to) (string? from) (not (equal? from "Any")) (conversion-cost from to))
+    [(and (choice-ctype? to) (or (string? from) (and (compound-ctype? from) (not (choice-ctype? from)))) (not (equal? from "Any")) (conversion-cost from to))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
     [(eqv? (conversion-cost from to) 0) n]
     [(promotion from to) (promote n from to)]
@@ -1255,7 +1449,10 @@
   (define birth
     (and (not calc?)
          (let* ([lx (L)] [model (or (lctx-model lx) (fail "age functions need a data model"))])
-           (cons (elm-property (elm-expression-ref "Patient" #f) (model-birth-date-path model) #f) "Date"))))
+           (if (mapped-element? (model-patient-class model) (model-birth-date-path model))
+               (let-values ([(n _t) (map-property (elm-expression-ref "Patient" #f) #f (model-patient-class model) (model-birth-date-path model))])
+                 (cons n "Date"))
+               (cons (elm-property (elm-expression-ref "Patient" #f) (model-birth-date-path model) #f) "Date")))))
   (define all (if birth (cons (car birth) operands) operands))
   (define all-t (if birth (cons (cdr birth) types) types))
   ;; with a DateTime "as of", the birth date is promoted to DateTime
@@ -1365,7 +1562,11 @@
 ;; ctype->elm-name : CType(string) -> "{urn:hl7-org:elm-types:r1}Integer" | "{http://hl7.org/fhir}Period"
 (define (ctype->elm-name s)
   (define m (lctx-model (L)))
-  (cond [(and m (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name m)) "[.]")) s))
+  (cond [(and (mapping-model? m) (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name m)) "[.]")) s))
+         (format "{~a}~a" (model-target-url m) (physical-name m s))]
+        [(and (mapping-model? m) (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name (target-model m))) "[.]")) s))
+         (format "{~a}~a" (model-target-url m) (strip-ns s))]
+        [(and m (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name m)) "[.]")) s))
          (format "{~a}~a" (model-url m) (local-name s))]
         [(regexp-match? #rx"[.{]" s) s]
         [else (system-type-name s)]))

@@ -20,15 +20,16 @@
 (require racket/contract racket/match racket/list racket/string racket/file json
          "parser/ast.rkt"
          (only-in "parser/parse.rkt" parse-cql)
-         (only-in "compile.rkt" compile-library current-library-resolver)
+         (only-in "compile.rkt" compile-library compile-library/partial current-library-resolver)
          (only-in "interp.rkt" make-rlib rlib-value runtime rlib? eval-elm make-ienv)
          (only-in "elm/ast.rkt" elm-library-parameters elm-parameter-def-name elm-parameter-def-default)
          (only-in "value.rkt" current-evaluation-offset)
          (only-in "error.rkt" cql-error? cql-error-string)
-         (only-in "model/modelinfo.rkt" model? model-name model-context context-info-type context-info-key-element model-relationships)
+         (only-in "model/modelinfo.rkt" model? model-name model-context context-info-type context-info-key-element model-relationships model-subtype?)
          (only-in "representation.rkt" model-representation record-type-name record->node node-property reference-key)
          (only-in "value.rkt" model-node? model-node-data)
          (only-in fhir/data-source bundle-resources)
+         (only-in "cqm.rkt" cqm-patient-records)
          (only-in fhir/result/result ok? ok-value err-error))
 
 (provide
@@ -51,7 +52,7 @@
   ;; patient-class : model -> (values class-name key-element) | (values #f #f)   the Patient context's
   ;; class (its unqualified name, as data names it) and the element that keys it
   [patient-class        (-> model? (values (or/c string? #f) (or/c string? #f)))]
-  [valuesets->terminology (-> (listof hash?) procedure?)]
+  [valuesets->terminology (-> (listof (or/c hash? list?)) procedure?)]
   [measure-populations  (-> hash? rlib? (hash/c string? exact-nonnegative-integer?))]
   [measure-group-populations (-> hash? rlib? (listof (hash/c string? exact-nonnegative-integer?)))]
   [read-json-files      (-> path-string? (listof hash?))]
@@ -71,12 +72,14 @@
   (define memo (make-hash))
   (define (compile1 ast)
     (hash-ref! compiled-libraries ast (lambda () (compile1* ast))))
+  ;; a library whose definitions partly fail to translate still runs: a failed definition raises its
+  ;; error when evaluated (a library that does not translate at all is an error here)
   (define (compile1* ast)
     (parameterize ([current-library-resolver resolver])
-      (let ([r (compile-library ast)])
-        (if (ok? r) (ok-value r)
+      (let-values ([(elm errors) (compile-library/partial ast)])
+        (or elm
             (error 'cql-run "~a: ~a" (cql-library-id ast)
-                   (let ([e (err-error r)]) (if (cql-error? e) (cql-error-string e) e)))))))
+                   (let ([e (car errors)]) (if (cql-error? e) (cql-error-string e) e)))))))
   ;; the main library's parameter defaults apply to the libraries it includes, the way a measure
   ;; evaluator passes the evaluation's parameters to every library (an include often declares
   ;; "Measurement Period" without a default)
@@ -116,17 +119,25 @@
 ;; policyHolder or payor) is that patient's only when one of them is this patient; a record that
 ;; references no patient is everyone's.
 (define (resources->data rs #:patient-context? [ctx? #t])
-  (define flat (if (hash? rs) #f (append-map bundle-resources rs)))
+  (define flat (if (hash? rs) #f (append-map records-in rs)))
   (define memo (make-hash))
   (define (records-of m type)
     (cond [(hash? rs) (hash-ref rs type (hash-ref rs (string->symbol type) '()))]
           [else (define want (string-append (model-name m) "." type))
-                (filter (lambda (r) (equal? (record-type-name m r) want)) flat)]))
+                ;; a record of the class or of a subclass (a QDM PositiveX record answers X)
+                (filter (lambda (r) (let ([t (record-type-name m r)]) (and t (or (equal? t want) (model-subtype? m t want))))) flat)]))
   (lambda (type m)
     (hash-ref! memo (cons type m)
                (lambda ()
                  (define rs* (records-of m type))
                  (if ctx? (filter (in-patient-context m (single-patient m (lambda (t) (records-of m t)))) rs*) rs*)))))
+
+;; records-in : json -> (listof record)   a Bundle's resources, a cqm-models QDM patient document's
+;; patient and data elements (cqm.rkt), else the record itself
+(define (records-in r)
+  (if (and (hash? r) (or (hash? (hash-ref r 'qdmPatient #f)) (list? (hash-ref r 'dataElements #f))))
+      (cqm-patient-records r)
+      (bundle-resources r)))
 
 ;; single-patient : model (class-name -> records) -> key|#f   the patient's key when the data holds one
 (define (single-patient m records-of)
@@ -176,9 +187,11 @@
         [(model-node? v) (with-handlers ([exn:fail? (lambda (_) '())]) (values-at (node-property v (car steps)) (cdr steps)))]
         [else '()]))
 
-;; valuesets->terminology : (listof ValueSet jsexpr) -> (url -> (hash (cons system code) -> #t) | #f)
+;; valuesets->terminology : (listof ValueSet jsexpr | list of them) -> (url -> (hash (cons system code) -> #t) | #f)
 ;; from each value set's expansion (else its enumerated compose concepts)
-(define (valuesets->terminology vss)
+(define (valuesets->terminology vss0)
+  ;; a list of value sets may arrive as one JSON array (cqm-models' value_sets.json)
+  (define vss (map cqm-value-set->fhir (filter hash? (append-map (lambda (v) (if (list? v) v (list v))) vss0))))
   (define idx
     (for/hash ([v (in-list vss)] #:when (hash-ref v 'url #f))
       (define from-expansion
@@ -193,12 +206,26 @@
   (define by-url (make-hash))
   (lambda (url) (hash-ref! by-url url (lambda () (hash-ref idx (car (string-split url "|")) #f)))))
 
-;; read-json-files : dir -> (listof jsexpr)   every *.json under dir (MeasureReports excluded)
+;; cqm-value-set->fhir : jsexpr -> jsexpr   a value set in cqm-models' shape ({oid, version, concepts:
+;; [{code, code_system_oid, display_name}]}, as Bonnie and cqm-execution carry them) in the url +
+;; expansion shape read above: url urn:oid:<oid>, systems urn:oid:<code_system_oid> (QDM libraries
+;; declare both as urn:oid: urls); any other value is returned as it is
+(define (cqm-value-set->fhir v)
+  (if (and (string? (hash-ref v 'oid #f)) (list? (hash-ref v 'concepts #f)) (not (hash-ref v 'url #f)))
+      (hasheq 'url (string-append "urn:oid:" (hash-ref v 'oid))
+              'expansion (hasheq 'contains
+                                 (for/list ([c (in-list (hash-ref v 'concepts))])
+                                   (hasheq 'system (string-append "urn:oid:" (hash-ref c 'code_system_oid ""))
+                                           'code (hash-ref c 'code #f)))))
+      v))
+
+;; read-json-files : dir -> (listof jsexpr)   every *.json under dir (MeasureReports excluded); a file
+;; holding a JSON array gives its objects
 (define (read-json-files dir)
   (for/list ([f (in-directory dir)]
              #:when (regexp-match? #rx"[.]json$" (path->string f))
              #:unless (regexp-match? #rx"(?i:measurereport)" (path->string f))
-             [j (in-value (call-with-input-file f read-json))]
+             [j (in-list (let ([x (call-with-input-file f read-json)]) (if (list? x) x (list x))))]   ; an array file: its objects
              #:when (hash? j))
     j))
 

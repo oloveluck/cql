@@ -1,0 +1,508 @@
+{
+ "calculation_method": "EPISODE_OF_CARE",
+ "cms_id": "CMS107v6",
+ "composite": false,
+ "hqmf_set_id": "217FDF0D-3D64-4720-9116-D5E5AFA27F2C",
+ "main_cql_library": "StrokeEducation",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "107",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "107"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Measure specifications are in the Public Domain\n\nLOINC(R) is a registered trademark of the Regenstrief Institute.\n\nThis material contains SNOMED Clinical Terms (R) (SNOMED CT[C]) copyright 2004-2016 International Health Terminology Standards Development Organization. All rights reserved.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Measure specifications are in the Public Domain\n\nLOINC(R) is a registered trademark of the Regenstrief Institute.\n\nThis material contains SNOMED Clinical Terms (R) (SNOMED CT[C]) copyright 2004-2016 International Health Terminology Standards Development Organization. All rights reserved."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications. The measures and specifications are provided without warranty.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications. The measures and specifications are provided without warranty."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "There are many examples of how patient education programs for specific chronic conditions have increased healthful behaviors, improved health status, and/or decreased health care costs of their participants. Clinical practice guidelines include recommendations for patient and family education during hospitalization as well as information about resources for social support services. Some clinical trials have shown measurable benefits in patient and caregiver outcomes with the application of education and support strategies. The type of stroke experienced and the resulting outcomes will play a large role in determining not only the course of treatment but also what education will be required. Patient education should include information about the event (eg, cause, treatment, and risk factors), the role of various medications or strategies, as well as desirable lifestyle modifications to reduce risk or improve outcomes. Family/caregivers will also need guidance in planning effective and realistic care strategies appropriate to the patient's prognosis and potential for rehabilitation.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "There are many examples of how patient education programs for specific chronic conditions have increased healthful behaviors, improved health status, and/or decreased health care costs of their participants. Clinical practice guidelines include recommendations for patient and family education during hospitalization as well as information about resources for social support services. Some clinical trials have shown measurable benefits in patient and caregiver outcomes with the application of education and support strategies. The type of stroke experienced and the resulting outcomes will play a large role in determining not only the course of treatment but also what education will be required. Patient education should include information about the event (eg, cause, treatment, and risk factors), the role of various medications or strategies, as well as desirable lifestyle modifications to reduce risk or improve outcomes. Family/caregivers will also need guidance in planning effective and realistic care strategies appropriate to the patient's prognosis and potential for rehabilitation."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "Some clinical trials have shown measurable benefits in patient and caregiver outcomes with the application of education and support strategies. Patient education should include information about the event (eg, cause, treatment, and risk factors), the role of various medications or strategies, as well as desirable lifestyle modifications to reduce risk or improve outcomes. Family/caregivers will also need guidance in planning effective and realistic care strategies appropriate to the patient's prognosis and potential for rehabilitation.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Some clinical trials have shown measurable benefits in patient and caregiver outcomes with the application of education and support strategies. Patient education should include information about the event (eg, cause, treatment, and risk factors), the role of various medications or strategies, as well as desirable lifestyle modifications to reduce risk or improve outcomes. Family/caregivers will also need guidance in planning effective and realistic care strategies appropriate to the patient's prognosis and potential for rehabilitation."
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "Improvement noted as an increase in rate",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Improvement noted as an increase in rate"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Eames, S., T. Hoffmann, L. Worrall, and S. Read. \"Stroke Patients' and Carers' Perception of Barriers to Accessing Stroke Information.\" [In eng]. Top Stroke Rehabil 17, no. 2 (Mar-Apr 2010): 69-78.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Eames, S., T. Hoffmann, L. Worrall, and S. Read. \"Stroke Patients' and Carers' Perception of Barriers to Accessing Stroke Information.\" [In eng]. Top Stroke Rehabil 17, no. 2 (Mar-Apr 2010): 69-78."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Furie, K. L., S. E. Kasner, R. J. Adams, G. W. Albers, R. L. Bush, S. C. Fagan, J. L. Halperin, et al. \"Guidelines for the Prevention of Stroke in Patients with Stroke or Transient Ischemic Attack: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [In eng]. Stroke 42, no. 1 (Jan 2011): 227-76.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Furie, K. L., S. E. Kasner, R. J. Adams, G. W. Albers, R. L. Bush, S. C. Fagan, J. L. Halperin, et al. \"Guidelines for the Prevention of Stroke in Patients with Stroke or Transient Ischemic Attack: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [In eng]. Stroke 42, no. 1 (Jan 2011): 227-76."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Goldstein, L. B., C. D. Bushnell, R. J. Adams, L. J. Appel, L. T. Braun, S. Chaturvedi, M. A. Creager, et al. \"Guidelines for the Primary Prevention of Stroke: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [In eng]. Stroke 42, no. 2 (Feb 2011): 517-84.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Goldstein, L. B., C. D. Bushnell, R. J. Adams, L. J. Appel, L. T. Braun, S. Chaturvedi, M. A. Creager, et al. \"Guidelines for the Primary Prevention of Stroke: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [In eng]. Stroke 42, no. 2 (Feb 2011): 517-84."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Hafsteinsdottir, T. B., M. Vergunst, E. Lindeman, and M. Schuurmans. \"Educational Needs of Patients with a Stroke and Their Caregivers: A Systematic Review of the Literature.\" [In eng]. Patient Educ Couns 85, no. 1 (Oct 2011): 14-25",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Hafsteinsdottir, T. B., M. Vergunst, E. Lindeman, and M. Schuurmans. \"Educational Needs of Patients with a Stroke and Their Caregivers: A Systematic Review of the Literature.\" [In eng]. Patient Educ Couns 85, no. 1 (Oct 2011): 14-25"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Jauch, E. C., J. L. Saver, H. P. Adams, Jr., A. Bruno, J. J. Connors, B. M. Demaerschalk, P. Khatri, et al. \"Guidelines for the Early Management of Patients with Acute Ischemic Stroke: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [In Eng]. Stroke (Jan 31 2013).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Jauch, E. C., J. L. Saver, H. P. Adams, Jr., A. Bruno, J. J. Connors, B. M. Demaerschalk, P. Khatri, et al. \"Guidelines for the Early Management of Patients with Acute Ischemic Stroke: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [In Eng]. Stroke (Jan 31 2013)."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Lorig, K. R., D. S. Sobel, A. L. Stewart, B. W. Brown, Jr., A. Bandura, P. Ritter, V. M. Gonzalez, D. D. Laurent, and H. R. Holman. \"Evidence Suggesting That a Chronic Disease Self-Management Program Can Improve Health Status While Reducing Hospitalization: A Randomized Trial.\" [In eng]. Med Care 37, no. 1 (Jan 1999): 5-14.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Lorig, K. R., D. S. Sobel, A. L. Stewart, B. W. Brown, Jr., A. Bandura, P. Ritter, V. M. Gonzalez, D. D. Laurent, and H. R. Holman. \"Evidence Suggesting That a Chronic Disease Self-Management Program Can Improve Health Status While Reducing Hospitalization: A Randomized Trial.\" [In eng]. Med Care 37, no. 1 (Jan 1999): 5-14."
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "Written information given to the patient is required to address each and every one of the educational components. These components are modeled in the population criteria and data criteria as communication from provider to patient :activation of emergency medical system, follow-up after discharge, medications prescribed at discharge, risk factors and signs and symptoms, and are intended to be specific to stroke.\n\nThe \"Non-elective admissions\" value set intends to capture all non-scheduled hospitalizations. This value set is a subset of the \"Inpatient encounter\" value set, excluding concepts that specifically refer to elective hospital admissions. Non-elective admissions include emergency, urgent and unplanned admissions.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Written information given to the patient is required to address each and every one of the educational components. These components are modeled in the population criteria and data criteria as communication from provider to patient :activation of emergency medical system, follow-up after discharge, medications prescribed at discharge, risk factors and signs and symptoms, and are intended to be specific to stroke.\n\nThe \"Non-elective admissions\" value set intends to capture all non-scheduled hospitalizations. This value set is a subset of the \"Inpatient encounter\" value set, excluding concepts that specifically refer to elective hospital admissions. Non-elective admissions include emergency, urgent and unplanned admissions."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "TBD",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "TBD"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "Patients age 18 and older discharged from inpatient care (non-elective admissions) with a principal diagnosis of ischemic or hemorrhagic stroke and a length of stay less than or equal to 120 days that ends during the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients age 18 and older discharged from inpatient care (non-elective admissions) with a principal diagnosis of ischemic or hemorrhagic stroke and a length of stay less than or equal to 120 days that ends during the measurement period"
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "Ischemic stroke or hemorrhagic stroke patients discharged to home, home care, or court/law enforcement",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Ischemic stroke or hemorrhagic stroke patients discharged to home, home care, or court/law enforcement"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "Patients with comfort measures documented",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients with comfort measures documented"
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Ischemic or hemorrhagic stroke patients with written documentation that they or their caregivers were given educational material addressing all of the following:\n1. Activation of emergency medical system \n2. Follow-up after discharge\n3. Medications prescribed at discharge\n4. Risk factors for stroke\n5. Warning signs and symptoms of stroke",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Ischemic or hemorrhagic stroke patients with written documentation that they or their caregivers were given educational material addressing all of the following:\n1. Activation of emergency medical system \n2. Follow-up after discharge\n3. Medications prescribed at discharge\n4. Risk factors for stroke\n5. Warning signs and symptoms of stroke"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "07E10C9B-D287-4D42-8CAF-C0CDC11D0E03",
+     "library_name": "StrokeEducation",
+     "statement_name": "Denominator Exclusions"
+    },
+    "DENOM": {
+     "hqmf_id": "A846DF34-A272-430E-9CF8-92A62DB02919",
+     "library_name": "StrokeEducation",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "hqmf_id": "2F3544F7-3E8A-4D1A-90A0-D6CCFA13B8A3",
+     "library_name": "StrokeEducation",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "F5D72B96-127B-4826-8FED-C9D367441AF5",
+     "library_name": "StrokeEducation",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Stroke Education"
+}

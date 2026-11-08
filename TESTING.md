@@ -8,7 +8,12 @@ that only rises. `raco test .` runs them all; the commands below run one with it
 | Suite | What it checks | Result |
 |---|---|---|
 | HL7 CQL suite (cqframework/cql-tests) | each expression compiled to ELM, run, and compared with the expected value | 1820/1823 |
-| Published libraries (FHIRHelpers, CQF Measures, the CQL IG) | each of 32 libraries parses and compiles; each definition's ELM compared with the reference translator's | 32/32 compile; 769/803 definitions ELM-identical |
+| Published libraries (FHIRHelpers, CQF Measures, the CQL IG) | each of 32 libraries parses and compiles; each definition's ELM compared with the reference translator's | 32/32 compile; 770/803 definitions ELM-identical |
+| QI-Core libraries (cqframework/ecqm-content-qicore-2024, `tests/qicore-elm-corpus-test.rkt`) | the 98 libraries of the 2024 eCQMs, written against QI-Core 4.1.1: each parses and compiles to ELM over FHIR; each definition's ELM compared with the reference translator's (3.25.0) | 98/98 compile; 1854/2144 definitions ELM-identical |
+| QI-Core eCQMs (`tests/qicore-measure-test.rkt`) | Breast and Cervical Cancer Screening, Controlling High Blood Pressure, Diabetes Glycemic Status > 9%, over their 190 MADiE test cases: populations against each case's MeasureReport | 188/190 |
+| QDM libraries (cqm-execution's fixtures, `tests/qdm-elm-corpus-test.rkt`) | 42 libraries (QDM 5.0.2 to 5.6) and the ELM their measure documents carry | 41/42 compile; 555/723 definitions ELM-identical (older translators) |
+| QDM measures (`tests/qdm-measure-test.rkt`) | 19 measures over 33 cqm-models patients: cqm-execution's own assertions (proportion, several population sets with strata, continuous-variable and ratio observations), then the expected values stored in the patients | all 31 assertions; 16/26 stored |
+| Mapping models (`tests/mapping-model-test.rkt`) | QI-Core and US Core over FHIR JSON: profile retrieves, mapped elements, QI-Core's NotDone value set, `convert … to days` | passes |
 | eCQMs (cqframework/ecqm-content-r4-2021) | four measures over their 76 test patients: populations against the expected results | 71/76 |
 | Evaluator differential | the compiled evaluator against the tree walker, result by result, over the three corpora above | 0 of 6,206 results differ |
 | Code paths | a retrieve's statically resolved code path against the generic navigation, over 65 (type, property) pairs, the eCQM data, the R4 IG examples in fhir-spec and mutants of each resource's code element | 0 of 19,472 differ |
@@ -20,6 +25,16 @@ recorded and compared with the new one, value by value: 3,608 suite expressions 
 definitions, 2,051 eCQM definitions and 76 eCQM population results. None differ.
 
 ## The misses, named
+
+**QI-Core eCQMs, 2:** two Diabetes > 9% cases (`NUMPass HbA1cGreaterThan9`, `NUMPass GMIGreaterThan9`)
+describe a 9.1% result, but their exported Observation's value is a SNOMED concept; the expected
+reports follow the description, not the data.
+
+**QDM stored values, 10**, each named in `tests/qdm-measure-test.rkt`: QDM 5.3 measures that read
+`principalDiagnosis` over QDM 5.5 data, which no longer has it (cqm-execution disables its own tests
+of these cases); stored observations that predate cqm-execution's current results, which this engine
+gives; a stored stratum the patient's data contradict; and one library definition the reference
+translator could not translate either.
 
 **HL7 suite, 3:**
 - `Floor(2147483648)` and `Floor(-2147483649)` expect out-of-range Integer literals to evaluate,

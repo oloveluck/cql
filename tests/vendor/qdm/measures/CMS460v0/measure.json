@@ -1,0 +1,562 @@
+{
+ "calculation_method": "PATIENT",
+ "cms_id": "CMS460v0",
+ "composite": false,
+ "hqmf_set_id": "442EDEF2-7347-4080-988F-16C9D1998803",
+ "main_cql_library": "PotentialOpioidOveruse",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "460",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "460"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Limited proprietary coding is contained in the Measure specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets.\n  \nCPT(R) contained in the measure specifications is copyright 2004-2017 American Medical Association. LOINC(R) copyright 2004-2017 Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms(R) (SNOMED CT[R]) copyright 2004-2017 International Health Terminology Standards Development Organisation. ICD-10 copyright 2017 World Health Organization. All Rights Reserved.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Limited proprietary coding is contained in the Measure specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets.\n  \nCPT(R) contained in the measure specifications is copyright 2004-2017 American Medical Association. LOINC(R) copyright 2004-2017 Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms(R) (SNOMED CT[R]) copyright 2004-2017 International Health Terminology Standards Development Organisation. ICD-10 copyright 2017 World Health Organization. All Rights Reserved."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "These performance measures are not clinical guidelines, do not establish a standard of medical care, and have not been tested for all potential applications.\n\nTHE MEASURES AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND.\n\nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM].",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "These performance measures are not clinical guidelines, do not establish a standard of medical care, and have not been tested for all potential applications.\n\nTHE MEASURES AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND.\n\nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM]."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "More than 100 million people in the United States suffer from chronic pain (Institute of Medicine 2011). An estimated 259 million opioid prescriptions to manage pain were written in the United States in 2012, approximately half of which were written by primary care providers (Cox et al. 2018). From 2000 to 2015, mortality from opioid-specific drug poisoning in the United States tripled, resulting in a reduction in life expectancy for non-Hispanic, white individuals (Dowell et al. 2017).\n\nAlthough all opioids can be dangerous, chronic use of opioids at high doses are more likely to result in fatalities and other adverse drug events (Edlund et al. 2014; Morasco et al. 2010; Atluri et al. 2012; Paulozzi et al. 2014). Recent guidelines recommend that providers use the lowest dose possible when initiating opioid therapy and that they carefully justify prescribing doses above 90 morphine milligram equivalents (MME) per day, considering the benefits and harms of the dose they select (Dowell et al. 2016).\n\nIn a large cohort study of almost 18 million commercially insured patients in the United States, about 15 percent of opioid recipients received a daily dose of 100 MME or higher, and 12 percent received more than a 90-day supply (Liu et al. 2013).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "More than 100 million people in the United States suffer from chronic pain (Institute of Medicine 2011). An estimated 259 million opioid prescriptions to manage pain were written in the United States in 2012, approximately half of which were written by primary care providers (Cox et al. 2018). From 2000 to 2015, mortality from opioid-specific drug poisoning in the United States tripled, resulting in a reduction in life expectancy for non-Hispanic, white individuals (Dowell et al. 2017).\n\nAlthough all opioids can be dangerous, chronic use of opioids at high doses are more likely to result in fatalities and other adverse drug events (Edlund et al. 2014; Morasco et al. 2010; Atluri et al. 2012; Paulozzi et al. 2014). Recent guidelines recommend that providers use the lowest dose possible when initiating opioid therapy and that they carefully justify prescribing doses above 90 morphine milligram equivalents (MME) per day, considering the benefits and harms of the dose they select (Dowell et al. 2016).\n\nIn a large cohort study of almost 18 million commercially insured patients in the United States, about 15 percent of opioid recipients received a daily dose of 100 MME or higher, and 12 percent received more than a 90-day supply (Liu et al. 2013)."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "The Centers for Disease Control and Prevention's CDC Guideline for Prescribing Opioids for Chronic Pain\u2014United States, 2016 (Dowell et al. 2016) states:\n-\"When opioids are started, clinicians should prescribe the lowest effective dosage. Clinicians should use caution when prescribing opioids at any dosage, should carefully reassess evidence of individual benefits and risks when considering increasing dosage to [greater than or equal to] 50 morphine milligram equivalents (MME)/day, and should avoid increasing dosage to [greater than or equal to] 90 MME/day or carefully justify a decision to titrate dosage to [greater than or equal to] 90 MME/day.\"\n-\"Clinicians should evaluate benefits and harms with patients within 1 to 4 weeks of starting opioid therapy for chronic pain or of dose escalation. Clinicians should evaluate benefits and harms of continued therapy with patients every 3 months or more frequently. If benefits do not outweigh harms of continued opioid therapy, clinicians should optimize other therapies and work with patients to taper opioids to lower dosages or to taper and discontinue opioids.\"",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "The Centers for Disease Control and Prevention's CDC Guideline for Prescribing Opioids for Chronic Pain\u2014United States, 2016 (Dowell et al. 2016) states:\n-\"When opioids are started, clinicians should prescribe the lowest effective dosage. Clinicians should use caution when prescribing opioids at any dosage, should carefully reassess evidence of individual benefits and risks when considering increasing dosage to [greater than or equal to] 50 morphine milligram equivalents (MME)/day, and should avoid increasing dosage to [greater than or equal to] 90 MME/day or carefully justify a decision to titrate dosage to [greater than or equal to] 90 MME/day.\"\n-\"Clinicians should evaluate benefits and harms with patients within 1 to 4 weeks of starting opioid therapy for chronic pain or of dose escalation. Clinicians should evaluate benefits and harms of continued therapy with patients every 3 months or more frequently. If benefits do not outweigh harms of continued opioid therapy, clinicians should optimize other therapies and work with patients to taper opioids to lower dosages or to taper and discontinue opioids.\""
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "A lower rate indicates better quality",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "A lower rate indicates better quality"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Atluri S., H. Akbik, and G. Sudarshan. Prevention of Opioid Abuse in Chronic Non-Cancer Pain: An Algorithmic, Evidence-Based Approach. Pain Physician, vol. 15, no. 3, July 2012, pp. ES177-ES189.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Atluri S., H. Akbik, and G. Sudarshan. Prevention of Opioid Abuse in Chronic Non-Cancer Pain: An Algorithmic, Evidence-Based Approach. Pain Physician, vol. 15, no. 3, July 2012, pp. ES177-ES189."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Cox, N., C.R. Tak, S.E. Cochella, E. Leishman, and K. Gunning. \"Impact of Pharmacist Previsit Input to Providers on Chronic Opioid Prescribing Safety.\" Journal of the American Board of Family Medicine, vol. 31, no. 1, January 2018, pp. 105\u2013112.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Cox, N., C.R. Tak, S.E. Cochella, E. Leishman, and K. Gunning. \"Impact of Pharmacist Previsit Input to Providers on Chronic Opioid Prescribing Safety.\" Journal of the American Board of Family Medicine, vol. 31, no. 1, January 2018, pp. 105\u2013112."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Dowell, D., T.M. Haegerich, and R. Chou. \"CDC Guideline for Prescribing Opioids for Chronic Pain--United States, 2016.\" Recommendations and Reports, vol. 65, no. 1, March 2016, pp. 1-49.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Dowell, D., T.M. Haegerich, and R. Chou. \"CDC Guideline for Prescribing Opioids for Chronic Pain--United States, 2016.\" Recommendations and Reports, vol. 65, no. 1, March 2016, pp. 1-49."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Edlund, M.J., B.C. Martin, J.E. Russo, A. DeVries, J.B. Braden, and M.D. Sullivan. \"The Role of Opioid Prescription in Incident Opioid Abuse and Dependence Among Individuals with Chronic Noncancer Pain.\" Clinical Journal of Pain, vol. 30, no. 7, July 2014, pp. 557\u2013564.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Edlund, M.J., B.C. Martin, J.E. Russo, A. DeVries, J.B. Braden, and M.D. Sullivan. \"The Role of Opioid Prescription in Incident Opioid Abuse and Dependence Among Individuals with Chronic Noncancer Pain.\" Clinical Journal of Pain, vol. 30, no. 7, July 2014, pp. 557\u2013564."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Institute of Medicine. \u201cRelieving Pain in America: A Blueprint for Transforming Prevention, Care, Education, and Research.\u201d 2011. Available at http://www.nationalacademies.org/hmd/Reports/2011/Relieving-Pain-in-America-A-Blueprint-for-Transforming-Prevention-Care-Education-Research.aspx",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Institute of Medicine. \u201cRelieving Pain in America: A Blueprint for Transforming Prevention, Care, Education, and Research.\u201d 2011. Available at http://www.nationalacademies.org/hmd/Reports/2011/Relieving-Pain-in-America-A-Blueprint-for-Transforming-Prevention-Care-Education-Research.aspx"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Liu, Y., J.E. Logan, L.J. Paulozzi, K. Zhang, and C.M. Jones. \"Potential Misuse and Inappropriate Prescription Practices Involving Opioid Analgesics.\" American Journal of Managed Care, vol. 19, no. 8, August 2013, pp. 648-658.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Liu, Y., J.E. Logan, L.J. Paulozzi, K. Zhang, and C.M. Jones. \"Potential Misuse and Inappropriate Prescription Practices Involving Opioid Analgesics.\" American Journal of Managed Care, vol. 19, no. 8, August 2013, pp. 648-658."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Morasco, B.J., J.P Duckart, T.P. Car, R.A. Deyo, and S.K. Dobscha. \"Clinical Characteristics of Veterans Prescribed High Doses of Opioid Medications for Chronic Non-Cancer Pain.\" Pain, vol. 151, no. 3, December 2010, pp. 625\u2013632.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Morasco, B.J., J.P Duckart, T.P. Car, R.A. Deyo, and S.K. Dobscha. \"Clinical Characteristics of Veterans Prescribed High Doses of Opioid Medications for Chronic Non-Cancer Pain.\" Pain, vol. 151, no. 3, December 2010, pp. 625\u2013632."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Paulozzi, L.J., K. Zhang, C.M. Jones, and K.A. Mack. \"Risk of Adverse Health Outcomes with Increasing Duration and Regularity of Opioid Therapy.\" Journal of the American Board of Family Medicine, vol. 27, no. 3, May\u2013June 2014, pp. 329\u2013338.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Paulozzi, L.J., K. Zhang, C.M. Jones, and K.A. Mack. \"Risk of Adverse Health Outcomes with Increasing Duration and Regularity of Opioid Therapy.\" Journal of the American Board of Family Medicine, vol. 27, no. 3, May\u2013June 2014, pp. 329\u2013338."
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "Long-term opioid therapy is defined as opioid use for 90 consecutive days or more (CDC 2016).\n\nHigh-dose usage is defined as at least a 90 MME dosage per day (CDC 2016).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Long-term opioid therapy is defined as opioid use for 90 consecutive days or more (CDC 2016).\n\nHigh-dose usage is defined as at least a 90 MME dosage per day (CDC 2016)."
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "Morphine milligram equivalents is abbreviated throughout the measure using 'MME'.\n\nFor this measure, the numerator applies to patients in the initial population with a 90-day or longer supply of opioids at a 90 MME or larger daily dose.\n\nPlease note that the numerator criteria of this measure are satisfied for all patients in the initial population with a 90-day or longer supply of the following specified opioids at a 90 MME or larger average daily dose:\n -Butorphanol\n -Codeine\n-Dihydrocodeine\n-Fentanyl\n-Hydrocodone\n-Hydromorphone\n-Levorphanol\n-Meperidine (Pethidine)\n-Methadone\n-Morphine\n-Nalbuphine\n-Opium\n-Oxycodone\n-Oxymorphone\n-Pentazocine\n-Tapentadol\n-Tramadol\n\nThis measure allows for up to seven days between prescriptions for long-term opioid users. If a patient has a gap between prescriptions of 7 days or fewer but takes one or more opioids listed above for at least 90 days, he or she will still be included in the measure\u2019s denominator.\n\nAverage MME is derived for every day on which a patient has an active order for one or more opioids. That day's MME is calculated for each opioid the patient is taking and is summed for all opioids taken that day. Then, then MMEs for each day on which a patient is using opioids is averaged across the prescription episode length (the total consecutive days on which a patient has an active order for one or more opioids), allowing for up to seven gap days between prescriptions.\n\nMME for each opioid used in measure calculation is based on conversion factors provided by the CDC. Providers can access these values through CDC\u2019s opioid guideline mobile app (available here for download: https://www.cdc.gov/drugoverdose/prescribing/app.html)  For more details on how to calculate daily dose, please review CDC's \"Guideline for Prescribing Opioids for Chronic Pain--United States, 2016;\" a two-page quick reference guide is also available here: https://www.cdc.gov/drugoverdose/pdf/calculating_total_daily_dose-a.pdf.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Morphine milligram equivalents is abbreviated throughout the measure using 'MME'.\n\nFor this measure, the numerator applies to patients in the initial population with a 90-day or longer supply of opioids at a 90 MME or larger daily dose.\n\nPlease note that the numerator criteria of this measure are satisfied for all patients in the initial population with a 90-day or longer supply of the following specified opioids at a 90 MME or larger average daily dose:\n -Butorphanol\n -Codeine\n-Dihydrocodeine\n-Fentanyl\n-Hydrocodone\n-Hydromorphone\n-Levorphanol\n-Meperidine (Pethidine)\n-Methadone\n-Morphine\n-Nalbuphine\n-Opium\n-Oxycodone\n-Oxymorphone\n-Pentazocine\n-Tapentadol\n-Tramadol\n\nThis measure allows for up to seven days between prescriptions for long-term opioid users. If a patient has a gap between prescriptions of 7 days or fewer but takes one or more opioids listed above for at least 90 days, he or she will still be included in the measure\u2019s denominator.\n\nAverage MME is derived for every day on which a patient has an active order for one or more opioids. That day's MME is calculated for each opioid the patient is taking and is summed for all opioids taken that day. Then, then MMEs for each day on which a patient is using opioids is averaged across the prescription episode length (the total consecutive days on which a patient has an active order for one or more opioids), allowing for up to seven gap days between prescriptions.\n\nMME for each opioid used in measure calculation is based on conversion factors provided by the CDC. Providers can access these values through CDC\u2019s opioid guideline mobile app (available here for download: https://www.cdc.gov/drugoverdose/prescribing/app.html)  For more details on how to calculate daily dose, please review CDC's \"Guideline for Prescribing Opioids for Chronic Pain--United States, 2016;\" a two-page quick reference guide is also available here: https://www.cdc.gov/drugoverdose/pdf/calculating_total_daily_dose-a.pdf."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "Patients 18 years of age and older prescribed a 90 day or longer supply of opioids and who have a visit during the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients 18 years of age and older prescribed a 90 day or longer supply of opioids and who have a visit during the measurement period"
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "Equals Initial Patient Population",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Equals Initial Patient Population"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "Patients receiving palliative or hospice treatment during the measurement period.\nPatients with cancer during the measurement period.\nPatients with sickle cell disease during the measurement period.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients receiving palliative or hospice treatment during the measurement period.\nPatients with cancer during the measurement period.\nPatients with sickle cell disease during the measurement period."
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Patients with an average daily dosage of 90 MME or greater prescribed during the measurement year",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients with an average daily dosage of 90 MME or greater prescribed during the measurement year"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "36907D4D-7EB8-476C-B600-397A9FAA2FB4",
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "Denominator Exclusion"
+    },
+    "DENOM": {
+     "hqmf_id": "22AB6E4A-4FD2-4489-841D-045F72291DC5",
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "hqmf_id": "6CA76DEF-10EF-4012-B636-5BFE88AF19F5",
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "47AD286D-25AC-4627-B658-5AA4CB49A116",
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "supplemental_data_elements": [
+    {
+     "hqmf_id": null,
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "SDE Ethnicity"
+    },
+    {
+     "hqmf_id": null,
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "SDE Payer"
+    },
+    {
+     "hqmf_id": null,
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "SDE Race"
+    },
+    {
+     "hqmf_id": null,
+     "library_name": "PotentialOpioidOveruse",
+     "statement_name": "SDE Sex"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Potential Opioid Overuse"
+}

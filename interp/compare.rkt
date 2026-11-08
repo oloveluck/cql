@@ -84,6 +84,10 @@
               (andmap equal? (cql-concept-codes a) (cql-concept-codes b)))
          'true 'false)]
     [(or (cql-code? a) (cql-code? b) (cql-concept? a) (cql-concept? b)) 'false]
+    ;; instances of a model's classes (a record and the same record reached another way, a QDM
+    ;; encounter in two lists): equal when of one class with equal data
+    [(and (model-node? a) (model-node? b))
+     (if (and (equal? (model-node-type a) (model-node-type b)) (equal? (model-node-data a) (model-node-data b))) 'true 'false)]
     [else (item-equal? a b)]))       ; reuse FHIRPath scalar equality (System values)
 
 ;; ratio = : numerator and denominator must each be equal (as quantities)

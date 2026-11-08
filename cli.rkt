@@ -17,8 +17,10 @@
 ;;; Exit codes: 0 ok · 1 CQL error / regression · 2 usage.
 
 (require (only-in racket/file file->string)
-         (only-in cql/parser/parse parse-cql)
-         (only-in cql/compile compile-library compile-library/errors current-library-resolver)
+         (only-in racket/match match)
+         (only-in cql/parser/parse parse-cql parse-cql-expr)
+         (only-in cql/compile compile-library compile-library/errors compile-expr current-library-resolver)
+         (only-in cql/interp eval-elm make-ienv)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/error cql-error-string)
          (only-in fhir/result/result ok? ok-value err-error)
@@ -31,13 +33,25 @@
 
 (provide compile-file run-file)
 
-;; run-file : file data valuesets|#f libraries|#f (listof name) -> void   evaluate and print definitions
-(define (run-file file data vs-dir lib-dir names)
+;; run-file : file data valuesets|#f libraries|#f (listof name) [params] -> void   evaluate and print
+;; definitions; params: (listof "name=<CQL expression>")
+(define (run-file file data vs-dir lib-dir names [params '()])
   (define res (library-resolver file lib-dir))
   (define lib (parse-file file))
-  (define resources (if (directory-exists? data) (read-json-files data) (list (call-with-input-file data read-json))))
+  (define resources (if (directory-exists? data) (read-json-files data)
+                        (let ([j (call-with-input-file data read-json)]) (if (list? j) j (list j)))))
+  (define parameters
+    (for/hash ([p (in-list params)])
+      (match (regexp-match #px"^([^=]+)=(.*)$" p)
+        [(list _ name text)
+         (define e (parse-cql-expr text))
+         (unless (ok? e) (eprintf "cql: --parameter ~a: ~a\n" name (cql-error-string (err-error e))) (exit 2))
+         (define c (compile-expr (ok-value e)))
+         (unless (ok? c) (eprintf "cql: --parameter ~a: ~a\n" name (cql-error-string (err-error c))) (exit 2))
+         (values name (eval-elm (ok-value c) (make-ienv)))]
+        [_ (eprintf "cql: --parameter takes name=<CQL expression>\n") (exit 2)])))
   (define rl (with-handlers ([exn:fail? (lambda (e) (eprintf "~a\n" (exn-message e)) (exit 1))])
-               (load-runtime-library lib #:resolver res #:data (resources->data resources)
+               (load-runtime-library lib #:resolver res #:data (resources->data resources) #:parameters parameters
                                      #:valuesets (valuesets->terminology (if vs-dir (read-json-files vs-dir) '())))))
   (define defs (or (and (pair? names) names)
                    (for/list ([d (in-list (cql-library-defs lib))] #:when (cql-def? d)) (symbol->string (cql-def-name d)))))
@@ -86,7 +100,7 @@
   (displayln (elm->json-string elm)))
 
 (define (usage [code 2])                             ; --help: stdout, exit 0
-  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n       raco cql --tck [-v]\n")
+  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n                [--parameter \"<name>=<CQL expression>\"]…\n       raco cql --tck [-v]\n")
   (exit code))
 
 (module+ main
@@ -109,13 +123,14 @@
        (dynamic-require '(submod cql/tests/run main) #f))]
     [(regexp-match? #rx"^-" (car args)) (usage)]
     [(member "--data" args)
-     (let loop ([as (cdr args)] [data #f] [vs #f] [libs #f] [names '()])
+     (let loop ([as (cdr args)] [data #f] [vs #f] [libs #f] [names '()] [params '()])
        (cond
-         [(null? as) (if data (run-file (car args) data vs libs (reverse names)) (usage))]
-         [(and (equal? (car as) "--data") (pair? (cdr as))) (loop (cddr as) (cadr as) vs libs names)]
-         [(and (equal? (car as) "--valuesets") (pair? (cdr as))) (loop (cddr as) data (cadr as) libs names)]
-         [(and (equal? (car as) "--libraries") (pair? (cdr as))) (loop (cddr as) data vs (cadr as) names)]
-         [(and (equal? (car as) "--define") (pair? (cdr as))) (loop (cddr as) data vs libs (cons (cadr as) names))]
+         [(null? as) (if data (run-file (car args) data vs libs (reverse names) (reverse params)) (usage))]
+         [(and (equal? (car as) "--data") (pair? (cdr as))) (loop (cddr as) (cadr as) vs libs names params)]
+         [(and (equal? (car as) "--valuesets") (pair? (cdr as))) (loop (cddr as) data (cadr as) libs names params)]
+         [(and (equal? (car as) "--libraries") (pair? (cdr as))) (loop (cddr as) data vs (cadr as) names params)]
+         [(and (equal? (car as) "--define") (pair? (cdr as))) (loop (cddr as) data vs libs (cons (cadr as) names) params)]
+         [(and (equal? (car as) "--parameter") (pair? (cdr as))) (loop (cddr as) data vs libs names (cons (cadr as) params))]
          [else (usage)]))]
     [(null? (cdr args)) (compile-file (car args))]
     [(and (equal? (cadr args) "--libraries") (= (length args) 3)) (compile-file (car args) (caddr args))]

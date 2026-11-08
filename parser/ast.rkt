@@ -27,7 +27,7 @@
          (struct-out cql-relationship) (struct-out cql-sort-item) (struct-out cql-code-selector)
          (struct-out cql-concept-selector) (struct-out cql-timing-offset) (struct-out cql-within)
          (struct-out tuple-type) (struct-out choice-type)
-         (struct-out cql-typeop) (struct-out cql-cast) (struct-out cql-convert)
+         (struct-out cql-typeop) (struct-out cql-cast) (struct-out cql-convert) (struct-out cql-convert-unit)
          (struct-out named-type) (struct-out interval-type) (struct-out list-type)
          (struct-out dec-lit) (struct-out long-lit) (struct-out qty-lit) (struct-out ratio-lit)
          (struct-out date-lit) (struct-out datetime-lit) (struct-out time-lit)
@@ -72,9 +72,9 @@
 (struct cql-between   (kind precision a b) #:prefab) ; kind 'duration|'difference ; precision a symbol
 (struct cql-timing    (op precision a b) #:prefab)  ; op 'before|'after|'same-as|'same-or-before|'same-or-after
 ;; queries
-(struct cql-query   (sources lets where ret sort agg rels) #:prefab) ; sort 'asc|'desc|(listof cql-sort-item)|#f
+(struct cql-query   (sources lets where ret sort agg rels) #:prefab) ; sort 'asc|'ascending|'desc|'descending|(listof cql-sort-item)|#f
 (struct cql-relationship (kind source such-that) #:prefab) ; kind 'with|'without ; source a cql-source
-(struct cql-sort-item (expr direction) #:prefab)           ; direction 'asc|'desc
+(struct cql-sort-item (expr direction) #:prefab)           ; direction 'asc|'ascending|'desc|'descending
 ;; [context -> Type: code-path comparator terminology] ; all but type may be #f
 (struct cql-retrieve (context type code-path comparator terminology) #:prefab) ; type symbol ; code-path symbol
 (struct cql-code-selector (code system display) #:prefab)   ; Code 'c' from "CS" display 'd'
@@ -91,6 +91,7 @@
 (struct cql-typeop    (op operand type) #:prefab) ; op 'is|'as ; type a type-spec node
 (struct cql-cast      (operand type)  #:prefab)
 (struct cql-convert   (operand type)  #:prefab)
+(struct cql-convert-unit (operand unit) #:prefab) ; convert X to 'mg' / to days — unit: a UCUM string
 
 ;; type specifiers
 (struct named-type    (name)          #:prefab) ; name symbol (qualified via ".")
@@ -228,6 +229,7 @@
   (match datum
     [(list 'expr e) (lower e)]
     [(list 'query parts ...) (lower-query parts)]
+    [(list 'bare-query source) (lower-query (list source))]
 
     ;; binary levels: operand (op operand)* — left associative
     [(list (or 'implies-expr 'or-expr 'and-expr 'membership-expr 'equality-expr
@@ -244,7 +246,15 @@
     [(list 'type-expr operand) (lower operand)]
     [(list 'type-expr operand tails ...) (fold-typeops (lower operand) tails)]
     [(list 'cast-expr operand ts) (cql-cast (lower operand) (lower-type ts))]
-    [(list 'convert-expr operand ts) (cql-convert (lower operand) (lower-type ts))]
+    [(list 'convert-expr operand (? string? unit)) (cql-convert-unit (lower operand) unit)]
+    [(list 'convert-expr operand ts)
+     ;; a calendar word is a unit (cql.g4's `unit: dateTimePrecision | pluralDateTimePrecision | STRING`),
+     ;; written as its UCUM unit (the reference translator: `to days` -> 'd')
+     (match ts
+       [(list 'type-specifier (list 'named-type (list 'qualified-id (and idn (list 'identifier _)))))
+        #:when (hash-ref calendar-ucum (unwrap-id idn) #f)
+        (cql-convert-unit (lower operand) (hash-ref calendar-ucum (unwrap-id idn)))]
+       [_ (cql-convert (lower operand) (lower-type ts))])]
 
     ;; unary
     [(list 'unary-expr operand) (lower operand)]
@@ -313,6 +323,12 @@
 
     [_ (error 'cql-lower "unexpected node: ~s" datum)]))
 
+;; the UCUM unit of a calendar word in `convert X to <word>`
+(define calendar-ucum
+  (hasheq 'year "a" 'years "a" 'month "mo" 'months "mo" 'week "wk" 'weeks "wk" 'day "d" 'days "d"
+          'hour "h" 'hours "h" 'minute "min" 'minutes "min" 'second "s" 'seconds "s"
+          'millisecond "ms" 'milliseconds "ms"))
+
 ;; ---- query lowering --------------------------------------------------------
 (define (lower-query parts)
   (define sources (for/list ([p (in-list parts)] #:when (tagged?* 'source-clause p)) (lower-source p)))
@@ -345,7 +361,8 @@
   (match it
     [(list 'sort-item e) (cql-sort-item (lower e) 'asc)]
     [(list 'sort-item e (list 'sort-dir d)) (cql-sort-item (lower e) (dir->sym d))]))
-(define (dir->sym d) (if (member d '("desc" "descending")) 'desc 'asc))
+;; the word as written: ELM's SortDirection has all four, and the reference keeps the spelling
+(define (dir->sym d) (string->symbol d))
 (define (lower-tail tail)
   (define parts (if tail (cdr tail) '()))
   (define lets (append-map (lambda (lc) (match lc [(list 'let-clause items ...) (map lower-let-item items)] [_ '()]))
@@ -431,6 +448,7 @@
         '("included") 'included-in '("properly" "included") 'properly-included-in
         '("during") 'included-in '("properly" "during") 'properly-included-in
         '("within") 'within '("properly" "within") 'within
+        '("in") 'included-in '("contains") 'includes
         '("before" "on") 'same-or-before '("after" "on") 'same-or-after))
 ;; lower-timing : timing-op-datum cql-expr cql-expr -> cql-expr
 ;; `starts`/`ends` before the phrase take Start/End of the left operand, `start`/`end` after it of the

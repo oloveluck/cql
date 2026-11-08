@@ -192,9 +192,12 @@
                          'timezoneOffset (opt-expr (elm-datetime-timezone-offset e))))]
     [(elm-component? e)
      ;; ELM DateTimeComponentFrom / TimezoneOffsetFrom / DateFrom / TimeFrom
-     (hasheq 'type (component-elm-type (elm-component-precision e))
-             'operand (expr->jsexpr (elm-component-operand e))
-             'precision (component-precision-name (elm-component-precision e)))]
+     ;; (only DateTimeComponentFrom names a precision: the others ARE one)
+     (let ([type (component-elm-type (elm-component-precision e))])
+       (drop-false (hasheq 'type type
+                           'operand (expr->jsexpr (elm-component-operand e))
+                           'precision (and (equal? type "DateTimeComponentFrom")
+                                           (component-precision-name (elm-component-precision e))))))]
     [(elm-between? e)
      (hasheq 'type (if (eq? (elm-between-kind e) 'difference) "DifferenceBetween" "DurationBetween")
              'precision (component-precision-name (elm-between-precision e))

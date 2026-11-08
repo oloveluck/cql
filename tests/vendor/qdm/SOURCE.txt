@@ -1,0 +1,30 @@
+projecttacoma/cqm-execution — the QDM measure calculation engine Bonnie and MADiE use (JavaScript)
+https://github.com/projecttacoma/cqm-execution
+commit b6a02ab63e7b995289c727918816ea86b0c24a55 (2026-07-01), retrieved 2026-11-08
+License: Apache License 2.0 (the repository's LICENSE.txt)
+
+Extracted by extract.py (in this directory) from a checkout: `python3 -I extract.py <checkout>`.
+From spec/fixtures/json, every measure under cqm_measures/ with patients under patients/ (19):
+
+measures/<Measure>/<Library>.cql and <Library>.elm.json
+    each CQL library of the measure document and the ELM the document carries (the reference
+    translator's, of its day; annotations dropped), each named by its own identifier: CMS460v0's
+    document attaches its CQL texts to the wrong entries, so the CQL is named by its `library` line
+    and the ELM by its identifier. Held by tests/qdm-elm-corpus-test.rkt.
+measures/<Measure>/measure.json
+    the measure document without its libraries: ids, measure period, scoring, calculation method,
+    population sets (populations, observations, stratifications).
+measures/<Measure>/value_sets.json
+    the measure's value sets in cqm-models' format, verbatim (run.rkt reads them).
+patients/<Measure>/<case>.json
+    the test patients, verbatim: cqm-models QDM patient documents (birthDatetime, dataElements) with
+    the expectedValues Bonnie stored. Held by tests/qdm-measure-test.rkt, against both
+    cqm-execution's own assertions (spec/models/calculator.spec.js, enabled tests, transcribed with
+    their line numbers) and the stored values.
+
+Known properties of the fixtures, named in the tests:
+  - several QDM 5.3 measures read Encounter.principalDiagnosis, but the patients are QDM 5.5 data
+    (diagnoses with a rank; principalDiagnosis was removed in 5.5); cqm-execution disables its own
+    tests of those cases.
+  - some stored expectedValues predate cqm-execution's current results (observations listed with the
+    excluded episodes; ratio observations without their nulls).

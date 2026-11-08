@@ -1,7 +1,8 @@
 # cql — Clinical Quality Language
 
-[CQL](https://cql.hl7.org/) compiled to ELM and run over FHIR R4 data, including quality measures, or
-over any data model you describe.
+[CQL](https://cql.hl7.org/) compiled to ELM and run over JSON data, including quality measures: FHIR R4,
+QI-Core and US Core (their libraries read FHIR), QDM (cqm-models JSON, as Bonnie and MADiE write it),
+or any data model you describe.
 It passes 1820 of the 1823 tests in HL7's CQL suite; [TESTING.md](TESTING.md) has the details.
 
 Part of the [fhir](https://github.com/oloveluck/fhir) family of FHIR languages and tools.
@@ -24,13 +25,23 @@ Age: 51
 Adult Female: true
 ```
 
-`--data` is one patient's record (a resource, a Bundle or a directory). `--libraries` holds the
-libraries it includes, such as FHIRHelpers, and `--valuesets` the expanded value sets. Errors point at
-the line, with exit status 1.
+`--data` is one patient's record (a resource, a Bundle, a QDM patient document or a directory).
+`--libraries` holds the libraries it includes, such as FHIRHelpers, and `--valuesets` the expanded
+value sets (FHIR ValueSets, or cqm-models' value set arrays). `--parameter "Measurement
+Period=Interval[@2024-01-01T00:00:00Z, @2024-12-31T23:59:59.999Z]"` sets a parameter to a CQL expression.
+Errors point at the line, with exit status 1.
 
-## Any data model
+## Data models
 
-FHIR 4.0.1 is installed. Any other model is data, not code:
+Installed: **FHIR 4.0.1**; **QI-Core** 4.1.1, 5.0.0 and 6.0.0 and **US Core** 3.1.1 and 6.1.0, which are
+views over FHIR: a library written against them is typed by their profiles and compiles to ELM that
+reads FHIR, as the reference translator writes it (each profile element's mapping, such as an
+extension or a component, becomes the ELM that reads it); and **QDM** 5.0.2 to 5.6, whose data are the
+cqm-models JSON documents Bonnie, MADiE and cqm-execution exchange. `cql/cqm` computes a cqm-models
+measure document's populations (proportion, ratio, continuous variable, cohort; patient or episode
+based; strata and observations) the way cqm-execution does.
+
+Any other model is data, not code:
 - a **ModelInfo** document, the format the reference CQL translator uses;
 - and a few lines saying **how its data looks**: which key names a record's type, how choice elements
   and references are written.

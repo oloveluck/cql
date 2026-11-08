@@ -1,0 +1,412 @@
+{
+ "calculation_method": "EPISODE_OF_CARE",
+ "cms_id": "CMS529v0",
+ "composite": false,
+ "hqmf_set_id": "FA75DE85-A934-45D7-A2F7-C700A756078B",
+ "main_cql_library": "CoreClinicalDataElementsfortheHybridHospitalWideReadmissionHWRMeasurewithClaimsandElectronicHealthRecordData",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "529",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "529"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "2879",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "2879"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Limited proprietary coding is contained in these specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets.  \n\nThis material contains SNOMED Clinical Terms (R) (SNOMED CT(C)) copyright 2004-2016 International Health Terminology Standards Development Organization. All rights reserved.\n\nLOINC (R) is a registered trademark of the Regenstrief Institute.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Limited proprietary coding is contained in these specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets.  \n\nThis material contains SNOMED Clinical Terms (R) (SNOMED CT(C)) copyright 2004-2016 International Health Terminology Standards Development Organization. All rights reserved.\n\nLOINC (R) is a registered trademark of the Regenstrief Institute."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "These performance specifications are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications.\n\nTHE MEASURES AND SPECIFICATIONS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND.\n\nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM].",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "These performance specifications are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications.\n\nTHE MEASURES AND SPECIFICATIONS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND.\n\nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM]."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "For a detailed description of how the core clinical data elements are used in the hybrid HWR measure risk adjustment model, see the Hybrid HWR Measure with Electronic Health Record Extracted Risk Factors Specifications Report on QualityNet.org here:\nhttps://www.qualitynet.org/dcs/ContentServer?c=Page&pagename=QnetPublic%2FPage%2FQnetTier3&cid=1228776337297",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For a detailed description of how the core clinical data elements are used in the hybrid HWR measure risk adjustment model, see the Hybrid HWR Measure with Electronic Health Record Extracted Risk Factors Specifications Report on QualityNet.org here:\nhttps://www.qualitynet.org/dcs/ContentServer?c=Page&pagename=QnetPublic%2FPage%2FQnetTier3&cid=1228776337297"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "Although we are using the \"proportion\" function in the MAT, hospitals will not report a proportion, ratio, or rate. Instead hospitals will report actual data values for all the elements included. \n\nThe intent of this logic is to extract the FIRST set of clinical data elements on patients, from hospital EHRs. The data will be linked with administrative claims to risk adjust the hybrid HWR outcome measure. This work addresses stakeholder concerns that clinical data garnered from patients, and used by clinicians to guide diagnostic decisions and treatment, are preferable to administrative claims data when profiling hospitals' case mix. We are calling the list of data elements for extraction the \"HWR-specific core clinical data elements\". The core clinical data elements are the first set of vital signs and basic laboratory test results captured on adult Medicare fee-for-service patients, age 65 or older (Initial Population), after they arrive at the hospital to which they are subsequently admitted. For example, this first set of data values is often captured in the emergency department or in the pre-operative area sometimes hours before a patient is admitted to that same facility. \n\nThese data elements were selected because they: 1. reflect patients' clinical status when they first present to the hospital; 2. are clinically and statistically relevant to patient outcomes; 3. are consistently obtained on adult inpatients based on current clinical practice; 4. are captured with a standard definition and recorded in a standard format across providers; and 5. are entered in structured fields that are feasibly retrieved from current EHR systems. Additional data called Linking Variables are used to link EHR data files with administrative claims data for CMS to calculate results for the hybrid HWR measure, which are: CMS Certification Number; Health Insurance Claim Number or Medicare Beneficiary Identifier; date of birth; sex; admission date; and discharge date.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Although we are using the \"proportion\" function in the MAT, hospitals will not report a proportion, ratio, or rate. Instead hospitals will report actual data values for all the elements included. \n\nThe intent of this logic is to extract the FIRST set of clinical data elements on patients, from hospital EHRs. The data will be linked with administrative claims to risk adjust the hybrid HWR outcome measure. This work addresses stakeholder concerns that clinical data garnered from patients, and used by clinicians to guide diagnostic decisions and treatment, are preferable to administrative claims data when profiling hospitals' case mix. We are calling the list of data elements for extraction the \"HWR-specific core clinical data elements\". The core clinical data elements are the first set of vital signs and basic laboratory test results captured on adult Medicare fee-for-service patients, age 65 or older (Initial Population), after they arrive at the hospital to which they are subsequently admitted. For example, this first set of data values is often captured in the emergency department or in the pre-operative area sometimes hours before a patient is admitted to that same facility. \n\nThese data elements were selected because they: 1. reflect patients' clinical status when they first present to the hospital; 2. are clinically and statistically relevant to patient outcomes; 3. are consistently obtained on adult inpatients based on current clinical practice; 4. are captured with a standard definition and recorded in a standard format across providers; and 5. are entered in structured fields that are feasibly retrieved from current EHR systems. Additional data called Linking Variables are used to link EHR data files with administrative claims data for CMS to calculate results for the hybrid HWR measure, which are: CMS Certification Number; Health Insurance Claim Number or Medicare Beneficiary Identifier; date of birth; sex; admission date; and discharge date."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "The logic is not meant to guide or alter the care patients receive. The purpose of this core clinical data elements logic is to extract clinical data that are already routinely captured in EHRs among hospitalized adult patients. It is not intended to require that clinical staff perform additional measurements or tests that are not needed for diagnostic assessment or treatment of patients.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "The logic is not meant to guide or alter the care patients receive. The purpose of this core clinical data elements logic is to extract clinical data that are already routinely captured in EHRs among hospitalized adult patients. It is not intended to require that clinical staff perform additional measurements or tests that are not needed for diagnostic assessment or treatment of patients."
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "No actual measure score will be generated by hospitals. Instead hospitals will report the data values for each of the core clinical data elements for all patients in the Initial Population. These core clinical data elements will be linked to administrative claims data and used by CMS to calculate results for the hybrid HWR measure. Hospitals that submit this data will receive reports detailing the success of their data submission.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "No actual measure score will be generated by hospitals. Instead hospitals will report the data values for each of the core clinical data elements for all patients in the Initial Population. These core clinical data elements will be linked to administrative claims data and used by CMS to calculate results for the hybrid HWR measure. Hospitals that submit this data will receive reports detailing the success of their data submission."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED"
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "HWR-Specific Core Clinical Data Elements",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "HWR-Specific Core Clinical Data Elements"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "This logic guides the user to extract the FIRST captured HWR-specific core clinical data elements for all Medicare fee-for-service patients age 65 or older (Initial Population) directly admitted to the hospital or admitted to the same facility after an emergency department stay or surgical procedure. \n\nThe logic supports extraction of the FIRST set of HWR-specific core clinical data elements in two different ways depending on if the patient was a direct admission, meaning that the patient was admitted directly to an inpatient unit without first receiving care in the Emergency Department or other outpatient location within the same admitting facility: \n\n1. If the patient was a direct admission, the logic supports extraction of the FIRST captured vital signs within 2 hours after the start of the inpatient admission, and the FIRST captured laboratory test results within 24 hours after the start of the inpatient admission. \n2. If the patient has values captured prior to admission, for example from the emergency department or pre-operative or other outpatient area within the hospital, the logic supports extraction of the FIRST captured vital signs and laboratory test results within 24 hours PRIOR to the start of the inpatient admission. All clinical systems used in inpatient and outpatient locations within the hospital facility should be queried when looking for core clinical data element values related to a patient who is subsequently admitted.\n\nValue sets for the laboratory tests represent the LOINC codes currently available for these tests. If the institution is using local codes to capture and store relevant laboratory test data, those sites should map that information to the LOINC code for CCDE reporting.\n\nNOTE: Do not report ALL values on a patient during their entire admission. Only report the FIRST recorded value for EACH core clinical data element collected in the appropriate timeframe, if available.\n\nFor each patient please also submit the following Linking Variables: \nCMS Certification Number; \nHealth Insurance Claim Number or Medicare Beneficiary Identifier;\nDate of Birth;\nSex;\nAdmission Date; and,\nDischarge Date.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "This logic guides the user to extract the FIRST captured HWR-specific core clinical data elements for all Medicare fee-for-service patients age 65 or older (Initial Population) directly admitted to the hospital or admitted to the same facility after an emergency department stay or surgical procedure. \n\nThe logic supports extraction of the FIRST set of HWR-specific core clinical data elements in two different ways depending on if the patient was a direct admission, meaning that the patient was admitted directly to an inpatient unit without first receiving care in the Emergency Department or other outpatient location within the same admitting facility: \n\n1. If the patient was a direct admission, the logic supports extraction of the FIRST captured vital signs within 2 hours after the start of the inpatient admission, and the FIRST captured laboratory test results within 24 hours after the start of the inpatient admission. \n2. If the patient has values captured prior to admission, for example from the emergency department or pre-operative or other outpatient area within the hospital, the logic supports extraction of the FIRST captured vital signs and laboratory test results within 24 hours PRIOR to the start of the inpatient admission. All clinical systems used in inpatient and outpatient locations within the hospital facility should be queried when looking for core clinical data element values related to a patient who is subsequently admitted.\n\nValue sets for the laboratory tests represent the LOINC codes currently available for these tests. If the institution is using local codes to capture and store relevant laboratory test data, those sites should map that information to the LOINC code for CCDE reporting.\n\nNOTE: Do not report ALL values on a patient during their entire admission. Only report the FIRST recorded value for EACH core clinical data element collected in the appropriate timeframe, if available.\n\nFor each patient please also submit the following Linking Variables: \nCMS Certification Number; \nHealth Insurance Claim Number or Medicare Beneficiary Identifier;\nDate of Birth;\nSex;\nAdmission Date; and,\nDischarge Date."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "To be determined.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "To be determined."
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "All Medicare fee-for-service patients age 65 and older with an inpatient admission (length of stay <365 days) during the measurement period.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "All Medicare fee-for-service patients age 65 and older with an inpatient admission (length of stay <365 days) during the measurement period."
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "Same as initial population",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Same as initial population"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Same as initial population",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Same as initial population"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For patients in the denominator, report the FIRST value for vital signs captured within the 24 hours prior to the inpatient admission. If no values were captured in the 24 hours prior to the admission (for example, for patients directly admitted to the hospital) report the first value captured within 2 hours after the start of the inpatient admission. For laboratory test results, report the first value captured in the 24 hours prior to admission. If there are no values in the 24 hours prior to admission, report the first value captured within 24 hours after the start of the inpatient admission. First values for the following data elements may be captured in the emergency department or other outpatient area within the hospital before a patient is subsequently admitted to the same hospital. First values for these data elements may also be captured on an inpatient unit for directly admitted patients who do not receive care in the emergency department or other hospital outpatient location before admission. \n\nThe core clinical data elements are as follows:\nHeart rate\nSystolic blood pressure\nRespiratory rate\nTemperature\nOxygen saturation\nWeight\nHematocrit\nWhite blood cell count\nPotassium\nSodium\nBicarbonate\nCreatinine\nGlucose\n\nNOTE: Do not report ALL values on a patient during their entire admission. Only report the FIRST recorded value for EACH core clinical data element collected in the appropriate timeframe, if available.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For patients in the denominator, report the FIRST value for vital signs captured within the 24 hours prior to the inpatient admission. If no values were captured in the 24 hours prior to the admission (for example, for patients directly admitted to the hospital) report the first value captured within 2 hours after the start of the inpatient admission. For laboratory test results, report the first value captured in the 24 hours prior to admission. If there are no values in the 24 hours prior to admission, report the first value captured within 24 hours after the start of the inpatient admission. First values for the following data elements may be captured in the emergency department or other outpatient area within the hospital before a patient is subsequently admitted to the same hospital. First values for these data elements may also be captured on an inpatient unit for directly admitted patients who do not receive care in the emergency department or other hospital outpatient location before admission. \n\nThe core clinical data elements are as follows:\nHeart rate\nSystolic blood pressure\nRespiratory rate\nTemperature\nOxygen saturation\nWeight\nHematocrit\nWhite blood cell count\nPotassium\nSodium\nBicarbonate\nCreatinine\nGlucose\n\nNOTE: Do not report ALL values on a patient during their entire admission. Only report the FIRST recorded value for EACH core clinical data element collected in the appropriate timeframe, if available."
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENOM": {
+     "hqmf_id": "B4C75BE6-6F53-42E3-9C63-13AB374685DE",
+     "library_name": "CoreClinicalDataElementsfortheHybridHospitalWideReadmissionHWRMeasurewithClaimsandElectronicHealthRecordData",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "hqmf_id": "33719872-9241-4DF9-BF73-D7BDE6D44929",
+     "library_name": "CoreClinicalDataElementsfortheHybridHospitalWideReadmissionHWRMeasurewithClaimsandElectronicHealthRecordData",
+     "statement_name": "IP Encounters"
+    },
+    "NUMER": {
+     "hqmf_id": "ADE8C6B6-A77C-49E1-BB2A-728A5AA7BB06",
+     "library_name": "CoreClinicalDataElementsfortheHybridHospitalWideReadmissionHWRMeasurewithClaimsandElectronicHealthRecordData",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "supplemental_data_elements": [
+    {
+     "hqmf_id": null,
+     "library_name": "CoreClinicalDataElementsfortheHybridHospitalWideReadmissionHWRMeasurewithClaimsandElectronicHealthRecordData",
+     "statement_name": "Results"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Core Clinical Data Elements for the Hybrid Hospital-Wide Readmission (HWR) Measure with Claims and Electronic Health Record Data"
+}

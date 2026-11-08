@@ -1,0 +1,459 @@
+{
+ "calculation_method": "EPISODE_OF_CARE",
+ "cms_id": "CMS903v0",
+ "composite": false,
+ "hqmf_set_id": "4DC3E7AA-8777-4749-A1E4-37E942036076",
+ "main_cql_library": "LikeCMS32",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "903",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "903"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "CONTVAR",
+    "system": "2.16.840.1.113883.5.1063",
+    "title": "Continuous Variable",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "<foo bar=\"smaller\">smaller-is-better</foo>",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "<foo bar=\"smaller\">smaller-is-better</foo>"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED"
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRPOPL",
+   "code_obj": {
+    "code": "MSRPOPL",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Population",
+    "type": "CD"
+   },
+   "name": "Measure Population",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSRPOPLEX",
+   "code_obj": {
+    "code": "MSRPOPLEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Population Exclusions",
+    "type": "CD"
+   },
+   "name": "Measure Population Exclusions",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "MSROBS",
+   "code_obj": {
+    "code": "MSROBS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Observation",
+    "type": "CD"
+   },
+   "name": "Measure Observation",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": ""
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "CONTINUOUS_VARIABLE",
+ "population_sets": [
+  {
+   "_id": "5d48728057a11e8a91275c37",
+   "observations": [
+    {
+     "_id": "5d48728057a11e8a91275c46",
+     "aggregation_type": "MEDIAN",
+     "hqmf_id": "558EB897-E657-4A3F-945A-313775CE2C89",
+     "observation_function": {
+      "_id": "5d48728057a11e8a91275c47",
+      "hqmf_id": "558EB897-E657-4A3F-945A-313775CE2C89",
+      "library_name": "LikeCMS32",
+      "statement_name": "Measure Observation"
+     },
+     "observation_parameter": {
+      "_id": "5d48728057a11e8a91275c48",
+      "hqmf_id": "558EB897-E657-4A3F-945A-313775CE2C89",
+      "library_name": "LikeCMS32",
+      "statement_name": "Measure Population"
+     }
+    }
+   ],
+   "population_set_id": "PopulationSet_1",
+   "populations": {
+    "IPP": {
+     "_id": "5d48728057a11e8a91275c39",
+     "hqmf_id": "D5234DDF-B2DF-4D0E-B822-C6C9A1ACB4B8",
+     "library_name": "LikeCMS32",
+     "statement_name": "Initial Population"
+    },
+    "MSRPOPL": {
+     "_id": "5d48728057a11e8a91275c3a",
+     "hqmf_id": "665465ED-0573-406B-9A3A-A47D77C4C6C6",
+     "library_name": "LikeCMS32",
+     "statement_name": "Measure Population"
+    },
+    "MSRPOPLEX": {
+     "_id": "5d48728057a11e8a91275c3b",
+     "hqmf_id": "CD78562F-E2C8-4792-A634-37A0DACC3E28",
+     "library_name": "LikeCMS32",
+     "statement_name": "Measure Population Exclusions"
+    },
+    "_id": "5d48728057a11e8a91275c38",
+    "_type": "CQM::ContinuousVariablePopulationMap"
+   },
+   "stratifications": [
+    {
+     "_id": "5d48728057a11e8a91275c3c",
+     "hqmf_id": "429368C4-06ED-4729-A52E-BC5A56F3B0D7",
+     "statement": {
+      "_id": "5d48728057a11e8a91275c3d",
+      "hqmf_id": "429368C4-06ED-4729-A52E-BC5A56F3B0D7",
+      "library_name": "LikeCMS32",
+      "statement_name": "Strat1"
+     },
+     "stratification_id": "PopulationSet_1_Stratification_1",
+     "title": "PopSet1 Stratification 1"
+    },
+    {
+     "_id": "5d48728057a11e8a91275c3e",
+     "hqmf_id": "F0BA095E-AD2E-4A05-A19F-A461835126B9",
+     "statement": {
+      "_id": "5d48728057a11e8a91275c3f",
+      "hqmf_id": "F0BA095E-AD2E-4A05-A19F-A461835126B9",
+      "library_name": "LikeCMS32",
+      "statement_name": "Strat2"
+     },
+     "stratification_id": "PopulationSet_1_Stratification_2",
+     "title": "PopSet1 Stratification 2"
+    },
+    {
+     "_id": "5d48728057a11e8a91275c40",
+     "hqmf_id": "3B414F16-D957-4D5B-83A8-B49362FB2C69",
+     "statement": {
+      "_id": "5d48728057a11e8a91275c41",
+      "hqmf_id": "3B414F16-D957-4D5B-83A8-B49362FB2C69",
+      "library_name": "LikeCMS32",
+      "statement_name": "Strat3"
+     },
+     "stratification_id": "PopulationSet_1_Stratification_3",
+     "title": "PopSet1 Stratification 3"
+    }
+   ],
+   "supplemental_data_elements": [
+    {
+     "_id": "5d48728057a11e8a91275c42",
+     "hqmf_id": "036572F4-6266-4AB2-805D-40E39F946958",
+     "library_name": "LikeCMS32",
+     "statement_name": "SDE Ethnicity"
+    },
+    {
+     "_id": "5d48728057a11e8a91275c43",
+     "hqmf_id": "0B26AB75-BD8F-42C7-9BD3-F1A1450C8A50",
+     "library_name": "LikeCMS32",
+     "statement_name": "SDE Payer"
+    },
+    {
+     "_id": "5d48728057a11e8a91275c44",
+     "hqmf_id": "AFF35AAE-7E41-42A2-8812-8E01747C20C2",
+     "library_name": "LikeCMS32",
+     "statement_name": "SDE Race"
+    },
+    {
+     "_id": "5d48728057a11e8a91275c45",
+     "hqmf_id": "39B95513-56D2-40D5-AD3B-FD9938F8728D",
+     "library_name": "LikeCMS32",
+     "statement_name": "SDE Sex"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "LikeCMS32"
+}

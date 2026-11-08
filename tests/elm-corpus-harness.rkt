@@ -31,7 +31,11 @@
   ;; corpus-libraries : dir -> (listof (list package name cql-library resolver))   every corpus library
   ;; that parses, with the resolver its includes use (the evaluator differential runs them)
   [corpus-libraries (-> path-string? (listof list?))]
-  [normalize-elm (->* (any/c) (any/c) any/c)]))
+  [normalize-elm (->* (any/c) (any/c) any/c)]
+  ;; print-corpus-report : (listof lib-result) label -> void   the totals, then the work list: every
+  ;; mismatch classified by its first difference (kind + path, list indices dropped), largest class
+  ;; first, with examples (library/definition: reference | ours)
+  [print-corpus-report (-> (listof lib-result?) string? void?)]))
 
 (struct lib-result (package name parse-ok? compile-ok? error defs-total defs-present defs-equal mismatches)
   #:transparent)
@@ -154,3 +158,26 @@
               #:when (regexp-match? #rx"[.]cql$" (path->string f))
               [lib (in-value (parse-file f))] #:when lib)
     (list pkg (path->string (path-replace-extension (file-name-from-path f) #"")) lib (package-resolver (build-path dir pkg)))))
+
+(define (print-corpus-report rs label)
+  (define (sum f) (apply + (map f rs)))
+  (printf "  ~a: ~a libraries; ~a parse, ~a compile; ~a/~a reference definitions present, ~a ELM-equal\n"
+          label (length rs) (count lib-result-parse-ok? rs) (count lib-result-compile-ok? rs)
+          (sum lib-result-defs-present) (sum lib-result-defs-total) (sum lib-result-defs-equal))
+  (for ([r (in-list rs)] #:when (lib-result-error r))
+    (printf "    ~a: ~a\n" (lib-result-name r) (lib-result-error r)))
+  (define (class-of d)
+    (cons (car d) (string-join (for/list ([seg (in-list (cadr d))] #:unless (number? seg)) (format "~a" seg)) ".")))
+  (define (short v) (let ([s (format "~s" v)]) (if (> (string-length s) 70) (string-append (substring s 0 70) "…") s)))
+  (define classes
+    (sort (for*/fold ([h (hash)] #:result (hash->list h))
+                     ([r (in-list rs)] [m (in-list (lib-result-mismatches r))])
+            (hash-update h (class-of (cadr m)) (lambda (l) (cons (list (lib-result-name r) (car m) (cadr m)) l)) '()))
+          > #:key (lambda (c) (length (cdr c)))))
+  (printf "  difference classes (first difference, reference vs ours), largest first:\n")
+  (for ([c (in-list classes)])
+    (printf "    ~a  ~a ~a\n" (length (cdr c)) (car (car c)) (cdr (car c)))
+    (for ([ex (in-list (take (reverse (cdr c)) (min 3 (length (cdr c)))))])
+      (define d (caddr ex))
+      (printf "        ~a/~a: ~a\n" (car ex) (cadr ex)
+              (if (eq? (car d) 'differs) (format "~a  |  ~a" (short (caddr d)) (short (cadddr d))) (string-join (map short (cddr d)) " "))))))

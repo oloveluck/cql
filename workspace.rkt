@@ -134,13 +134,18 @@
     (for/or ([l (in-list libs)] #:when (equal? (hash-ref l 'name #f) name))
       (define t (library-content l))
       (and t (let ([r (parse-cql t)]) (and (ok? r) (ok-value r))))))
-  (define (bundled name)
-    (define f (build-path bundled-dir (string-append name ".cql")))
-    (and (file-exists? f) (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r)))))
+  ;; a bundled library: <name>-<version>.cql when that version is there (FHIRHelpers 4.4.000, which
+  ;; QI-Core libraries include), else <name>.cql
+  (define (bundled name version)
+    (define f (for/first ([f (in-list (list (and version (build-path bundled-dir (format "~a-~a.cql" name version)))
+                                            (build-path bundled-dir (string-append name ".cql"))))]
+                          #:when (and f (file-exists? f)))
+                f))
+    (and f (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r)))))
   (caching-resolver
    (lambda (name version)
      (define n (format "~a" name))
-     (or (hash-ref own n #f) (from-resources n) (bundled n)))))
+     (or (hash-ref own n #f) (from-resources n) (bundled n version)))))
 
 ;; version-diagnostics : workspace library text path -> diagnostics   CQL's FHIR model here is 4.0.1
 (define (version-diagnostics ws lib text path)

@@ -38,7 +38,8 @@
                   moment-kind moment-year moment-month moment-day moment-hour moment-minute moment-second
                   moment-frac moment-tzmin moment-prec moment-plus moment-add-ms)
          "representation.rkt"
-         (only-in "model/modelinfo.rkt" find-model find-model-by-url model-name model-url)
+         (only-in "model/modelinfo.rkt" find-model find-model-by-url model-name model-url find-profile-class model-element-target)
+         (only-in "mapping.rkt" parse-mapping map-call map-path map-field map-filter)
          (only-in "code-path.rkt" resolve-code-path code-path-codes)
          ;; the interpreter's algebra, each a module of its own: the numeric base and errors, the
          ;; temporal semantics, arithmetic, comparison and equality, intervals
@@ -60,6 +61,8 @@
           ;; rlib-eval : one ELM expression in a library's context (its definitions, functions,
           ;; terms and runtime): what an explanation evaluates a definition's parts with
           [rlib-eval   (-> rlib? elm-expr? cql-value?)]
+          ;; rlib-call : a library's function applied to values (a measure observation per episode)
+          [rlib-call   (-> rlib? string? (listof cql-value?) cql-value?)]
           [runtime     (-> procedure? procedure? (or/c exact-integer? #f) runtime?)]
           [runtime?    (-> any/c boolean?)]
           [rlib?       (-> any/c boolean?)]
@@ -199,6 +202,11 @@
 (define (rlib-eval rl expr)
   (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
     ((elm-runner) expr (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (current-moment) rl (rlib-rt rl)))))
+
+(define (rlib-call rl name args)
+  (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
+    (call-library-function rl name args #f (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (current-moment) rl (rlib-rt rl))
+                           (elm-runner))))
 
 ;; target-lib : env alias|#f -> rlib|#f   the library a qualified reference points into
 (define (target-lib env alias)
@@ -621,7 +629,51 @@
     [else
      (define w (want))
      (define property (elm-retrieve-code-property r))
-     (runtime-retrieve rt (cons m type) property w (lambda () (filter (code-filter m type property w env) all)))]))
+     (define by-value-set (and (equal? (elm-retrieve-code-comparator r) "~") (cql-obj? w) (obj-field w 'id)
+                               (mapped-value-set-reader (elm-retrieve-template-id r) property)))
+     (if by-value-set
+         ;; the profile maps a ValueSet at the code property (QI-Core's NotDone profiles: the value set
+         ;; the action was not done for): `~` a ValueSet holds when the mapped value set is that one
+         (runtime-retrieve rt (list m type '~) property w
+                           (lambda () (filter (lambda (n) (member (obj-field w 'id) (by-value-set n))) all)))
+         (runtime-retrieve rt (cons m type) property w (lambda () (filter (code-filter m type property w env) all))))]))
+
+;; mapped-value-set-reader : template-id property -> (ModelNode -> (listof url))|#f   when the profile
+;; (a class of an installed mapping model, by identifier) maps a System.ValueSet alternative at the
+;; property, the reader of that alternative's path over the target data — the urls it names (the
+;; mapping's function, a ValueSet constructor from its url, is the reading of the url)
+(define value-set-readers (make-hash))
+(define (mapped-value-set-reader template-id property)
+  (hash-ref! value-set-readers (cons template-id property)
+             (lambda ()
+               (define found (and template-id property (find-profile-class template-id)))
+               (define target (and found (model-element-target (car found) (cdr found) property)))
+               (define term (and target (for/first ([alt (in-list (parse-mapping target))]
+                                                    #:when (equal? (car alt) "System.ValueSet"))
+                                          (cdr alt))))
+               (define path (let unwrap ([t term]) (match t [(map-call _ a) (unwrap a)] [(map-path 'parent steps) steps] [_ #f])))
+               (and path (lambda (n) (filter string? (map scalar-of (walk-mapped-path (list n) path))))))))
+;; scalar-of : value -> value   a record written as a bare scalar (FHIR's uri, canonical) as its System
+;; value, through its model's scalar element
+(define (scalar-of v)
+  (define s (and (model-node? v) (not (hash? (model-node-data v)))
+                 (representation-scalar-element (model-representation (model-node-model v)))))
+  (if s (node-property v s) v))
+;; walk-mapped-path : (listof value) steps -> (listof value)   a mapping path over data: a field of
+;; each item (lists flattened; a System value's own `value` is itself), a filter keeping the items
+;; whose condition paths read the given text
+(define (walk-mapped-path vs steps)
+  (define (field v f)
+    (cond [(model-node? v) (let ([r (node-property v f)]) (cond [(list? r) r] [(cql-null? r) '()] [else (list r)]))]
+          [(and (string? v) (equal? f "value")) (list v)]
+          [else '()]))
+  (for/fold ([vs vs]) ([s (in-list steps)])
+    (match s
+      [(map-field f) (append-map (lambda (v) (field v f)) vs)]
+      [(map-filter conds)
+       (filter (lambda (v) (for/and ([c (in-list conds)])
+                             (member (cdr c) (map scalar-of (walk-mapped-path (list v) (map map-field (car c)))))))
+               vs)])))
 
 ;; retrieve-class : data-type Env -> (values Model class-name)   `{url}Type`: the model the library's
 ;; `using` names with that url (version and all), else any installed model with it
@@ -662,7 +714,7 @@
 (define (navigate-path v steps)
   (for/fold ([v v]) ([s (in-list steps)])
     (cond [(list? v) (append-map (lambda (x) (let ([r (navigate-path x (list s))]) (if (list? r) r (list r)))) v)]
-          [(model-node? v) (node-property v s)]
+          [(model-node? v) (node-property-all v s)]
           [else cql-null])))
 
 ;; in-vocabulary? : code-ish ValueSet|CodeSystem-obj env -> boolean   membership by (system, code);
@@ -896,6 +948,19 @@
                                                            (if (or (<= av 0) (<= bv 0) (= bv 1)) cql-null
                                                                (safe-float->dec (/ (log (exact->inexact av)) (log (exact->inexact bv))))))))))
 (def-nary! "Round"    (lambda (vs) (round-op vs)))
+;; ConvertQuantity(q, unit): q expressed in `unit` (UCUM; calendar words read as their UCUM units, as
+;; FHIR data write them: 90 'days' -> 90 'd'); null when either is null or the units do not convert
+(def-nary! "ConvertQuantity"
+  (lambda (vs)
+    (match vs
+      [(list (? fp-quantity? q) (? string? u))
+       (define (ucum x) (let ([d (duration-unit x)]) (if d (hash-ref ucum-of-duration d) x)))
+       (define r (quantity-add (make-quantity (parse-decimal "0") (ucum u))
+                               (fp-quantity (fp-quantity-value q) (ucum (fp-quantity-unit q)) #f)))
+       (if r (fp-quantity (fp-quantity-value r) u #f) cql-null)]
+      [_ cql-null])))
+(define ucum-of-duration
+  (hash "year" "a" "month" "mo" "week" "wk" "day" "d" "hour" "h" "minute" "min" "second" "s" "millisecond" "ms"))
 
 ;; string
 (def-nary! "Concatenate" (lambda (vs) (concat vs)))
@@ -1154,7 +1219,7 @@
                   (cond [(null? bs) #f]
                         [else
                          (define c (total-compare (key-of (car bs) a) (key-of (car bs) b)))
-                         (define c* (if (equal? (elm-sort-by-direction (car bs)) "desc") (- c) c))
+                         (define c* (if (member (elm-sort-by-direction (car bs)) '("desc" "descending")) (- c) c))
                          (cond [(< c* 0) #t] [(> c* 0) #f] [else (loop (cdr bs))])]))))]))
 (define (query-cartesian aliases lists)
   (if (null? aliases) (list (hash))
@@ -1171,12 +1236,12 @@
         [(= 1 (length aliases)) (hash-ref (ienv-operands e) (car aliases))]
         [else (cql-tuple (for/hash ([a (in-list aliases)]) (values (string->symbol a) (hash-ref (ienv-operands e) a))))]))
 
-;; sort-values : (Listof CqlValue) ('asc|'desc) -> (Listof CqlValue)
+;; sort-values : (Listof CqlValue) ('asc|'ascending|'desc|'descending) -> (Listof CqlValue)
 ;; Sorting needs a TOTAL order, so undecidable pairs (mixed-precision moments) fall back to a
 ;; deterministic tiebreak: component-wise with an absent component sorting FIRST (so @2012-10-05
 ;; precedes @2012-10-05T10, per the reference implementation).
 (define (sort-values xs dir)
-  (sort xs (lambda (a b) (define c (total-compare a b)) (if (eq? dir 'desc) (> c 0) (< c 0)))))
+  (sort xs (lambda (a b) (define c (total-compare a b)) (if (memq dir '(desc descending)) (> c 0) (< c 0)))))
 (define (run-aggregate agg aliases kept env [ev eval-elm])
   (define name (car agg)) (define adist (cadr agg)) (define start-elm (caddr agg)) (define body (cadddr agg))
   (define rows (if adist (dedup-rows kept aliases) kept))
@@ -1229,6 +1294,9 @@
         [(cql-concept? v) (case path [("codes") (cql-concept-codes v)] [("display") (or (cql-concept-display v) cql-null)] [else cql-null])]
         [(cql-interval? v) (case path [("low") (or (cql-interval-low v) cql-null)] [("high") (or (cql-interval-high v) cql-null)]
                              [("lowClosed") (cql-interval-low-closed? v)] [("highClosed") (cql-interval-high-closed? v)] [else cql-null])]
+        ;; System.Quantity's value and unit, System.Ratio's numerator and denominator
+        [(fp-quantity? v) (case path [("value") (->dec (fp-quantity-value v))] [("unit") (fp-quantity-unit v)] [else cql-null])]
+        [(cql-ratio? v) (case path [("numerator") (cql-ratio-numerator v)] [("denominator") (cql-ratio-denominator v)] [else cql-null])]
         [else cql-null]))          ; slice-1: property on non-tuples is undecidable -> null
 (define (eval-function name args env [run eval-elm])
   (define f (hash-ref (ienv-funcs env) name (lambda () (fail (format "unknown function ~a" name)))))

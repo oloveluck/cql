@@ -1,0 +1,530 @@
+{
+ "calculation_method": "PATIENT",
+ "cms_id": "CMS123v7",
+ "composite": false,
+ "hqmf_set_id": "C0D72444-7C26-4863-9B51-8080F8928A85",
+ "main_cql_library": "DiabetesFootExam",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "123",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "123"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "0056",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "0056"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "This Physician Performance Measure (Measure) and related data specifications were developed by the National Committee for Quality Assurance (NCQA). NCQA is not responsible for any use of the Measure. NCQA makes no representations, warranties, or endorsement about the quality of any organization or physician that uses or reports performance measures and NCQA has no liability to anyone who relies on such measures or specifications. NCQA holds a copyright in the Measure. The Measure can be reproduced and distributed, without modification, for noncommercial purposes (eg, use by healthcare providers in connection with their practices) without obtaining approval from NCQA. Commercial use is defined as the sale, licensing, or distribution of the Measure for commercial gain, or incorporation of the Measure into a product or service that is sold, licensed or distributed for commercial gain. All commercial uses or requests for modification must be approved by NCQA and are subject to a license at the discretion of NCQA. (C) 2012-2017 National Committee for Quality Assurance. All Rights Reserved. \n\nLimited proprietary coding is contained in the Measure specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets. NCQA disclaims all liability for use or accuracy of any third party codes contained in the specifications.\n\nCPT(R) contained in the Measure specifications is copyright 2004-2017 American Medical Association. LOINC(R) copyright 2004-2017 Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms(R) (SNOMED CT[R] ) copyright 2004-2017 International Health Terminology Standards Development Organisation. ICD-10 copyright 2017 World Health Organization. All Rights Reserved.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "This Physician Performance Measure (Measure) and related data specifications were developed by the National Committee for Quality Assurance (NCQA). NCQA is not responsible for any use of the Measure. NCQA makes no representations, warranties, or endorsement about the quality of any organization or physician that uses or reports performance measures and NCQA has no liability to anyone who relies on such measures or specifications. NCQA holds a copyright in the Measure. The Measure can be reproduced and distributed, without modification, for noncommercial purposes (eg, use by healthcare providers in connection with their practices) without obtaining approval from NCQA. Commercial use is defined as the sale, licensing, or distribution of the Measure for commercial gain, or incorporation of the Measure into a product or service that is sold, licensed or distributed for commercial gain. All commercial uses or requests for modification must be approved by NCQA and are subject to a license at the discretion of NCQA. (C) 2012-2017 National Committee for Quality Assurance. All Rights Reserved. \n\nLimited proprietary coding is contained in the Measure specifications for user convenience. Users of proprietary code sets should obtain all necessary licenses from the owners of the code sets. NCQA disclaims all liability for use or accuracy of any third party codes contained in the specifications.\n\nCPT(R) contained in the Measure specifications is copyright 2004-2017 American Medical Association. LOINC(R) copyright 2004-2017 Regenstrief Institute, Inc. This material contains SNOMED Clinical Terms(R) (SNOMED CT[R] ) copyright 2004-2017 International Health Terminology Standards Development Organisation. ICD-10 copyright 2017 World Health Organization. All Rights Reserved."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "The performance Measure is not a clinical guideline and does not establish a standard of medical care, and has not been tested for all potential applications. THE MEASURE AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND.\n \nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM].",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "The performance Measure is not a clinical guideline and does not establish a standard of medical care, and has not been tested for all potential applications. THE MEASURE AND SPECIFICATIONS ARE PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND.\n \nDue to technical limitations, registered trademarks are indicated by (R) or [R] and unregistered trademarks are indicated by (TM) or [TM]."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "As the seventh leading cause of death in the U.S., diabetes kills approximately 79,500 people a year (CDC Health 2017). Diabetes is a long lasting disease marked by high blood glucose levels, resulting from the body's inability to produce or use insulin properly (CDC About Diabetes 2017). People with diabetes are at increased risk of serious health complications including vision loss, heart disease, stroke, kidney failure, amputation of toes, feet or legs, and premature death. (CDC At a Glance 2016). \n\nIn 2012, diabetes cost the U.S. an estimated $245 billion: $176 billion in direct medical costs and $69 billion in reduced productivity. This is a 41 percent increase from the estimated $174 billion spent on diabetes in 2007 (ADA Economic 2013).  \n\nDiabetes reduces the blood flow to the extremities of the body such as the legs and feet, which make it harder for the body to heal from injuries to those parts of the body. Patients with diabetes are at higher risks of developing serious problems with their feet, toes, and legs which can lead to difficulty walking or even amputation (CDC Living with Diabetes, 2015). \n\nAccording to research from the Centers for Disease Control and Prevention (CDC), in 2010 approximately 73,000 adults with diabetes had a leg or foot amputated. Furthermore, amputations in adults with diabetes accounts for 60 percent of amputation of legs and feet, not related to an injury (CDC Living with Diabetes, 2015). Adults 45 years and older with diabetes are 10 times more likely to have an amputation of their leg or foot compared to adults without diabetes (CDC Living with Diabetes, 2015).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "As the seventh leading cause of death in the U.S., diabetes kills approximately 79,500 people a year (CDC Health 2017). Diabetes is a long lasting disease marked by high blood glucose levels, resulting from the body's inability to produce or use insulin properly (CDC About Diabetes 2017). People with diabetes are at increased risk of serious health complications including vision loss, heart disease, stroke, kidney failure, amputation of toes, feet or legs, and premature death. (CDC At a Glance 2016). \n\nIn 2012, diabetes cost the U.S. an estimated $245 billion: $176 billion in direct medical costs and $69 billion in reduced productivity. This is a 41 percent increase from the estimated $174 billion spent on diabetes in 2007 (ADA Economic 2013).  \n\nDiabetes reduces the blood flow to the extremities of the body such as the legs and feet, which make it harder for the body to heal from injuries to those parts of the body. Patients with diabetes are at higher risks of developing serious problems with their feet, toes, and legs which can lead to difficulty walking or even amputation (CDC Living with Diabetes, 2015). \n\nAccording to research from the Centers for Disease Control and Prevention (CDC), in 2010 approximately 73,000 adults with diabetes had a leg or foot amputated. Furthermore, amputations in adults with diabetes accounts for 60 percent of amputation of legs and feet, not related to an injury (CDC Living with Diabetes, 2015). Adults 45 years and older with diabetes are 10 times more likely to have an amputation of their leg or foot compared to adults without diabetes (CDC Living with Diabetes, 2015)."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "American Diabetes Association (2017) Guidelines/ Recommendations: Perform annual comprehensive foot examination to identify risk factors predictive of ulcers and amputations. The foot examination should include inspection, assessment of foot/leg pulses, and testing for loss of protective sensation (10-g monofilament plus testing any one of: vibration using 128-Hz tuning fork, pinprick sensation, temperature, ankle reflexes, or vibration perception threshold). (Level of evidence: B)",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "American Diabetes Association (2017) Guidelines/ Recommendations: Perform annual comprehensive foot examination to identify risk factors predictive of ulcers and amputations. The foot examination should include inspection, assessment of foot/leg pulses, and testing for loss of protective sensation (10-g monofilament plus testing any one of: vibration using 128-Hz tuning fork, pinprick sensation, temperature, ankle reflexes, or vibration perception threshold). (Level of evidence: B)"
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "Higher score indicates better quality",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Higher score indicates better quality"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "American Diabetes Association (ADA). April 2013. Economic Costs of Diabetes in the U.S. in 2012. Diabetes Care. Vol. 36 no. 4\n1033-46. http://care.diabetesjournals.org/content/36/4/1033.full",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "American Diabetes Association (ADA). April 2013. Economic Costs of Diabetes in the U.S. in 2012. Diabetes Care. Vol. 36 no. 4\n1033-46. http://care.diabetesjournals.org/content/36/4/1033.full"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Centers for Disease Control and Prevention (CDC). 2017. About Diabetes. https://www.cdc.gov/diabetes/basics/diabetes.html.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Centers for Disease Control and Prevention (CDC). 2017. About Diabetes. https://www.cdc.gov/diabetes/basics/diabetes.html."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Centers for Disease Control and Prevention (CDC). 2016. At a Glance 2016, Diabetes Working to Reverse the US Epidemic. https://www.cdc.gov/chronicdisease/resources/publications/aag/pdf/2016/diabetes-aag.pdf.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Centers for Disease Control and Prevention (CDC). 2016. At a Glance 2016, Diabetes Working to Reverse the US Epidemic. https://www.cdc.gov/chronicdisease/resources/publications/aag/pdf/2016/diabetes-aag.pdf."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Centers for Disease Control and Prevention (CDC). 2017. Health, United States, 2016: With Chartbook on Long-term Trends in Health. https://www.cdc.gov/nchs/data/hus/hus16.pdf#019.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Centers for Disease Control and Prevention (CDC). 2017. Health, United States, 2016: With Chartbook on Long-term Trends in Health. https://www.cdc.gov/nchs/data/hus/hus16.pdf#019."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Centers for Disease Control and Prevention (CDC). 2015. Living with Diabetes: Keep Your Feet Healthy. https://www.cdc.gov/features/diabetesfoothealth/index.html",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Centers for Disease Control and Prevention (CDC). 2015. Living with Diabetes: Keep Your Feet Healthy. https://www.cdc.gov/features/diabetesfoothealth/index.html"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "American Diabetes Association. Microvascular complications and foot care. Sec. 10. In Standards of Medical Care in Diabetes-2017. Diabetes Care 2017;40(Suppl. 1):S88-S98",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "American Diabetes Association. Microvascular complications and foot care. Sec. 10. In Standards of Medical Care in Diabetes-2017. Diabetes Care 2017;40(Suppl. 1):S88-S98"
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "Foot exam: visual inspection with a sensory exam and a pulse exam.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Foot exam: visual inspection with a sensory exam and a pulse exam."
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "Only patients with a diagnosis of Type 1 or Type 2 diabetes should be included in the denominator of this measure; patients with a diagnosis of secondary diabetes due to another condition should not be included.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Only patients with a diagnosis of Type 1 or Type 2 diabetes should be included in the denominator of this measure; patients with a diagnosis of secondary diabetes due to another condition should not be included."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "TBD",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "TBD"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "Patients 18-75 years of age with diabetes with a visit during the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients 18-75 years of age with diabetes with a visit during the measurement period"
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "Equals Initial Population",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Equals Initial Population"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "Patients who have had either a bilateral amputation above or below the knee, or both a left and right amputation above or below the knee before or during the measurement period. \n\nExclude patients whose hospice care overlaps the measurement period.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients who have had either a bilateral amputation above or below the knee, or both a left and right amputation above or below the knee before or during the measurement period. \n\nExclude patients whose hospice care overlaps the measurement period."
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Patients who received visual, pulse and sensory foot examinations during the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients who received visual, pulse and sensory foot examinations during the measurement period"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "169882FC-8B2E-4632-862C-3081579CB7AD",
+     "library_name": "DiabetesFootExam",
+     "statement_name": "Denominator Exclusions"
+    },
+    "DENOM": {
+     "hqmf_id": "181114D4-30C3-4373-883B-1089B4B5F78C",
+     "library_name": "DiabetesFootExam",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "hqmf_id": "7567276B-C419-4192-9302-B74184432984",
+     "library_name": "DiabetesFootExam",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "1B37DBE9-2193-4846-95BD-A3F3DFF21D5A",
+     "library_name": "DiabetesFootExam",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "supplemental_data_elements": [
+    {
+     "hqmf_id": null,
+     "library_name": "DiabetesFootExam",
+     "statement_name": "SDE Ethnicity"
+    },
+    {
+     "hqmf_id": null,
+     "library_name": "DiabetesFootExam",
+     "statement_name": "SDE Payer"
+    },
+    {
+     "hqmf_id": null,
+     "library_name": "DiabetesFootExam",
+     "statement_name": "SDE Race"
+    },
+    {
+     "hqmf_id": null,
+     "library_name": "DiabetesFootExam",
+     "statement_name": "SDE Sex"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Diabetes: Foot Exam"
+}

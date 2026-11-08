@@ -1,0 +1,630 @@
+{
+ "calculation_method": "EPISODE_OF_CARE",
+ "cms_id": "CMS32v7",
+ "composite": false,
+ "hqmf_set_id": "3FD13096-2C8F-40B5-9297-B714E8DE9133",
+ "main_cql_library": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "32",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "32"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "0496",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "0496"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Measure specifications are in the Public Domain.\n\nLogical Observation Identifiers Names and Codes (LOINC) (R) is a registered trademark of the Regenstrief Institute.\n\nThis material contains Systematized Nomenclature of Medicine -- Clinical Terms (SNOMED CT (R)) copyright 2004-2016 International Health Terminology Standards Development Organization. All rights reserved.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Measure specifications are in the Public Domain.\n\nLogical Observation Identifiers Names and Codes (LOINC) (R) is a registered trademark of the Regenstrief Institute.\n\nThis material contains Systematized Nomenclature of Medicine -- Clinical Terms (SNOMED CT (R)) copyright 2004-2016 International Health Terminology Standards Development Organization. All rights reserved."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications. The measures and specifications are provided without warranty. CMS has contracted with Mathematica Policy Research and its subcontractors, Lantana and Telligen, for the continued maintenance of this electronic measure.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications. The measures and specifications are provided without warranty. CMS has contracted with Mathematica Policy Research and its subcontractors, Lantana and Telligen, for the continued maintenance of this electronic measure."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "CONTVAR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Continuous Variable",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "Report total score and the following strata: \nStratification 1 - all patients with principal diagnosis consistent with mental disorders;\nStratification 2 - all patients transferred to another acute care hospital; and \nStratification 3 - all patients who do not have a principal diagnosis consistent with mental disorders and who are not transferred.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Report total score and the following strata: \nStratification 1 - all patients with principal diagnosis consistent with mental disorders;\nStratification 2 - all patients transferred to another acute care hospital; and \nStratification 3 - all patients who do not have a principal diagnosis consistent with mental disorders and who are not transferred."
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "Calculate the ED encounter duration at the facility in minutes for each ED encounter in the measure population; report the median time for all calculations performed. The specification provides elements from the clinical electronic record required to calculate for each ED encounter, i.e., the length of time the patient was in the Emergency Department, also stated as: the Datetime difference between the Emergency Department facility location departure time and the Emergency Department facility location arrival time. The calculation requires the median across all ED encounter durations.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Calculate the ED encounter duration at the facility in minutes for each ED encounter in the measure population; report the median time for all calculations performed. The specification provides elements from the clinical electronic record required to calculate for each ED encounter, i.e., the length of time the patient was in the Emergency Department, also stated as: the Datetime difference between the Emergency Department facility location departure time and the Emergency Department facility location arrival time. The calculation requires the median across all ED encounter durations."
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "In recent times, EDs have experienced significant overcrowding. Although once only a problem in large, urban, teaching hospitals, the phenomenon has spread to other suburban and rural healthcare organizations. According to a 2002 national U.S. survey, more than 90 percent of large hospitals report EDs operating \"at\" or \"over\" capacity. Overcrowding and heavy emergency resource demand have led to a number of problems, including ambulance refusals, prolonged patient waiting times, increased suffering for those who wait, rushed and unpleasant treatment environments, and potentially poor patient outcomes. Approximately one third of hospitals in the U.S. report increases in ambulance diversion in a given year, whereas up to half report crowded conditions in the ED. In a recent national survey, 40 percent of hospital leaders viewed ED crowding as a symptom of workforce shortages. ED crowding may result in delays in the administration of medication such as antibiotics for pneumonia and has been associated with perceptions of compromised emergency care. For patients with non-ST-segment-elevation myocardial infarction, long ED stays were associated with decreased use of guideline-recommended therapies and a higher risk of recurrent myocardial infarction. When EDs are overwhelmed, their ability to respond to community emergencies and disasters may be compromised.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "In recent times, EDs have experienced significant overcrowding. Although once only a problem in large, urban, teaching hospitals, the phenomenon has spread to other suburban and rural healthcare organizations. According to a 2002 national U.S. survey, more than 90 percent of large hospitals report EDs operating \"at\" or \"over\" capacity. Overcrowding and heavy emergency resource demand have led to a number of problems, including ambulance refusals, prolonged patient waiting times, increased suffering for those who wait, rushed and unpleasant treatment environments, and potentially poor patient outcomes. Approximately one third of hospitals in the U.S. report increases in ambulance diversion in a given year, whereas up to half report crowded conditions in the ED. In a recent national survey, 40 percent of hospital leaders viewed ED crowding as a symptom of workforce shortages. ED crowding may result in delays in the administration of medication such as antibiotics for pneumonia and has been associated with perceptions of compromised emergency care. For patients with non-ST-segment-elevation myocardial infarction, long ED stays were associated with decreased use of guideline-recommended therapies and a higher risk of recurrent myocardial infarction. When EDs are overwhelmed, their ability to respond to community emergencies and disasters may be compromised."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "Reducing the time patients remain in the emergency department (ED) can improve access to treatment and increase quality of care. Reducing this time potentially improves access to care specific to the patient condition and increases the capability to provide additional treatment.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Reducing the time patients remain in the emergency department (ED) can improve access to treatment and increase quality of care. Reducing this time potentially improves access to care specific to the patient condition and increases the capability to provide additional treatment."
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "Improvement noted as a decrease in the median value",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Improvement noted as a decrease in the median value"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Derlet RW, Richards JR. Emergency department overcrowding in Florida, New York, and Texas. South Med J. 2002;95:846-9.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Derlet RW, Richards JR. Emergency department overcrowding in Florida, New York, and Texas. South Med J. 2002;95:846-9."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Derlet RW, Richards JR. Overcrowding in the nation's emergency departments: complex causes and disturbing effects. Ann Emerg Med. 2000; 35:63-8.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Derlet RW, Richards JR. Overcrowding in the nation's emergency departments: complex causes and disturbing effects. Ann Emerg Med. 2000; 35:63-8."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Diercks DB, et al. Prolonged emergency department stays of non-ST-segment-elevation myocardial infarction patients are associated with worse adherence to the American College of Cardiology/American Heart Association guidelines for management and increased adverse events. Ann Emerg Med.2007;50:489-96.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Diercks DB, et al. Prolonged emergency department stays of non-ST-segment-elevation myocardial infarction patients are associated with worse adherence to the American College of Cardiology/American Heart Association guidelines for management and increased adverse events. Ann Emerg Med.2007;50:489-96."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Fatovich DM, Hirsch RL. Entry overload, emergency department overcrowding, and ambulance bypass. Emerg Med J. 2003; 20:406-9.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Fatovich DM, Hirsch RL. Entry overload, emergency department overcrowding, and ambulance bypass. Emerg Med J. 2003; 20:406-9."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Hwang U, Richardson LD, Sonuyi TO, Morrison RS. The effect of emergency department crowding on the management of pain in older adults with hip fracture. J Am Geriatr Soc. 2006; 54:270-5.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Hwang U, Richardson LD, Sonuyi TO, Morrison RS. The effect of emergency department crowding on the management of pain in older adults with hip fracture. J Am Geriatr Soc. 2006; 54:270-5."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Institute of Medicine of the National Academies. Future of emergency care: Hospital-based emergency care at the breaking point. The National Academies Press 2006.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Institute of Medicine of the National Academies. Future of emergency care: Hospital-based emergency care at the breaking point. The National Academies Press 2006."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Kyriacou DN, Ricketts V, Dyne PL, McCollough MD, Talan DA. A 5-year time study analysis of emergency department patient care efficiency. Ann Emerg Med. 1999;34:326-35",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Kyriacou DN, Ricketts V, Dyne PL, McCollough MD, Talan DA. A 5-year time study analysis of emergency department patient care efficiency. Ann Emerg Med. 1999;34:326-35"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Pines JM, et al. ED crowding is associated with variable perceptions of care compromise. Acad Emerg Med. 2007;14:1176-81.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Pines JM, et al. ED crowding is associated with variable perceptions of care compromise. Acad Emerg Med. 2007;14:1176-81."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Pines JM, et al. Emergency department crowding is associated with poor care for patients with severe pain. Ann Emerg Med. 2008;51:6-7.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Pines JM, et al. Emergency department crowding is associated with poor care for patients with severe pain. Ann Emerg Med. 2008;51:6-7."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Schull MJ, et al. Emergency department crowding and thrombolysis delays in acute myocardial infarction. Ann Emerg Med. 2004;44:577-85.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Schull MJ, et al. Emergency department crowding and thrombolysis delays in acute myocardial infarction. Ann Emerg Med. 2004;44:577-85."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Siegel B, et al. Enhancing work flow to reduce crowding. Jt Comm J Qual Patient Saf. 2007;33(11 Suppl):57-67.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Siegel B, et al. Enhancing work flow to reduce crowding. Jt Comm J Qual Patient Saf. 2007;33(11 Suppl):57-67."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Trzeciak S, Rivers EP. Emergency department overcrowding in the United States: an emerging threat to patient safety and public health. Emerg Med J. 2003;20:402-5.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Trzeciak S, Rivers EP. Emergency department overcrowding in the United States: an emerging threat to patient safety and public health. Emerg Med J. 2003;20:402-5."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Wilper AP, Woolhandler S, Lasser KE, McCormick D, Cutrona SL, Bor DH, Himmelstein DU. Waits to see an emergency department physician: U.S. trends and predictors, 1997-2004. Health Aff (Millwood). 2008;27:w84-95.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Wilper AP, Woolhandler S, Lasser KE, McCormick D, Cutrona SL, Bor DH, Himmelstein DU. Waits to see an emergency department physician: U.S. trends and predictors, 1997-2004. Health Aff (Millwood). 2008;27:w84-95."
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "This measure uses a continuous variable.  The specification provides elements from the clinical electronic record required to calculate for each ED encounter, i.e., the length of time the patient was in the Emergency Department, also stated as: the Emergency Department departure time minus the Emergency Department arrival time. The calculation requires the median of all ED encounter durations.  This measure specification defines how to determine an individual Emergency Department stay. Reporting requires the median of all patient stays ([Encounter: encounter ED].facility location departure date and time minus [Encounter: encounter ED].facility location arrival date and time).\n\nFor each population, results should be reported without stratification and then with each stratum applied. For this measure, the number of encounters that fall into the Initial Population are reported without stratification, then reported according to the defined stratification. The number of encounters that fall into the Measure Population are reported without stratification, then reported according to the defined stratification. The computed continuous variable defined by the Measure Observation is reported for the Measure Population also, then reported according to the defined stratification.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "This measure uses a continuous variable.  The specification provides elements from the clinical electronic record required to calculate for each ED encounter, i.e., the length of time the patient was in the Emergency Department, also stated as: the Emergency Department departure time minus the Emergency Department arrival time. The calculation requires the median of all ED encounter durations.  This measure specification defines how to determine an individual Emergency Department stay. Reporting requires the median of all patient stays ([Encounter: encounter ED].facility location departure date and time minus [Encounter: encounter ED].facility location arrival date and time).\n\nFor each population, results should be reported without stratification and then with each stratum applied. For this measure, the number of encounters that fall into the Initial Population are reported without stratification, then reported according to the defined stratification. The number of encounters that fall into the Measure Population are reported without stratification, then reported according to the defined stratification. The computed continuous variable defined by the Measure Observation is reported for the Measure Population also, then reported according to the defined stratification."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "TBD",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "TBD"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "Emergency department encounters during the measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Emergency department encounters during the measurement period"
+   }
+  },
+  {
+   "code": "MSRPOPL",
+   "code_obj": {
+    "code": "MSRPOPL",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Population",
+    "type": "CD"
+   },
+   "name": "Measure Population",
+   "value": "Equals initial population",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Equals initial population"
+   }
+  },
+  {
+   "code": "MSRPOPLEX",
+   "code_obj": {
+    "code": "MSRPOPLEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Population Exclusions",
+    "type": "CD"
+   },
+   "name": "Measure Population Exclusions",
+   "value": "Emergency department encounters where the patient expired during the encounter or where the ED visit is followed within an hour by an inpatient encounter at the same physical facility",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Emergency department encounters where the patient expired during the encounter or where the ED visit is followed within an hour by an inpatient encounter at the same physical facility"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "title": "Measure Observations",
+    "type": "CD"
+   },
+   "name": "Measure Observations",
+   "value": "Median elapsed time (in minutes) from emergency department arrival to emergency room departure for patients discharged from the emergency department",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Median elapsed time (in minutes) from emergency department arrival to emergency room departure for patients discharged from the emergency department"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "CONTINUOUS_VARIABLE",
+ "population_sets": [
+  {
+   "observations": [
+    {
+     "aggregation_type": null,
+     "hqmf_id": "FFB1B6BE-B96F-4B29-A920-0E4966D209A3",
+     "observation_function": {
+      "hqmf_id": "FFB1B6BE-B96F-4B29-A920-0E4966D209A3",
+      "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+      "statement_name": "Measure Observation"
+     },
+     "observation_parameter": {
+      "hqmf_id": "FFB1B6BE-B96F-4B29-A920-0E4966D209A3",
+      "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+      "statement_name": "Measure Population"
+     }
+    }
+   ],
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "IPP": {
+     "hqmf_id": "036B7EEE-DEB5-40E2-B802-BC6CDF2B8A43",
+     "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+     "statement_name": "Initial Population"
+    },
+    "MSRPOPL": {
+     "hqmf_id": "4A80FF43-6FC1-4975-806B-4FD40C7C4B95",
+     "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+     "statement_name": "Measure Population"
+    },
+    "MSRPOPLEX": {
+     "hqmf_id": "34607208-5E04-4BC6-94E4-F3168609640E",
+     "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+     "statement_name": "Measure Population Exclusions"
+    },
+    "_type": "CQM::ContinuousVariablePopulationMap"
+   },
+   "stratifications": [
+    {
+     "hqmf_id": "041A37F6-86D3-471F-86DD-12FB668092BD",
+     "statement": {
+      "hqmf_id": "041A37F6-86D3-471F-86DD-12FB668092BD",
+      "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+      "statement_name": "Stratification 1"
+     },
+     "stratification_id": "PopulationCriteria1 - Stratification 1",
+     "title": "Stratification 1"
+    },
+    {
+     "hqmf_id": "7846CD9A-9B68-4C2C-9CFB-0E52777D9EEA",
+     "statement": {
+      "hqmf_id": "7846CD9A-9B68-4C2C-9CFB-0E52777D9EEA",
+      "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+      "statement_name": "Stratification 2"
+     },
+     "stratification_id": "PopulationCriteria1 - Stratification 2",
+     "title": "Stratification 2"
+    },
+    {
+     "hqmf_id": "566164F8-47E0-4ADB-A3A6-383067490DA8",
+     "statement": {
+      "hqmf_id": "566164F8-47E0-4ADB-A3A6-383067490DA8",
+      "library_name": "MedianTimefromEDArrivaltoEDDepartureforDischargedEDPatients",
+      "statement_name": "Stratification 3"
+     },
+     "stratification_id": "PopulationCriteria1 - Stratification 3",
+     "title": "Stratification 3"
+    }
+   ],
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Median Time from ED Arrival to ED Departure for Discharged ED Patients"
+}

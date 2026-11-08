@@ -1,0 +1,513 @@
+{
+ "calculation_method": "EPISODE_OF_CARE",
+ "cms_id": "CMS105v7",
+ "composite": false,
+ "hqmf_set_id": "1F503318-BB8D-4B91-AF63-223AE0A2328E",
+ "main_cql_library": "DischargedonStatinMedication",
+ "measure_attributes": [
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "eCQM Identifier (Measure Authoring Tool)",
+    "type": "CD"
+   },
+   "name": "eCQM Identifier (Measure Authoring Tool)",
+   "value": "105",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "105"
+   }
+  },
+  {
+   "code": "OTH",
+   "code_obj": {
+    "null_flavor": "OTH",
+    "original_text": "NQF Number",
+    "type": "CD"
+   },
+   "name": "NQF Number",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "COPY",
+   "code_obj": {
+    "code": "COPY",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Copyright",
+    "type": "CD"
+   },
+   "name": "Copyright",
+   "value": "Measure specifications are in the Public Domain.\n\nLOINC(R) is a registered trademark of the Regenstrief Institute.\n\nThis material contains SNOMED Clinical Terms (R) (SNOMED CT[C]) copyright 2004-2017 International Health Terminology Standards Development Organization. All rights reserved.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Measure specifications are in the Public Domain.\n\nLOINC(R) is a registered trademark of the Regenstrief Institute.\n\nThis material contains SNOMED Clinical Terms (R) (SNOMED CT[C]) copyright 2004-2017 International Health Terminology Standards Development Organization. All rights reserved."
+   }
+  },
+  {
+   "code": "DISC",
+   "code_obj": {
+    "code": "DISC",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Disclaimer",
+    "type": "CD"
+   },
+   "name": "Disclaimer",
+   "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications. The measures and specifications are provided without warranty.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "These performance measures are not clinical guidelines and do not establish a standard of medical care, and have not been tested for all potential applications. The measures and specifications are provided without warranty."
+   }
+  },
+  {
+   "code": "MSRSCORE",
+   "code_obj": {
+    "code": "MSRSCORE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Scoring",
+    "type": "CD"
+   },
+   "name": "Measure Scoring",
+   "value_obj": {
+    "code": "PROPOR",
+    "system": "2.16.840.1.113883.1.11.20367",
+    "title": "Proportion",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "MSRTYPE",
+   "code_obj": {
+    "code": "MSRTYPE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Measure Type",
+    "type": "CD"
+   },
+   "name": "Measure Type",
+   "value_obj": {
+    "code": "PROCESS",
+    "system": "2.16.840.1.113883.1.11.20368",
+    "title": "PROCESS",
+    "type": "CD"
+   }
+  },
+  {
+   "code": "STRAT",
+   "code_obj": {
+    "code": "STRAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Stratification",
+    "type": "CD"
+   },
+   "name": "Stratification",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRADJ",
+   "code_obj": {
+    "code": "MSRADJ",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Risk Adjustment",
+    "type": "CD"
+   },
+   "name": "Risk Adjustment",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "MSRAGG",
+   "code_obj": {
+    "code": "MSRAGG",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rate Aggregation",
+    "type": "CD"
+   },
+   "name": "Rate Aggregation",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "RAT",
+   "code_obj": {
+    "code": "RAT",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Rationale",
+    "type": "CD"
+   },
+   "name": "Rationale",
+   "value": "There is an extensive and consistent body of evidence supporting the use of statins for secondary prevention in patients with clinically evident atherosclerotic cardiovascular disease (ASCVD), which includes individuals with ischemic stroke due to large artery atherosclerosis, individuals with ischemic stroke due to intrinsic small vessel disease, and individuals with ischemic stroke not directly due to atherosclerosis but with clinically evident atherosclerotic disease in an uninvolved cerebral or noncerebral bed.  Both women and men with clinical ASCVD are at increased risk for recurrent ASCVD and ASCVD death.  High-intensity statin therapy should be initiated or continued as first-line therapy in women and men less than or equal to 75 years of age who have clinical ASCVD, unless contraindicated. In patients with clinical ASCVD and a contraindication to high-intensity statin therapy, moderate-intensity therapy should be considered as an alternative if it can be tolerated.  In individuals greater than 75 years of age, the potential for ASCVD risk reduction benefits, adverse effects, drug-drug interactions, and patient preferences should be considered, and statin therapy individualized based on these considerations (Stone, 2013).",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "There is an extensive and consistent body of evidence supporting the use of statins for secondary prevention in patients with clinically evident atherosclerotic cardiovascular disease (ASCVD), which includes individuals with ischemic stroke due to large artery atherosclerosis, individuals with ischemic stroke due to intrinsic small vessel disease, and individuals with ischemic stroke not directly due to atherosclerosis but with clinically evident atherosclerotic disease in an uninvolved cerebral or noncerebral bed.  Both women and men with clinical ASCVD are at increased risk for recurrent ASCVD and ASCVD death.  High-intensity statin therapy should be initiated or continued as first-line therapy in women and men less than or equal to 75 years of age who have clinical ASCVD, unless contraindicated. In patients with clinical ASCVD and a contraindication to high-intensity statin therapy, moderate-intensity therapy should be considered as an alternative if it can be tolerated.  In individuals greater than 75 years of age, the potential for ASCVD risk reduction benefits, adverse effects, drug-drug interactions, and patient preferences should be considered, and statin therapy individualized based on these considerations (Stone, 2013)."
+   }
+  },
+  {
+   "code": "CRS",
+   "code_obj": {
+    "code": "CRS",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Clinical Recommendation Statement",
+    "type": "CD"
+   },
+   "name": "Clinical Recommendation Statement",
+   "value": "For patients with stroke of atherosclerotic origin, intensive lipid lowering therapy with statins should be initiated",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For patients with stroke of atherosclerotic origin, intensive lipid lowering therapy with statins should be initiated"
+   }
+  },
+  {
+   "code": "IDUR",
+   "code_obj": {
+    "code": "IDUR",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Improvement Notation",
+    "type": "CD"
+   },
+   "name": "Improvement Notation",
+   "value": "Improvement noted as an increase in rate",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Improvement noted as an increase in rate"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Stone NJ, Robinson J, Lichtenstein AH, Noel Bairey Merz C, Blum CB, Eckel RH, Goldberg AC, Gordon D, Levy D, Lloyd-Jones DM, McBride P, Schwartz JS, Shero Jr, ST, Smith SC, Watson K, Wilson PWF. \"Guideline on the Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Disease in Adults: A Report of the American College of Cardiology/American Heart Association Task Force on Practice Guidelines.\" [In eng]. Circulation 11, (Nov 2013): 1-84.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Stone NJ, Robinson J, Lichtenstein AH, Noel Bairey Merz C, Blum CB, Eckel RH, Goldberg AC, Gordon D, Levy D, Lloyd-Jones DM, McBride P, Schwartz JS, Shero Jr, ST, Smith SC, Watson K, Wilson PWF. \"Guideline on the Treatment of Blood Cholesterol to Reduce Atherosclerotic Cardiovascular Disease in Adults: A Report of the American College of Cardiology/American Heart Association Task Force on Practice Guidelines.\" [In eng]. Circulation 11, (Nov 2013): 1-84."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Amarenco, P., J. Bogousslavsky, A. Callahan, 3rd, L. B. Goldstein, M. Hennerici, A. E. Rudolph, H. Sillesen, et al. \"High-Dose Atorvastatin after Stroke or Transient Ischemic Attack.\" [In eng]. N Engl J Med 355, no. 6 (Aug 10 2006): 549-59",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Amarenco, P., J. Bogousslavsky, A. Callahan, 3rd, L. B. Goldstein, M. Hennerici, A. E. Rudolph, H. Sillesen, et al. \"High-Dose Atorvastatin after Stroke or Transient Ischemic Attack.\" [In eng]. N Engl J Med 355, no. 6 (Aug 10 2006): 549-59"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Feher, A., G. Pusch, K. Koltai, A. Tibold, B. Gasztonyi, L. Szapary, and G. Feher. \"Statintherapy in the Primary and the Secondary Prevention of Ischaemic Cerebrovascular Diseases.\" [In eng]. Int J Cardiol 148, no. 2 (Apr 14 2011): 131-8.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Feher, A., G. Pusch, K. Koltai, A. Tibold, B. Gasztonyi, L. Szapary, and G. Feher. \"Statintherapy in the Primary and the Secondary Prevention of Ischaemic Cerebrovascular Diseases.\" [In eng]. Int J Cardiol 148, no. 2 (Apr 14 2011): 131-8."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Kernan, W.N., B. Ovbiagele, H. R. Black, D. M. Bravata, M. I. Chimowitz, M. D. Ezekowitz, M. C. Fang, M. Fisher, K. L. Furie, D. V. Heck, S. C. Johnston, S. E. Kasner, S. J. Kittner, P. H. Mitchell, M. W. Rich, D. Richardson, L. H. Schwamm, J. A. Wilson. \"Guidelines for the Prevention of Stroke in Patients with Stroke and Transient Ischemic Attack: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [in eng.]  Stroke 45, no. 7 (May 2014): 2160-223",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Kernan, W.N., B. Ovbiagele, H. R. Black, D. M. Bravata, M. I. Chimowitz, M. D. Ezekowitz, M. C. Fang, M. Fisher, K. L. Furie, D. V. Heck, S. C. Johnston, S. E. Kasner, S. J. Kittner, P. H. Mitchell, M. W. Rich, D. Richardson, L. H. Schwamm, J. A. Wilson. \"Guidelines for the Prevention of Stroke in Patients with Stroke and Transient Ischemic Attack: A Guideline for Healthcare Professionals from the American Heart Association/American Stroke Association.\" [in eng.]  Stroke 45, no. 7 (May 2014): 2160-223"
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "National Cholesterol Education Program Expert Panel on Detection, Evaluation, and Adults Treatment of High Blood Cholesterol in Adults.\"Third Report of the National Cholesterol Education Program (Ncep) Expert Panel on Detection, Evaluation, and Treatment of High Blood Cholesterol in Adults (Adult Treatment Panel Iii) Final Report.\" [In eng]. Circulation 106, no. 25 (Dec 17 2002): 3143-421.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "National Cholesterol Education Program Expert Panel on Detection, Evaluation, and Adults Treatment of High Blood Cholesterol in Adults.\"Third Report of the National Cholesterol Education Program (Ncep) Expert Panel on Detection, Evaluation, and Treatment of High Blood Cholesterol in Adults (Adult Treatment Panel Iii) Final Report.\" [In eng]. Circulation 106, no. 25 (Dec 17 2002): 3143-421."
+   }
+  },
+  {
+   "code": "REF",
+   "code_obj": {
+    "code": "REF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Reference",
+    "type": "CD"
+   },
+   "name": "Reference",
+   "value": "Squizzato, A., E. Romualdi, F. Dentali, and W. Ageno. \"Statins for Acute Ischemic Stroke.\" [In eng]. Cochrane Database Syst Rev, no. 8 (2011): CD007551.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Squizzato, A., E. Romualdi, F. Dentali, and W. Ageno. \"Statins for Acute Ischemic Stroke.\" [In eng]. Cochrane Database Syst Rev, no. 8 (2011): CD007551."
+   }
+  },
+  {
+   "code": "DEF",
+   "code_obj": {
+    "code": "DEF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Definition",
+    "type": "CD"
+   },
+   "name": "Definition",
+   "value": "None",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "None"
+   }
+  },
+  {
+   "code": "GUIDE",
+   "code_obj": {
+    "code": "GUIDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Guidance",
+    "type": "CD"
+   },
+   "name": "Guidance",
+   "value": "The \"Non-elective Inpatient Encounter\" value set intends to capture all non-scheduled hospitalizations. This value set is a subset of the \"Inpatient encounter\" value set, excluding concepts that specifically refer to elective hospital admissions. Non-elective admissions include emergency, urgent and unplanned admissions.\n\nThe \"Medication, Discharge\" datatype refers to the discharge medication list and is intended to express medications ordered for post-discharge use.",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "The \"Non-elective Inpatient Encounter\" value set intends to capture all non-scheduled hospitalizations. This value set is a subset of the \"Inpatient encounter\" value set, excluding concepts that specifically refer to elective hospital admissions. Non-elective admissions include emergency, urgent and unplanned admissions.\n\nThe \"Medication, Discharge\" datatype refers to the discharge medication list and is intended to express medications ordered for post-discharge use."
+   }
+  },
+  {
+   "code": "TRANF",
+   "code_obj": {
+    "code": "TRANF",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Transmission Format",
+    "type": "CD"
+   },
+   "name": "Transmission Format",
+   "value": "TBD",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "TBD"
+   }
+  },
+  {
+   "code": "IPOP",
+   "code_obj": {
+    "code": "IPOP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Initial Population",
+    "type": "CD"
+   },
+   "name": "Initial Population",
+   "value": "Patients age 18 and older discharged from inpatient care (non-elective admissions) with a principal diagnosis of ischemic or hemorrhagic stroke and a length of stay less than or equal to 120 days that ends during measurement period",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients age 18 and older discharged from inpatient care (non-elective admissions) with a principal diagnosis of ischemic or hemorrhagic stroke and a length of stay less than or equal to 120 days that ends during measurement period"
+   }
+  },
+  {
+   "code": "DENOM",
+   "code_obj": {
+    "code": "DENOM",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator",
+    "type": "CD"
+   },
+   "name": "Denominator",
+   "value": "Patients with a principal diagnosis of ischemic stroke",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients with a principal diagnosis of ischemic stroke"
+   }
+  },
+  {
+   "code": "DENEX",
+   "code_obj": {
+    "code": "DENEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exclusions",
+    "type": "CD"
+   },
+   "name": "Denominator Exclusions",
+   "value": "*Patients admitted for elective carotid intervention. This exclusion is implicitly modeled by only including non-elective hospitalizations.\n*Patients with comfort measures documented\n*Patients discharged to another hospital\n*Patients who left against medical advice\n*Patients who expired\n*Patients discharged to home for hospice care\n*Patients discharged to a health care facility for hospice care",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "*Patients admitted for elective carotid intervention. This exclusion is implicitly modeled by only including non-elective hospitalizations.\n*Patients with comfort measures documented\n*Patients discharged to another hospital\n*Patients who left against medical advice\n*Patients who expired\n*Patients discharged to home for hospice care\n*Patients discharged to a health care facility for hospice care"
+   }
+  },
+  {
+   "code": "NUMER",
+   "code_obj": {
+    "code": "NUMER",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator",
+    "type": "CD"
+   },
+   "name": "Numerator",
+   "value": "Patients prescribed or continuing to take statin medication at hospital discharge",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Patients prescribed or continuing to take statin medication at hospital discharge"
+   }
+  },
+  {
+   "code": "NUMEX",
+   "code_obj": {
+    "code": "NUMEX",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Numerator Exclusions",
+    "type": "CD"
+   },
+   "name": "Numerator Exclusions",
+   "value": "Not Applicable",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "Not Applicable"
+   }
+  },
+  {
+   "code": "DENEXCEP",
+   "code_obj": {
+    "code": "DENEXCEP",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Denominator Exceptions",
+    "type": "CD"
+   },
+   "name": "Denominator Exceptions",
+   "value": "*Patients with a reason for not prescribing statin medication at discharge\n*Patients with a maximum LDL-c result of  less than 70 mg/dL <= 30 days prior to arrival or any time during the hospital stay",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "*Patients with a reason for not prescribing statin medication at discharge\n*Patients with a maximum LDL-c result of  less than 70 mg/dL <= 30 days prior to arrival or any time during the hospital stay"
+   }
+  },
+  {
+   "code": "SDE",
+   "code_obj": {
+    "code": "SDE",
+    "system": "2.16.840.1.113883.5.4",
+    "title": "Supplemental Data Elements",
+    "type": "CD"
+   },
+   "name": "Supplemental Data Elements",
+   "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex",
+   "value_obj": {
+    "media_type": "text/plain",
+    "type": "ED",
+    "value": "For every patient evaluated by this measure also identify payer, race, ethnicity and sex"
+   }
+  }
+ ],
+ "measure_period": {
+  "high": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201212312359"
+  },
+  "low": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "TS",
+   "value": "201201010000"
+  },
+  "type": "IVL_TS",
+  "width": {
+   "derived?": false,
+   "inclusive?": true,
+   "type": "PQ",
+   "unit": "a",
+   "value": "1"
+  }
+ },
+ "measure_scoring": "PROPORTION",
+ "population_sets": [
+  {
+   "population_set_id": "PopulationCriteria1",
+   "populations": {
+    "DENEX": {
+     "hqmf_id": "8F0CCD37-2974-4B86-A15A-9982FCA7DAB2",
+     "library_name": "DischargedonStatinMedication",
+     "statement_name": "Denominator Exclusions"
+    },
+    "DENEXCEP": {
+     "hqmf_id": "9C16306F-1ADD-4475-BF09-2DA51F56F160",
+     "library_name": "DischargedonStatinMedication",
+     "statement_name": "Denominator Exceptions"
+    },
+    "DENOM": {
+     "hqmf_id": "342426D4-36EE-43DC-A11C-F83C0F3AEE81",
+     "library_name": "DischargedonStatinMedication",
+     "statement_name": "Denominator"
+    },
+    "IPP": {
+     "hqmf_id": "57FE43A4-CBE2-4E94-B271-60D3C4077789",
+     "library_name": "DischargedonStatinMedication",
+     "statement_name": "Initial Population"
+    },
+    "NUMER": {
+     "hqmf_id": "A1560C0B-DE34-42FA-B2BB-7D0A559A8CB9",
+     "library_name": "DischargedonStatinMedication",
+     "statement_name": "Numerator"
+    },
+    "_type": "CQM::ProportionPopulationMap"
+   },
+   "title": "Population Criteria Section"
+  }
+ ],
+ "title": "Discharged on Statin Medication"
+}

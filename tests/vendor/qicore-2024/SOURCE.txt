@@ -1,0 +1,30 @@
+cqframework/ecqm-content-qicore-2024 — the 2024 eCQMs authored against QI-Core 4.1.1
+https://github.com/cqframework/ecqm-content-qicore-2024
+commit b982bfa6131ce3c69524beb0c85aa474056ccc23 (2026-05-13), retrieved 2026-11-08
+License: CC0 1.0 Universal (the repository's LICENSE)
+
+Extracted by extract.py (in this directory) from a checkout: `python3 extract.py <checkout>`.
+
+elm-corpus/ecqm-content-qicore-2024/
+    98 libraries: every library under input/resources/library that carries application/elm+json
+    content and has its CQL under input/cql — the CQL verbatim and the ELM the reference translator
+    (cql-to-elm 3.25.0) wrote, base64-decoded, with annotations dropped. Held by
+    tests/qicore-elm-corpus-test.rkt (elm-corpus-harness.rkt): parse, compile, ELM per definition.
+measure/
+    BreastCancerScreeningFHIR, CervicalCancerScreeningFHIR, ControllingHighBloodPressureFHIR,
+    DiabetesGlycemicStatusAssessmentGreaterThan9PercentFHIR (input/resources/measure), verbatim.
+tests/<Measure>/<case>/ and tests/<Measure>/README.txt
+    their MADiE test cases (input/tests/measure), verbatim: each case is a patient, its resources and
+    the expected individual MeasureReport; README.txt names the cases. The measure directories' loose
+    JSON files — MADiE's flattened copy of the same cases with resource ids made unique — are not
+    copied. Held by tests/qicore-measure-test.rkt (qicore-measure-harness.rkt): 190 cases.
+valueset/
+    the 47 value sets the four measures' libraries declare (input/vocabulary/valueset/external), with
+    their expansions, verbatim.
+
+Known properties of the data, used by the harness and named in the test:
+  - some resources reference `Patient/Patient-1` (MADiE's id before export) while the patient has its
+    UUID; MADiE evaluates every resource of a case for its patient, and so does the harness.
+  - two Diabetes > 9% cases (NUMPass HbA1cGreaterThan9, NUMPass GMIGreaterThan9) describe a 9.1%
+    result but export the Observation's value as a SNOMED CodeableConcept; their expected reports
+    follow the description, not the data.

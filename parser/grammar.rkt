@@ -53,7 +53,7 @@ expr                : implies-expr | implies-open
 
 ;; ---- queries (over lists / singletons; no FHIR retrieve in this slice) ----------------------
 query               : source-clause query-tail
-                    | /"from" source-clause (/"," source-clause)* query-tail
+                    | /"from" source-clause (/"," source-clause)* query-tail?
 source-clause       : query-source alias
 query-source        : /"(" expr /")" | retrieve | member | qualified-source
 ;; [Type], [Type: "VS"], [Type: path in "VS"], [Ctx -> Type: …]
@@ -65,7 +65,14 @@ code-comparator     : "in" | "=" | "~"
 terminology         : postfix-expr
 qualified-source    : identifier (/"." @ref-id)+
 alias               : identifier
-query-tail          : let-clause* inclusion-clause* where-clause? return-or-agg? sort-clause?
+query-tail          : let-clause+ inclusion-clause* where-clause? return-or-agg? sort-clause?
+                    | inclusion-clause+ where-clause? return-or-agg? sort-clause?
+                    | where-clause return-or-agg? sort-clause?
+                    | return-or-agg sort-clause?
+                    | sort-clause
+;; a query of sources alone ends at its alias: it is CLOSED (cql.g4 lets it be the left operand of
+;; `union`: `[Condition: A] X union [Condition: B] Y`)
+bare-query          : source-clause
 inclusion-clause    : with-clause | without-clause
 with-clause         : /"with" source-clause /"such that" expr
 without-clause      : /"without" source-clause /"such that" expr
@@ -120,6 +127,7 @@ timing-op           : timing-lead? "same" prec? same-tail timing-trail?
                     | "overlaps" "after" prec-of?
                     | "starts" prec-of?
                     | "ends" prec-of?
+                    | "in" prec-of | "contains" prec-of
 same-tail           : /"as" | /"or" "before" | /"or" "after"
 timing-lead         : "starts" | "ends" | "occurs"
 timing-trail        : "start" | "end"
@@ -144,11 +152,13 @@ type-op-tail        : @type-op type-specifier
                     | "is" BOOL
                     | "is" "not" BOOL
 cast-expr           : /"cast" unary-expr /"as" type-specifier
-convert-expr        : /"convert" unary-expr /"to" type-specifier
-;; duration-of / component-from are TERMS (cql.g4), not primaries: as primaries they would take
-;; postfix tails — `duration in hours of Global.F(x)` parsed as `(duration in hours of Global).F(x)`
+;; `convert X to <type>` or to a unit: a string, or a calendar word (`to days`, a ConvertQuantity)
+convert-expr        : /"convert" unary-expr /"to" type-specifier | /"convert" unary-expr /"to" STRING
+;; duration-of / component-from / duration-between / difference-between are TERMS (cql.g4), not
+;; primaries: as primaries they would take postfix tails — `duration in hours of Global.F(x)` parsed as
+;; `(duration in hours of Global).F(x)`, `difference in days between A and E.f()` as `(…).f()`
 unary-expr          : @unary-op unary-expr | interval-prefix | duration-of
-                    | component-from | postfix-expr
+                    | component-from | postfix-expr | bare-query | duration-between | difference-between
 ;; interval/list prefix operators
 interval-prefix     : "start" /"of" unary-expr
                     | "end" /"of" unary-expr
@@ -181,8 +191,6 @@ primary             : literal
                     | code-selector
                     | concept-selector
                     | retrieve
-                    | duration-between
-                    | difference-between
                     | function-call
                     | member
                     | /"(" expr /")"
