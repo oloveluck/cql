@@ -42,7 +42,10 @@
           ;; the report from population counts (one hash per Measure.group), for other evaluators of
           ;; the same measure (cql-to-sql's SQL) to build reports identically
           [measure-report (-> hash? (listof hash?) string? string? (or/c string? #f) hash?)]
-          [period-offset (-> string? (or/c exact-integer? #f))]))
+          [period-offset (-> string? (or/c exact-integer? #f))]
+          ;; packages-valuesets : -> (url -> members|#f)   the ValueSets of the packages in context
+          ;; (sd-context), indexed once per package list
+          [packages-valuesets (-> procedure?)]))
 
 (define current-measure-offset (make-parameter 0))
 

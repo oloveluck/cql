@@ -56,6 +56,9 @@
           [make-ienv   (->* () (#:defs hash? #:operands hash?) ienv?)]
           [make-rlib   (-> elm-library? hash? (or/c runtime? #f) hash? rlib?)]
           [rlib-value  (-> rlib? string? cql-value?)]
+          ;; rlib-eval : one ELM expression in a library's context (its definitions, functions,
+          ;; terms and runtime): what an explanation evaluates a definition's parts with
+          [rlib-eval   (-> rlib? elm-expr? cql-value?)]
           [runtime     (-> procedure? procedure? (or/c exact-integer? #f) runtime?)]
           [runtime?    (-> any/c boolean?)]
           [rlib?       (-> any/c boolean?)]
@@ -174,6 +177,10 @@
 (define (rlib-value rl name)
   (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
     (force-value (hash-ref (rlib-defs rl) name (lambda () (fail (format "unknown definition ~a" name)))))))
+
+(define (rlib-eval rl expr)
+  (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
+    ((elm-runner) expr (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (current-moment) rl (rlib-rt rl)))))
 
 ;; target-lib : env alias|#f -> rlib|#f   the library a qualified reference points into
 (define (target-lib env alias)

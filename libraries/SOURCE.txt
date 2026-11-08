@@ -1,0 +1,6 @@
+Libraries a workspace may include without supplying them (cql/workspace's resolver falls back here).
+
+FHIRHelpers.cql — FHIRHelpers 4.0.1, the Library's text/cql content from the fhir.cqf.common 4.0.1
+package (https://packages.fhir.org/fhir.cqf.common/4.0.1), the same file as
+tests/vendor/elm-corpus/fhir.cqf.common-4.0.1/FHIRHelpers.cql. Package license Apache-2.0
+(http://www.apache.org/licenses/LICENSE-2.0). Reproduced unmodified.

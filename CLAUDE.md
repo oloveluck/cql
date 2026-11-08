@@ -241,3 +241,18 @@ operators, `if`/`case`. Layers:
   outline (read from the text), hover, go to definition (an include alias leads to the library's file
   when it is beside; a qualified `C.X` through its alias), completion of declared names and keywords,
   and the tools `cql_elm` and `cql_evaluate`. The LSP and MCP hubs load it by collection name.
+
+- **Workspace support** (`workspace.rkt`, `fhir/lang/workspace`; served by fhir-mcp): artifacts = a
+  Library per `.cql` file (text/cql content) with every translation error, a FHIR-version mismatch at
+  the `using` line (the model here is 4.0.1), and a library name declared by two files; `run` = every
+  define (or `entry`) for every patient of the data source (`over` Patient/id), values as JSON (a
+  resource as "Type/id"), per-define tallies; ad-hoc text that is not a library is wrapped as
+  `define "Query"` (FHIRHelpers included); parameters are CQL expressions; `explain` = one patient's
+  define, recursively through the defines it references (an included one's value via `rlib-eval`),
+  with each retrieve's type, filter, line, how many resources of the type the patient has and which it
+  kept. Includes resolve: the workspace's .cql files, then registered/data-source Libraries (searched by
+  name on a server), then `libraries/` (FHIRHelpers 4.0.1, Apache-2.0, SOURCE.txt). Value sets: the
+  workspace's (registered; expanded by $expand when not enumerated), then the data source (by url, lazy;
+  a server that cannot search ValueSet holds none), then the packages (`measure.rkt`'s
+  `packages-valuesets`, now exported). `interp.rkt` exports `rlib-eval` (one ELM node in a library's
+  context).
