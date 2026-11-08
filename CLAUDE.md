@@ -239,8 +239,8 @@ operators, `if`/`case`. Layers:
 - **Editor and agent support** (`support.rkt`, through `fhir/lang/support`): diagnostics (parse, then
   every definition translated), the libraries beside a document as its project, the declarations as an
   outline (read from the text), hover, go to definition (an include alias leads to the library's file
-  when it is beside; a qualified `C.X` through its alias), completion of declared names and keywords,
-  and the tools `cql_elm` and `cql_evaluate`. The LSP and MCP hubs load it by collection name.
+  when it is beside; a qualified `C.X` through its alias), completion of declared names and keywords.
+  The language server loads it by collection name.
 
 - **Workspace support** (`workspace.rkt`, `fhir/lang/workspace`; served by fhir-mcp): artifacts = a
   Library per `.cql` file (text/cql content) with every translation error, a FHIR-version mismatch at

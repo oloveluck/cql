@@ -140,11 +140,12 @@ Over a server's store, fhir-server serves the same operation
 
 @section{In an editor, for an agent}
 
-@tt{cql/support} is what the family's language server (fhir-lsp) and MCP server (fhir-mcp) load for
-CQL: a library's diagnostics (parse, then every definition translated), the libraries beside it as its
-project, the declarations as an outline, hover, go to definition (an include alias leads to the
-library's file beside it), completion of declared names and keywords, and the tools @tt{cql_elm} and
-@tt{cql_evaluate}. It is a @tt{fhir/lang/support} value; the hubs know no CQL.
+@tt{cql/support} is what the family's language server (fhir-lsp) loads for CQL: a library's
+diagnostics (parse, then every definition translated), the libraries beside it as its project, the
+declarations as an outline, hover, go to definition (an include alias leads to the library's file
+beside it), and completion of declared names and keywords. It is a @tt{fhir/lang/support} value.
+@tt{cql/workspace} is what fhir-mcp runs for an agent: a library run over every patient of the data,
+and one patient's answer explained define by define down to the retrieves.
 
 @section{Limits}
 

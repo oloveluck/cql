@@ -3,19 +3,15 @@
 ;;; support.rkt — what CQL offers the family's editor and agent hubs (fhir/lang/support): the
 ;;; diagnostics of a library (parse, then every definition translated), the libraries beside it, its
 ;;; declarations as an outline, hover and go to definition (an include's alias leads to the library's
-;;; file), completion of declared names and keywords, and the tools an agent calls (translate to
-;;; ELM, evaluate over a patient's resources). Declarations are read from the text, not a parse, so
-;;; they work while the library does not parse yet.
+;;; file), and completion of declared names and keywords. Declarations are read from the text, not a
+;;; parse, so they work while the library does not parse yet. What an agent runs is workspace.rkt.
 
-(require racket/contract racket/string racket/list json
+(require racket/contract racket/string racket/list
          fhir/lang/support fhir/lang/declared
          (only-in fhir/result/result ok? err? ok-value err-error)
          (only-in "parser/parse.rkt" parse-cql)
-         (only-in "compile.rkt" compile-library compile-library/errors)
-         (only-in "error.rkt" cql-error-diagnostic cql-error-message cql-error-phase cql-error-string)
-         (only-in "elm/json.rkt" elm->json-string)
-         (only-in "run.rkt" evaluate-library)
-         (only-in "value.rkt" render))
+         (only-in "compile.rkt" compile-library/errors)
+         (only-in "error.rkt" cql-error-diagnostic cql-error-message cql-error-phase))
 
 (provide (contract-out [support lang-support?]))
 
@@ -82,38 +78,7 @@
   (and e (declaration-hover e ((project-text-of pr) (entity-file e)) "cql")))
 (define (completion pr text pos) (prefix-completions (project-entities pr) keywords item-kind text pos))
 
-;; ---- the tools --------------------------------------------------------------------------------
-(define tools
-  (list
-   (tool "cql_elm"
-         "Translate a CQL library to ELM JSON. Errors are positioned diagnostics."
-         (text-schema 'cql "the CQL source")
-         (lambda (args)
-           (define src (string-arg args 'cql))
-           (cond [(not src) (missing 'cql)]
-                 [else (define r (parse-cql src))
-                       (cond [(err? r) (values (cql-error-string (err-error r)) #t)]
-                             [else (define c (compile-library (ok-value r)))
-                                   (if (err? c) (values (cql-error-string (err-error c)) #t)
-                                       (values (elm->json-string (ok-value c)) #f))])])))
-   (tool "cql_evaluate"
-         "Evaluate a CQL library over one patient's FHIR resources (FHIR R4 JSON, the Patient among them); every definition's value by name. parameters: name to value."
-         (hasheq 'type "object"
-                 'properties (hasheq 'cql (hasheq 'type "string" 'description "the CQL source")
-                                     'resources (hasheq 'type "array" 'items (hasheq 'type "object") 'description "the patient's resources as FHIR JSON")
-                                     'parameters (hasheq 'type "object" 'description "the library's parameters by name"))
-                 'required '("cql" "resources"))
-         (lambda (args)
-           (define src (string-arg args 'cql))
-           (define rs (hash-ref args 'resources #f))
-           (define ps (let ([p (hash-ref args 'parameters (hasheq))]) (if (hash? p) p (hasheq))))
-           (cond [(not src) (missing 'cql)] [(not (list? rs)) (missing 'resources)]
-                 [else (define r (parse-cql src))
-                       (cond [(err? r) (values (cql-error-string (err-error r)) #t)]
-                             [else (define results (evaluate-library (ok-value r) rs #:parameters (for/hash ([(k v) (in-hash ps)]) (values (symbol->string k) v))))
-                                   (values (jsexpr->string (for/hasheq ([(k v) (in-hash results)]) (values (string->symbol k) (render v)))) #f)])])))))
-
-(define support (lang-support "cql" diagnose project-files entities hover definition completion tools))
+(define support (lang-support "cql" diagnose project-files entities hover definition completion))
 
 (module+ test
   (require rackunit racket/file)
@@ -132,14 +97,6 @@
   ;; diagnostics: a library that does not parse, one whose definition does not translate
   (check-true (pair? (diagnose "library L\ndefine X: 1 +\n" "/tmp/nowhere/bad.cql")))
   (check-equal? (diagnose "library L\ndefine X: 1 + 2\n" "/tmp/nowhere/ok.cql") '())
-  ;; the tools
-  (define by-name (for/hash ([t (in-list tools)]) (values (tool-name t) t)))
-  (define-values (t1 e1) (call-tool (hash-ref by-name "cql_elm") (hasheq 'cql "library L\ndefine X: 1 + 2\n")))
-  (check-false e1) (check-regexp-match #rx"\"library\"" t1)
-  (define-values (t2 e2) (call-tool (hash-ref by-name "cql_elm") (hasheq 'cql "library L\ndefine X: 1 +\n")))
-  (check-true e2)
-  (define-values (t3 e3) (call-tool (hash-ref by-name "cql_evaluate") (hasheq 'cql "library L\ndefine X: 1 + 2\n" 'resources '())))
-  (check-false e3) (check-equal? (hash-ref (string->jsexpr t3) 'X) "3")     ; values render as text
   (define dir (make-temporary-file "cql-support-~a" 'directory))
   (with-output-to-file (build-path dir "a.cql") (lambda () (display "library a\n")))
   (check-equal? (length (project-files (build-path dir "x.cql"))) 1)
