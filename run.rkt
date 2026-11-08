@@ -17,10 +17,11 @@
 ;;; Parameters (e.g. "Measurement Period") apply to every library in the evaluation, the way a
 ;;; measure evaluator passes them; a library's own default is used otherwise.
 
-(require racket/contract racket/match racket/list racket/string racket/file json
+(require racket/contract racket/match racket/list racket/string racket/file racket/runtime-path json
          "parser/ast.rkt"
-         (only-in "parser/parse.rkt" parse-cql)
-         (only-in "compile.rkt" compile-library compile-library/partial current-library-resolver)
+         (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
+         (only-in "error.rkt" cql-error-string)
+         (only-in "compile.rkt" compile-library compile-library/partial compile-expr current-library-resolver)
          (only-in "interp.rkt" make-rlib rlib-value runtime rlib? eval-elm make-ienv)
          (only-in "elm/ast.rkt" elm-library-parameters elm-parameter-def-name elm-parameter-def-default)
          (only-in "value.rkt" current-evaluation-offset)
@@ -56,9 +57,21 @@
   [measure-populations  (-> hash? rlib? (hash/c string? exact-nonnegative-integer?))]
   [measure-group-populations (-> hash? rlib? (listof (hash/c string? exact-nonnegative-integer?)))]
   [read-json-files      (-> path-string? (listof hash?))]
+  ;; bundled-library : name version|#f -> cql-library|#f   a library shipped in libraries/:
+  ;; <name>-<version>.cql when that version is there, else <name>.cql (what a CLI run or a workspace
+  ;; includes without supplying it)
+  [bundled-library      (-> (or/c symbol? string?) (or/c string? #f) (or/c cql-library? #f))]
+  ;; directory-resolver : dir|#f -> (name version -> cql-library|#f)   <Name>.cql in dir, else a
+  ;; bundled library — how a CLI run and a #lang cql module find their includes
+  [directory-resolver   (-> (or/c path-string? #f) procedure?)]
+  ;; cql-value : string [#:offset minutes] -> CqlValue   a CQL expression's value with no data or
+  ;; library (a parameter's value: "Interval[@2024-01-01T00:00:00Z, @2025-01-01T00:00:00Z)");
+  ;; raises exn:fail with the parse or translation error
+  [cql-value            (->* (string?) (#:offset (or/c exact-integer? #f)) any/c)]
   ;; evaluate-library : the library over these resources -> define-name -> value (every define)
   [evaluate-library     (->* (cql-library? (listof hash?))
-                             (#:parameters hash? #:valuesets (listof hash?) #:offset (or/c exact-integer? #f))
+                             (#:parameters hash? #:valuesets (listof (or/c hash? list?)) #:offset (or/c exact-integer? #f)
+                              #:resolver procedure?)
                              hash?)])
  rlib-value)
 
@@ -219,6 +232,27 @@
                                            'code (hash-ref c 'code #f)))))
       v))
 
+(define-runtime-path bundled-dir "libraries")
+(define (cql-value text #:offset [offset #f])
+  (define p (parse-cql-expr text))
+  (unless (ok? p) (error 'cql-value "~a" (cql-error-string (err-error p))))
+  (define c (compile-expr (ok-value p)))
+  (unless (ok? c) (error 'cql-value "~a" (cql-error-string (err-error c))))
+  (parameterize ([current-evaluation-offset offset]) (eval-elm (ok-value c) (make-ienv))))
+
+(define (directory-resolver dir)
+  (caching-resolver
+   (lambda (name version)
+     (define f (and dir (build-path dir (format "~a.cql" name))))
+     (or (and f (file-exists? f) (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r))))
+         (bundled-library name version)))))
+(define (bundled-library name version)
+  (define f (for/first ([f (in-list (list (and version (build-path bundled-dir (format "~a-~a.cql" name version)))
+                                          (build-path bundled-dir (format "~a.cql" name))))]
+                        #:when (and f (file-exists? f)))
+              f))
+  (and f (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r)))))
+
 ;; read-json-files : dir -> (listof jsexpr)   every *.json under dir (MeasureReports excluded); a file
 ;; holding a JSON array gives its objects
 (define (read-json-files dir)
@@ -266,8 +300,9 @@
 ;; evaluate-library : library resources [#:parameters #:valuesets #:offset] -> (hash name -> value)
 ;; the library run over the given FHIR resources (in a Patient context: the Patient among them and
 ;; their data), each `define` evaluated — what #lang cql's `evaluate` is
-(define (evaluate-library library resources #:parameters [params (hash)] #:valuesets [vss '()] #:offset [offset #f])
-  (define rl (load-runtime-library library #:data (resources->data resources) #:parameters params
+(define (evaluate-library library resources #:parameters [params (hash)] #:valuesets [vss '()] #:offset [offset #f]
+                          #:resolver [resolver bundled-library])
+  (define rl (load-runtime-library library #:resolver resolver #:data (resources->data resources) #:parameters params
                                    #:valuesets (valuesets->terminology vss) #:offset offset))
   (for/hash ([d (in-list (cql-library-defs library))] #:when (cql-def? d))
     (define name (format "~a" (cql-def-name d)))

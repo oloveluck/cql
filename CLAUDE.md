@@ -251,7 +251,8 @@ operators, `if`/`case`. Layers:
   define, recursively through the defines it references (an included one's value via `rlib-eval`),
   with each retrieve's type, filter, line, how many resources of the type the patient has and which it
   kept. Includes resolve: the workspace's .cql files, then registered/data-source Libraries (searched by
-  name on a server), then `libraries/` (FHIRHelpers 4.0.1, Apache-2.0, SOURCE.txt). Value sets: the
+  name on a server), then `libraries/` (run.rkt's `bundled-library`: `<Name>-<version>.cql`, else
+  `<Name>.cql` — FHIRHelpers 4.0.1 and 4.4.000, SOURCE.txt). It also provides `guide` (below). Value sets: the
   workspace's (registered; expanded by $expand when not enumerated), then the data source (by url, lazy;
   a server that cannot search ValueSet holds none), then the packages (`measure.rkt`'s
   `packages-valuesets`, now exported). `interp.rkt` exports `rlib-eval` (one ELM node in a library's
@@ -364,3 +365,19 @@ operators, `if`/`case`. Layers:
     a stored stratum the data contradict; a definition the reference translator could not translate).
   Held to: the FHIR snapshot of every engine outcome (6300) unchanged; the FHIR ELM corpus 770 (+1, the
   DateFrom precision); the HL7 suite 1820/1823.
+
+- **Documentation for users and agents** (2026-11-08; the pattern for the family's languages, see the
+  main repo's CLAUDE.md). `guide.md` is the language for agents — cheat sheet, worked example,
+  running it, the data models, common problems — provided by `cql/workspace` as `guide` (fhir-mcp's
+  `learn://cql`); `tests/guide-test.rkt` translates every ```cql block (with the bundled libraries)
+  and checks the claims (the worked example's answer; the choice-timing trap: `O.effective during P`
+  is null for an `effectiveDateTime`, as the reference translator casts the choice to Period — the
+  guide's first cheat sheet had that very bug, which is why its claims are tested).
+  `.claude/skills/cql/SKILL.md` is the workflow without MCP (every command in it was run).
+  `scribblings/cql.scrbl` is the manual; `tests/docs-test.rkt` renders it and fails on a broken
+  reference to its own sections or `cql/…` bindings (it once stopped reading at a `|` inside
+  `@racket`, unnoticed). Writing them fixed: the CLI and a `#lang cql` module now find includes
+  beside the file, then the bundled libraries (`directory-resolver`; a module that included
+  FHIRHelpers could not run before); `cql-value` (a CQL expression's value, for parameters) backs
+  `--parameter`.
+

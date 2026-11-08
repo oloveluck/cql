@@ -72,5 +72,7 @@ raco pkg install --link --auto ../fhir/fhir ../fhir/fhir-spec ../fhirpath .   # 
 raco test .
 ```
 
-Reference: [oloveluck.github.io/cql](https://oloveluck.github.io/cql/). Architecture: `CLAUDE.md`.
+Reference: [oloveluck.github.io/cql](https://oloveluck.github.io/cql/). The language for agents,
+with a checked cheat sheet and the common problems: [guide.md](guide.md); the workflow without MCP:
+[.claude/skills/cql](.claude/skills/cql/SKILL.md). Architecture: `CLAUDE.md`.
 License: MIT.

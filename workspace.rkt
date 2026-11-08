@@ -38,7 +38,7 @@
                   elm-retrieve? elm-retrieve-data-type elm-retrieve-codes elm-retrieve-code-property
                   elm-expression-ref? elm-expression-ref-name elm-expression-ref-library elm-term-ref? elm-term-ref-name)
          (only-in "interp.rkt" eval-elm make-ienv rlib-value rlib-eval)
-         (only-in "run.rkt" load-runtime-library valuesets->terminology caching-resolver patient-data patient-class)
+         (only-in "run.rkt" load-runtime-library valuesets->terminology caching-resolver patient-data patient-class bundled-library)
          (only-in "model/modelinfo.rkt" find-model current-model-providers)
          (only-in "model/structure-definitions.rkt" structure-definitions->model logical-model?)
          (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version)
@@ -49,9 +49,12 @@
          (only-in "error.rkt" cql-error? cql-error-diagnostic cql-error-message cql-error-phase cql-error-string))
 
 (provide (contract-out [workspace-support ws-support?]
+                       ;; guide : the language guide (guide.md) a hub serves to agents (learn://cql)
+                       [guide string?]
                        [value->json (-> any/c jsexpr?)]))
 
-(define-runtime-path bundled-dir "libraries")
+(define-runtime-path guide-file "guide.md")
+(define guide (file->string guide-file))
 
 (define (path-string p) (if (path? p) (path->string p) p))
 
@@ -134,18 +137,11 @@
     (for/or ([l (in-list libs)] #:when (equal? (hash-ref l 'name #f) name))
       (define t (library-content l))
       (and t (let ([r (parse-cql t)]) (and (ok? r) (ok-value r))))))
-  ;; a bundled library: <name>-<version>.cql when that version is there (FHIRHelpers 4.4.000, which
-  ;; QI-Core libraries include), else <name>.cql
-  (define (bundled name version)
-    (define f (for/first ([f (in-list (list (and version (build-path bundled-dir (format "~a-~a.cql" name version)))
-                                            (build-path bundled-dir (string-append name ".cql"))))]
-                          #:when (and f (file-exists? f)))
-                f))
-    (and f (let ([r (parse-cql (file->string f))]) (and (ok? r) (ok-value r)))))
   (caching-resolver
    (lambda (name version)
      (define n (format "~a" name))
-     (or (hash-ref own n #f) (from-resources n) (bundled n version)))))
+     ;; last, a library shipped in libraries/ (run.rkt's bundled-library: FHIRHelpers 4.0.1 and 4.4.000)
+     (or (hash-ref own n #f) (from-resources n) (bundled-library n version)))))
 
 ;; version-diagnostics : workspace library text path -> diagnostics   CQL's FHIR model here is 4.0.1
 (define (version-diagnostics ws lib text path)

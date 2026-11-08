@@ -18,6 +18,8 @@ that only rises. `raco test .` runs them all; the commands below run one with it
 | Evaluator differential | the compiled evaluator against the tree walker, result by result, over the three corpora above | 0 of 6,206 results differ |
 | Code paths | a retrieve's statically resolved code path against the generic navigation, over 65 (type, property) pairs, the eCQM data, the R4 IG examples in fhir-spec and mutants of each resource's code element | 0 of 19,472 differ |
 | Any data model (`tests/any-model-test.rkt`) | a model made from logical models, and one from a ModelInfo document in a model directory, each with data in its own JSON shape: retrieves by value set and code, the Patient context through the model's relationships, ages, choices, lists, nested classes | passes |
+| The guide (`tests/guide-test.rkt`) | every CQL example in guide.md translates; the worked example and the common problems it describes behave as written | passes |
+| The manual (`tests/docs-test.rkt`) | scribblings/cql.scrbl renders with no broken reference to its own sections or bindings | passes |
 | Model neutrality (`tests/model-neutral-test.rkt`) | the engine's modules name no data model (no FHIR, its elements or FHIRHelpers) in their code | passes |
 
 When FHIR became one model among others (2026-11-08), every outcome of the previous engine was

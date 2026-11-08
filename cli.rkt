@@ -18,15 +18,14 @@
 
 (require (only-in racket/file file->string)
          (only-in racket/match match)
-         (only-in cql/parser/parse parse-cql parse-cql-expr)
-         (only-in cql/compile compile-library compile-library/errors compile-expr current-library-resolver)
-         (only-in cql/interp eval-elm make-ienv)
+         (only-in cql/parser/parse parse-cql)
+         (only-in cql/compile compile-library compile-library/errors current-library-resolver)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/error cql-error-string)
          (only-in fhir/result/result ok? ok-value err-error)
          (only-in cql/error cql-error? cql-error-diagnostic cql-error-phase cql-error-message)
          (only-in fhir/diagnostic diagnostic loc emit-diagnostics format-flag)
-         (only-in cql/run load-runtime-library resources->data valuesets->terminology read-json-files rlib-value)
+         (only-in cql/run load-runtime-library resources->data valuesets->terminology read-json-files rlib-value bundled-library cql-value)
          (only-in cql/parser/ast cql-library-defs cql-def? cql-def-name)
          (only-in cql/value render)
          (only-in json read-json))
@@ -44,11 +43,8 @@
     (for/hash ([p (in-list params)])
       (match (regexp-match #px"^([^=]+)=(.*)$" p)
         [(list _ name text)
-         (define e (parse-cql-expr text))
-         (unless (ok? e) (eprintf "cql: --parameter ~a: ~a\n" name (cql-error-string (err-error e))) (exit 2))
-         (define c (compile-expr (ok-value e)))
-         (unless (ok? c) (eprintf "cql: --parameter ~a: ~a\n" name (cql-error-string (err-error c))) (exit 2))
-         (values name (eval-elm (ok-value c) (make-ienv)))]
+         (values name (with-handlers ([exn:fail? (lambda (e) (eprintf "cql: --parameter ~a: ~a\n" name (exn-message e)) (exit 2))])
+                        (cql-value text)))]
         [_ (eprintf "cql: --parameter takes name=<CQL expression>\n") (exit 2)])))
   (define rl (with-handlers ([exn:fail? (lambda (e) (eprintf "~a\n" (exn-message e)) (exit 1))])
                (load-runtime-library lib #:resolver res #:data (resources->data resources) #:parameters parameters
@@ -65,10 +61,10 @@
     (ok-value r)))
 
 ;; library-resolver : path-string dir|#f -> (name version -> cql-library|#f)   includes as <Name>.cql in
-;; lib-dir, or beside `file`
+;; lib-dir, or beside `file`; else a bundled one (FHIRHelpers)
 (define (library-resolver file lib-dir)
   (define libdir (or lib-dir (let-values ([(d _n _m) (split-path (path->complete-path file))]) d)))
-  (lambda (n _v) (let ([g (build-path libdir (format "~a.cql" n))]) (and (file-exists? g) (parse-file g)))))
+  (lambda (n v) (let ([g (build-path libdir (format "~a.cql" n))]) (if (file-exists? g) (parse-file g) (bundled-library n v)))))
 
 ;; compile-file : path-string [dir|#f] -> void   print the ELM JSON of the library in `file`, or exit 1
 ;; the output format for errors (--format text|json|outcome)

@@ -6,6 +6,7 @@
 ;;; (cql-library-form <prefab-ast>) form here. This custom #%module-begin compiles it to ELM
 ;;; (compile.rkt) and provides:
 ;;;   library  the CQL AST          elm  the ELM AST          elm-json  the canonical ELM JSON
+;;; Includes resolve to <Name>.cql beside the file, else to a bundled library (FHIRHelpers).
 ;;;   (evaluate resources #:parameters h #:valuesets vss)   the library over FHIR resources (a
 ;;;            patient's data, the Patient among them): define-name -> value — how other modules
 ;;;            (and the other FHIR languages' modules) use a CQL library
@@ -16,10 +17,11 @@
 ;;; Nothing else runs when the module is required. Run the file to print the ELM JSON.
 
 (require (for-syntax racket/base syntax/parse (only-in cql/parser/ast cql-library?))
-         (only-in cql/compile compile-library)
+         (only-in cql/compile compile-library current-library-resolver)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/interp run-library)
-         (only-in cql/run evaluate-library)
+         (only-in cql/run evaluate-library directory-resolver)
+         (only-in racket/path path-only)
          (only-in fhir/result/result ok? ok-value err-error)
          (only-in fhir/registry register-resources!)
          (only-in cql/library library-resource)
@@ -46,12 +48,15 @@
         (define library (~? form #f))                            ; the CQL library AST
         (define resource (~? (library-resource form.text) #f))   ; the Library resource, or #f without a header
         (when resource (register-resources! (list resource) #:source (variable-reference->module-source (#%variable-reference))))
-        (define elm-result (and library (compile-library library)))
+        ;; includes: <Name>.cql beside this file, else a bundled library (FHIRHelpers)
+        (define resolver (directory-resolver (let ([src (variable-reference->module-source (#%variable-reference))])
+                                               (and (path? src) (path-only src)))))
+        (define elm-result (and library (parameterize ([current-library-resolver resolver]) (compile-library library))))
         (define elm (and elm-result (ok? elm-result) (ok-value elm-result))) ; the ELM library AST
         (define elm-json (and elm (elm->json-string elm)))       ; canonical ELM JSON string
         (define (results) (if elm (run-library elm) (hash)))     ; define-name -> value, no data
         (define (evaluate resources #:parameters [ps (hash)] #:valuesets [vss '()])
-          (evaluate-library library resources #:parameters ps #:valuesets vss))
+          (evaluate-library library resources #:parameters ps #:valuesets vss #:resolver resolver))
         (provide library elm elm-json results evaluate resource)
         (module+ main
           (cond
