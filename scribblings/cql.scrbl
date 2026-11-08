@@ -3,9 +3,9 @@
                      cql/parser/parse cql/compile cql/elm/json cql/interp cql/run cql/measure
                      cql/value cql/error cql/model/modelinfo))
 
-@title{cql: Clinical Quality Language for Racket}
+@title{cql: Clinical Quality Language}
 
-@hyperlink["https://cql.hl7.org/"]{CQL} for Racket. You write a library in a @tt{.cql} file; it is
+@hyperlink["https://cql.hl7.org/"]{CQL}, compiled and run. You write a library in a @tt{.cql} file; it is
 compiled to ELM (the standard machine form) and the ELM is run over FHIR R4 data: retrieves, value
 set membership, queries, the implicit FHIRHelpers conversions, and measure populations. A
 @tt{.cql} file is a Racket module whose definitions a program evaluates over a patient's resources.

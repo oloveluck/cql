@@ -2,7 +2,7 @@
 
 (define collection "cql")
 (define version "0.3")
-(define pkg-desc "Clinical Quality Language for Racket: CQL parser, CQL-to-ELM compiler, ELM interpreter, #lang cql and raco cql")
+(define pkg-desc "Clinical Quality Language: CQL parser, CQL-to-ELM compiler, ELM interpreter and measure evaluation; the cql command-line tool and #lang cql")
 (define pkg-authors '(oloveluck))
 (define license 'MIT)
 (define deps '("base" "fhir" "fhirpath" "brag-lib" "br-parser-tools-lib"))
