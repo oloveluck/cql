@@ -5,6 +5,7 @@
  "4.0.1"
  (required)
  (patient "FHIR.Patient" "birthDate.value")
+ (target #f)
  (types
   (type
    "FHIR.Account"
@@ -32,18 +33,19 @@
     ("status" "status")
     ("type" "type")
     ("identifier" "identifier")
-    ("subject" "subject")))
-  (type "FHIR.Account.Coverage" "FHIR.BackboneElement" #f #f #f #f (("coverage" "FHIR.Reference" #f) ("priority" "FHIR.positiveInt" #f)) () ())
-  (type "FHIR.Account.Guarantor" "FHIR.BackboneElement" #f #f #f #f (("party" "FHIR.Reference" #f) ("onHold" "FHIR.boolean" #f) ("period" "FHIR.Period" #f)) () ())
-  (type "FHIR.AccountStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionCardinalityBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionConditionKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionGroupingBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionParticipantType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionPrecheckBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionRelationshipType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionRequiredBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActionSelectionBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("subject" "subject"))
+   #f)
+  (type "FHIR.Account.Coverage" "FHIR.BackboneElement" #f #f #f #f (("coverage" "FHIR.Reference" #f) ("priority" "FHIR.positiveInt" #f)) () () #f)
+  (type "FHIR.Account.Guarantor" "FHIR.BackboneElement" #f #f #f #f (("party" "FHIR.Reference" #f) ("onHold" "FHIR.boolean" #f) ("period" "FHIR.Period" #f)) () () #f)
+  (type "FHIR.AccountStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionCardinalityBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionConditionKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionGroupingBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionParticipantType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionPrecheckBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionRelationshipType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionRequiredBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActionSelectionBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ActivityDefinition"
    "FHIR.DomainResource"
@@ -115,11 +117,12 @@
     ("title" "title")
     ("depends-on" "relatedArtifact.where(type='depends-on').resource|library")
     ("identifier" "identifier")
-    ("publisher" "publisher")))
-  (type "FHIR.ActivityDefinition.DynamicValue" "FHIR.BackboneElement" #f #f #f #f (("path" "FHIR.string" #f) ("expression" "FHIR.Expression" #f)) () ())
-  (type "FHIR.ActivityDefinition.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ActivityParticipantType" #f) ("role" "FHIR.CodeableConcept" #f)) () ())
-  (type "FHIR.ActivityDefinitionKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ActivityParticipantType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("publisher" "publisher"))
+   #f)
+  (type "FHIR.ActivityDefinition.DynamicValue" "FHIR.BackboneElement" #f #f #f #f (("path" "FHIR.string" #f) ("expression" "FHIR.Expression" #f)) () () #f)
+  (type "FHIR.ActivityDefinition.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ActivityParticipantType" #f) ("role" "FHIR.CodeableConcept" #f)) () () #f)
+  (type "FHIR.ActivityDefinitionKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ActivityParticipantType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Address"
    "FHIR.Element"
@@ -138,10 +141,11 @@
     ("country" "FHIR.string" #f)
     ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.AddressType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AddressUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AdministrativeGender" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.AddressType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AddressUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AdministrativeGender" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.AdverseEvent"
    "FHIR.DomainResource"
@@ -181,8 +185,9 @@
     ("study" "study")
     ("seriousness" "seriousness")
     ("category" "category")
-    ("location" "location")))
-  (type "FHIR.AdverseEvent.SuspectEntity" "FHIR.BackboneElement" #f #f #f #f (("instance" "FHIR.Reference" #f) ("causality" (list "FHIR.AdverseEvent.SuspectEntity.Causality") #f)) () ())
+    ("location" "location"))
+   #f)
+  (type "FHIR.AdverseEvent.SuspectEntity" "FHIR.BackboneElement" #f #f #f #f (("instance" "FHIR.Reference" #f) ("causality" (list "FHIR.AdverseEvent.SuspectEntity.Causality") #f)) () () #f)
   (type
    "FHIR.AdverseEvent.SuspectEntity.Causality"
    "FHIR.BackboneElement"
@@ -192,10 +197,11 @@
    #f
    (("assessment" "FHIR.CodeableConcept" #f) ("productRelatedness" "FHIR.string" #f) ("author" "FHIR.Reference" #f) ("method" "FHIR.CodeableConcept" #f))
    ()
-   ())
-  (type "FHIR.AdverseEventActuality" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Age" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Age" "Age" #f #f () () ())
-  (type "FHIR.AggregationMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.AdverseEventActuality" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Age" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Age" "Age" #f #f () () () #f)
+  (type "FHIR.AggregationMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.AllergyIntolerance"
    "FHIR.DomainResource"
@@ -235,7 +241,8 @@
     ("criticality" "criticality")
     ("clinical-status" "clinicalStatus")
     ("recorder" "recorder")
-    ("asserter" "asserter")))
+    ("asserter" "asserter"))
+   #f)
   (type
    "FHIR.AllergyIntolerance.Reaction"
    "FHIR.BackboneElement"
@@ -251,11 +258,12 @@
     ("exposureRoute" "FHIR.CodeableConcept" #f)
     ("note" (list "FHIR.Annotation") #f))
    ()
-   ())
-  (type "FHIR.AllergyIntoleranceCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AllergyIntoleranceCriticality" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AllergyIntoleranceSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AllergyIntoleranceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.AllergyIntoleranceCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AllergyIntoleranceCriticality" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AllergyIntoleranceSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AllergyIntoleranceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Annotation"
    "FHIR.Element"
@@ -265,7 +273,8 @@
    #f
    (("author" (choice "FHIR.Reference" "FHIR.string") #f) ("time" "FHIR.dateTime" #f) ("text" "FHIR.markdown" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Appointment"
    "FHIR.DomainResource"
@@ -312,7 +321,8 @@
     ("supporting-info" "supportingInformation")
     ("reason-code" "reasonCode")
     ("location" "participant.actor.where(resolve() is Location)")
-    ("identifier" "identifier")))
+    ("identifier" "identifier"))
+   #f)
   (type
    "FHIR.Appointment.Participant"
    "FHIR.BackboneElement"
@@ -322,7 +332,8 @@
    #f
    (("type" (list "FHIR.CodeableConcept") #f) ("actor" "FHIR.Reference" #f) ("required" "FHIR.ParticipantRequired" #f) ("status" "FHIR.ParticipationStatus" #f) ("period" "FHIR.Period" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.AppointmentResponse"
    "FHIR.DomainResource"
@@ -345,11 +356,12 @@
     ("part-status" "participantStatus")
     ("identifier" "identifier")
     ("location" "actor.where(resolve() is Location)")
-    ("actor" "actor")))
-  (type "FHIR.AppointmentStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AssertionDirectionType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AssertionOperatorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AssertionResponseTypes" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("actor" "actor"))
+   #f)
+  (type "FHIR.AppointmentStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AssertionDirectionType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AssertionOperatorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AssertionResponseTypes" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Attachment"
    "FHIR.Element"
@@ -366,7 +378,8 @@
     ("title" "FHIR.string" #f)
     ("creation" "FHIR.dateTime" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.AuditEvent"
    "FHIR.DomainResource"
@@ -403,7 +416,8 @@
     ("patient" "agent.who.where(resolve() is Patient)|entity.what.where(resolve() is Patient)")
     ("entity" "entity.what")
     ("altid" "agent.altId")
-    ("outcome" "outcome")))
+    ("outcome" "outcome"))
+   #f)
   (type
    "FHIR.AuditEvent.Agent"
    "FHIR.BackboneElement"
@@ -423,8 +437,9 @@
     ("network" "FHIR.AuditEvent.Agent.Network" #f)
     ("purposeOfUse" (list "FHIR.CodeableConcept") #f))
    ()
-   ())
-  (type "FHIR.AuditEvent.Agent.Network" "FHIR.BackboneElement" #f #f #f #f (("address" "FHIR.string" #f) ("type" "FHIR.AuditEventAgentNetworkType" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.AuditEvent.Agent.Network" "FHIR.BackboneElement" #f #f #f #f (("address" "FHIR.string" #f) ("type" "FHIR.AuditEventAgentNetworkType" #f)) () () #f)
   (type
    "FHIR.AuditEvent.Entity"
    "FHIR.BackboneElement"
@@ -442,13 +457,14 @@
     ("query" "FHIR.base64Binary" #f)
     ("detail" (list "FHIR.AuditEvent.Entity.Detail") #f))
    ()
-   ())
-  (type "FHIR.AuditEvent.Entity.Detail" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.string" #f) ("value" (choice "FHIR.string" "FHIR.base64Binary") #f)) () ())
-  (type "FHIR.AuditEvent.Source" "FHIR.BackboneElement" #f #f #f #f (("site" "FHIR.string" #f) ("observer" "FHIR.Reference" #f) ("type" (list "FHIR.Coding") #f)) () ())
-  (type "FHIR.AuditEventAction" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AuditEventAgentNetworkType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.AuditEventOutcome" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.BackboneElement" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/BackboneElement" "BackboneElement" #f #f (("modifierExtension" (list "FHIR.Extension") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.AuditEvent.Entity.Detail" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.string" #f) ("value" (choice "FHIR.string" "FHIR.base64Binary") #f)) () () #f)
+  (type "FHIR.AuditEvent.Source" "FHIR.BackboneElement" #f #f #f #f (("site" "FHIR.string" #f) ("observer" "FHIR.Reference" #f) ("type" (list "FHIR.Coding") #f)) () () #f)
+  (type "FHIR.AuditEventAction" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AuditEventAgentNetworkType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.AuditEventOutcome" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.BackboneElement" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/BackboneElement" "BackboneElement" #f #f (("modifierExtension" (list "FHIR.Extension") #f)) () () #f)
   (type
    "FHIR.Basic"
    "FHIR.DomainResource"
@@ -458,7 +474,8 @@
    #t
    (("identifier" (list "FHIR.Identifier") #f) ("code" "FHIR.CodeableConcept" #f) ("subject" "FHIR.Reference" #f) ("created" "FHIR.date" #f) ("author" "FHIR.Reference" #f))
    (("Practitioner" "author") ("Patient" "where(resolve() is Patient)") ("Patient" "author") ("RelatedPerson" "author"))
-   (("subject" "subject") ("patient" "subject.where(resolve() is Patient)") ("created" "created") ("author" "author") ("identifier" "identifier") ("code" "code")))
+   (("subject" "subject") ("patient" "subject.where(resolve() is Patient)") ("created" "created") ("author" "author") ("identifier" "identifier") ("code" "code"))
+   #f)
   (type
    "FHIR.Binary"
    "FHIR.Resource"
@@ -468,8 +485,9 @@
    #t
    (("contentType" "FHIR.MimeType" #f) ("securityContext" "FHIR.Reference" #f) ("data" "FHIR.base64Binary" #f))
    ()
-   ())
-  (type "FHIR.BindingStrength" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.BindingStrength" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.BiologicallyDerivedProduct"
    "FHIR.DomainResource"
@@ -489,7 +507,8 @@
     ("manipulation" "FHIR.BiologicallyDerivedProduct.Manipulation" #f)
     ("storage" (list "FHIR.BiologicallyDerivedProduct.Storage") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.BiologicallyDerivedProduct.Collection"
    "FHIR.BackboneElement"
@@ -499,8 +518,9 @@
    #f
    (("collector" "FHIR.Reference" #f) ("source" "FHIR.Reference" #f) ("collected" (choice "FHIR.dateTime" "FHIR.Period") #f))
    ()
-   ())
-  (type "FHIR.BiologicallyDerivedProduct.Manipulation" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("time" (choice "FHIR.dateTime" "FHIR.Period") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.BiologicallyDerivedProduct.Manipulation" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("time" (choice "FHIR.dateTime" "FHIR.Period") #f)) () () #f)
   (type
    "FHIR.BiologicallyDerivedProduct.Processing"
    "FHIR.BackboneElement"
@@ -510,7 +530,8 @@
    #f
    (("description" "FHIR.string" #f) ("procedure" "FHIR.CodeableConcept" #f) ("additive" "FHIR.Reference" #f) ("time" (choice "FHIR.dateTime" "FHIR.Period") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.BiologicallyDerivedProduct.Storage"
    "FHIR.BackboneElement"
@@ -520,10 +541,11 @@
    #f
    (("description" "FHIR.string" #f) ("temperature" "FHIR.decimal" #f) ("scale" "FHIR.BiologicallyDerivedProductStorageScale" #f) ("duration" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.BiologicallyDerivedProductCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.BiologicallyDerivedProductStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.BiologicallyDerivedProductStorageScale" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.BiologicallyDerivedProductCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.BiologicallyDerivedProductStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.BiologicallyDerivedProductStorageScale" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.BodyStructure"
    "FHIR.DomainResource"
@@ -540,7 +562,8 @@
     ("image" (list "FHIR.Attachment") #f)
     ("patient" "FHIR.Reference" #f))
    (("Patient" "patient"))
-   (("morphology" "morphology") ("identifier" "identifier") ("patient" "patient") ("location" "location")))
+   (("morphology" "morphology") ("identifier" "identifier") ("patient" "patient") ("location" "location"))
+   #f)
   (type
    "FHIR.Bundle"
    "FHIR.Resource"
@@ -556,7 +579,8 @@
     ("entry" (list "FHIR.Bundle.Entry") #f)
     ("signature" "FHIR.Signature" #f))
    ()
-   (("composition" "entry[0].resource") ("type" "type") ("message" "entry[0].resource") ("identifier" "identifier") ("timestamp" "timestamp")))
+   (("composition" "entry[0].resource") ("type" "type") ("message" "entry[0].resource") ("identifier" "identifier") ("timestamp" "timestamp"))
+   #f)
   (type
    "FHIR.Bundle.Entry"
    "FHIR.BackboneElement"
@@ -571,7 +595,8 @@
     ("request" "FHIR.Bundle.Entry.Request" #f)
     ("response" "FHIR.Bundle.Entry.Response" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Bundle.Entry.Request"
    "FHIR.BackboneElement"
@@ -581,7 +606,8 @@
    #f
    (("method" "FHIR.HTTPVerb" #f) ("url" "FHIR.uri" #f) ("ifNoneMatch" "FHIR.string" #f) ("ifModifiedSince" "FHIR.instant" #f) ("ifMatch" "FHIR.string" #f) ("ifNoneExist" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Bundle.Entry.Response"
    "FHIR.BackboneElement"
@@ -591,10 +617,11 @@
    #f
    (("status" "FHIR.string" #f) ("location" "FHIR.uri" #f) ("etag" "FHIR.string" #f) ("lastModified" "FHIR.instant" #f) ("outcome" "FHIR.Resource" #f))
    ()
-   ())
-  (type "FHIR.Bundle.Entry.Search" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.SearchEntryMode" #f) ("score" "FHIR.decimal" #f)) () ())
-  (type "FHIR.Bundle.Link" "FHIR.BackboneElement" #f #f #f #f (("relation" "FHIR.string" #f) ("url" "FHIR.uri" #f)) () ())
-  (type "FHIR.BundleType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Bundle.Entry.Search" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.SearchEntryMode" #f) ("score" "FHIR.decimal" #f)) () () #f)
+  (type "FHIR.Bundle.Link" "FHIR.BackboneElement" #f #f #f #f (("relation" "FHIR.string" #f) ("url" "FHIR.uri" #f)) () () #f)
+  (type "FHIR.BundleType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CapabilityStatement"
    "FHIR.DomainResource"
@@ -647,9 +674,10 @@
     ("resource-profile" "rest.resource.profile")
     ("name" "name")
     ("jurisdiction" "jurisdiction")
-    ("version" "version")))
-  (type "FHIR.CapabilityStatement.Document" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.DocumentMode" #f) ("documentation" "FHIR.markdown" #f) ("profile" "FHIR.canonical" #f)) () ())
-  (type "FHIR.CapabilityStatement.Implementation" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("url" "FHIR.url" #f) ("custodian" "FHIR.Reference" #f)) () ())
+    ("version" "version"))
+   #f)
+  (type "FHIR.CapabilityStatement.Document" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.DocumentMode" #f) ("documentation" "FHIR.markdown" #f) ("profile" "FHIR.canonical" #f)) () () #f)
+  (type "FHIR.CapabilityStatement.Implementation" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("url" "FHIR.url" #f) ("custodian" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.CapabilityStatement.Messaging"
    "FHIR.BackboneElement"
@@ -662,9 +690,10 @@
     ("documentation" "FHIR.markdown" #f)
     ("supportedMessage" (list "FHIR.CapabilityStatement.Messaging.SupportedMessage") #f))
    ()
-   ())
-  (type "FHIR.CapabilityStatement.Messaging.Endpoint" "FHIR.BackboneElement" #f #f #f #f (("protocol" "FHIR.Coding" #f) ("address" "FHIR.url" #f)) () ())
-  (type "FHIR.CapabilityStatement.Messaging.SupportedMessage" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.EventCapabilityMode" #f) ("definition" "FHIR.canonical" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CapabilityStatement.Messaging.Endpoint" "FHIR.BackboneElement" #f #f #f #f (("protocol" "FHIR.Coding" #f) ("address" "FHIR.url" #f)) () () #f)
+  (type "FHIR.CapabilityStatement.Messaging.SupportedMessage" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.EventCapabilityMode" #f) ("definition" "FHIR.canonical" #f)) () () #f)
   (type
    "FHIR.CapabilityStatement.Rest"
    "FHIR.BackboneElement"
@@ -681,8 +710,9 @@
     ("operation" (list "FHIR.CapabilityStatement.Rest.Resource.Operation") #f)
     ("compartment" (list "FHIR.canonical") #f))
    ()
-   ())
-  (type "FHIR.CapabilityStatement.Rest.Interaction" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.SystemRestfulInteraction" #f) ("documentation" "FHIR.markdown" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CapabilityStatement.Rest.Interaction" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.SystemRestfulInteraction" #f) ("documentation" "FHIR.markdown" #f)) () () #f)
   (type
    "FHIR.CapabilityStatement.Rest.Resource"
    "FHIR.BackboneElement"
@@ -708,9 +738,20 @@
     ("searchParam" (list "FHIR.CapabilityStatement.Rest.Resource.SearchParam") #f)
     ("operation" (list "FHIR.CapabilityStatement.Rest.Resource.Operation") #f))
    ()
-   ())
-  (type "FHIR.CapabilityStatement.Rest.Resource.Interaction" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.TypeRestfulInteraction" #f) ("documentation" "FHIR.markdown" #f)) () ())
-  (type "FHIR.CapabilityStatement.Rest.Resource.Operation" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("definition" "FHIR.canonical" #f) ("documentation" "FHIR.markdown" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CapabilityStatement.Rest.Resource.Interaction" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.TypeRestfulInteraction" #f) ("documentation" "FHIR.markdown" #f)) () () #f)
+  (type
+   "FHIR.CapabilityStatement.Rest.Resource.Operation"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("name" "FHIR.string" #f) ("definition" "FHIR.canonical" #f) ("documentation" "FHIR.markdown" #f))
+   ()
+   ()
+   #f)
   (type
    "FHIR.CapabilityStatement.Rest.Resource.SearchParam"
    "FHIR.BackboneElement"
@@ -720,10 +761,21 @@
    #f
    (("name" "FHIR.string" #f) ("definition" "FHIR.canonical" #f) ("type" "FHIR.SearchParamType" #f) ("documentation" "FHIR.markdown" #f))
    ()
-   ())
-  (type "FHIR.CapabilityStatement.Rest.Security" "FHIR.BackboneElement" #f #f #f #f (("cors" "FHIR.boolean" #f) ("service" (list "FHIR.CodeableConcept") #f) ("description" "FHIR.markdown" #f)) () ())
-  (type "FHIR.CapabilityStatement.Software" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("version" "FHIR.string" #f) ("releaseDate" "FHIR.dateTime" #f)) () ())
-  (type "FHIR.CapabilityStatementKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type
+   "FHIR.CapabilityStatement.Rest.Security"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("cors" "FHIR.boolean" #f) ("service" (list "FHIR.CodeableConcept") #f) ("description" "FHIR.markdown" #f))
+   ()
+   ()
+   #f)
+  (type "FHIR.CapabilityStatement.Software" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("version" "FHIR.string" #f) ("releaseDate" "FHIR.dateTime" #f)) () () #f)
+  (type "FHIR.CapabilityStatementKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CarePlan"
    "FHIR.DomainResource"
@@ -774,7 +826,8 @@
     ("part-of" "partOf")
     ("activity-reference" "activity.reference")
     ("instantiates-uri" "instantiatesUri")
-    ("replaces" "replaces")))
+    ("replaces" "replaces"))
+   #f)
   (type
    "FHIR.CarePlan.Activity"
    "FHIR.BackboneElement"
@@ -788,7 +841,8 @@
     ("reference" "FHIR.Reference" #f)
     ("detail" "FHIR.CarePlan.Activity.Detail" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.CarePlan.Activity.Detail"
    "FHIR.BackboneElement"
@@ -814,11 +868,12 @@
     ("quantity" "FHIR.SimpleQuantity" #f)
     ("description" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.CarePlanActivityKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CarePlanActivityStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CarePlanIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CarePlanStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CarePlanActivityKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CarePlanActivityStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CarePlanIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CarePlanStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CareTeam"
    "FHIR.DomainResource"
@@ -847,7 +902,8 @@
     ("patient" "subject.where(resolve() is Patient)")
     ("subject" "subject")
     ("encounter" "encounter")
-    ("category" "category")))
+    ("category" "category"))
+   #f)
   (type
    "FHIR.CareTeam.Participant"
    "FHIR.BackboneElement"
@@ -857,8 +913,9 @@
    #f
    (("role" (list "FHIR.CodeableConcept") #f) ("member" "FHIR.Reference" #f) ("onBehalfOf" "FHIR.Reference" #f) ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.CareTeamStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CareTeamStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CatalogEntry"
    "FHIR.DomainResource"
@@ -880,9 +937,10 @@
     ("additionalClassification" (list "FHIR.CodeableConcept") #f)
     ("relatedEntry" (list "FHIR.CatalogEntry.RelatedEntry") #f))
    ()
-   ())
-  (type "FHIR.CatalogEntry.RelatedEntry" "FHIR.BackboneElement" #f #f #f #f (("relationtype" "FHIR.CatalogEntryRelationType" #f) ("item" "FHIR.Reference" #f)) () ())
-  (type "FHIR.CatalogEntryRelationType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CatalogEntry.RelatedEntry" "FHIR.BackboneElement" #f #f #f #f (("relationtype" "FHIR.CatalogEntryRelationType" #f) ("item" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.CatalogEntryRelationType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ChargeItem"
    "FHIR.DomainResource"
@@ -933,8 +991,9 @@
     ("code" "code")
     ("subject" "subject")
     ("occurrence" "occurrence")
-    ("service" "service")))
-  (type "FHIR.ChargeItem.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () ())
+    ("service" "service"))
+   #f)
+  (type "FHIR.ChargeItem.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.ChargeItemDefinition"
    "FHIR.DomainResource"
@@ -976,8 +1035,9 @@
     ("title" "title")
     ("effective" "effectivePeriod")
     ("identifier" "identifier")
-    ("url" "url")))
-  (type "FHIR.ChargeItemDefinition.Applicability" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("language" "FHIR.string" #f) ("expression" "FHIR.string" #f)) () ())
+    ("url" "url"))
+   #f)
+  (type "FHIR.ChargeItemDefinition.Applicability" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("language" "FHIR.string" #f) ("expression" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.ChargeItemDefinition.PropertyGroup"
    "FHIR.BackboneElement"
@@ -987,7 +1047,8 @@
    #f
    (("applicability" (list "FHIR.ChargeItemDefinition.Applicability") #f) ("priceComponent" (list "FHIR.ChargeItemDefinition.PropertyGroup.PriceComponent") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ChargeItemDefinition.PropertyGroup.PriceComponent"
    "FHIR.BackboneElement"
@@ -997,9 +1058,10 @@
    #f
    (("type" "FHIR.ChargeItemDefinitionPriceComponentType" #f) ("code" "FHIR.CodeableConcept" #f) ("factor" "FHIR.decimal" #f) ("amount" "FHIR.Money" #f))
    ()
-   ())
-  (type "FHIR.ChargeItemDefinitionPriceComponentType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ChargeItemStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ChargeItemDefinitionPriceComponentType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ChargeItemStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Claim"
    "FHIR.DomainResource"
@@ -1062,8 +1124,9 @@
     ("encounter" "item.encounter")
     ("patient" "patient")
     ("care-team" "careTeam.provider")
-    ("created" "created")))
-  (type "FHIR.Claim.Accident" "FHIR.BackboneElement" #f #f #f #f (("date" "FHIR.date" #f) ("type" "FHIR.CodeableConcept" #f) ("location" (choice "FHIR.Address" "FHIR.Reference") #f)) () ())
+    ("created" "created"))
+   #f)
+  (type "FHIR.Claim.Accident" "FHIR.BackboneElement" #f #f #f #f (("date" "FHIR.date" #f) ("type" "FHIR.CodeableConcept" #f) ("location" (choice "FHIR.Address" "FHIR.Reference") #f)) () () #f)
   (type
    "FHIR.Claim.CareTeam"
    "FHIR.BackboneElement"
@@ -1073,7 +1136,8 @@
    #f
    (("sequence" "FHIR.positiveInt" #f) ("provider" "FHIR.Reference" #f) ("responsible" "FHIR.boolean" #f) ("role" "FHIR.CodeableConcept" #f) ("qualification" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Claim.Diagnosis"
    "FHIR.BackboneElement"
@@ -1087,7 +1151,8 @@
     ("onAdmission" "FHIR.CodeableConcept" #f)
     ("packageCode" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Claim.Insurance"
    "FHIR.BackboneElement"
@@ -1103,7 +1168,8 @@
     ("preAuthRef" (list "FHIR.string") #f)
     ("claimResponse" "FHIR.Reference" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Claim.Item"
    "FHIR.BackboneElement"
@@ -1133,7 +1199,8 @@
     ("encounter" (list "FHIR.Reference") #f)
     ("detail" (list "FHIR.Claim.Item.Detail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Claim.Item.Detail"
    "FHIR.BackboneElement"
@@ -1154,7 +1221,8 @@
     ("udi" (list "FHIR.Reference") #f)
     ("subDetail" (list "FHIR.Claim.Item.Detail.SubDetail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Claim.Item.Detail.SubDetail"
    "FHIR.BackboneElement"
@@ -1174,8 +1242,9 @@
     ("net" "FHIR.Money" #f)
     ("udi" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.Claim.Payee" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("party" "FHIR.Reference" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Claim.Payee" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("party" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.Claim.Procedure"
    "FHIR.BackboneElement"
@@ -1189,8 +1258,9 @@
     ("procedure" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)
     ("udi" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.Claim.Related" "FHIR.BackboneElement" #f #f #f #f (("claim" "FHIR.Reference" #f) ("relationship" "FHIR.CodeableConcept" #f) ("reference" "FHIR.Identifier" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Claim.Related" "FHIR.BackboneElement" #f #f #f #f (("claim" "FHIR.Reference" #f) ("relationship" "FHIR.CodeableConcept" #f) ("reference" "FHIR.Identifier" #f)) () () #f)
   (type
    "FHIR.Claim.SupportingInfo"
    "FHIR.BackboneElement"
@@ -1205,7 +1275,8 @@
     ("value" (choice "FHIR.boolean" "FHIR.string" "FHIR.Quantity" "FHIR.Attachment" "FHIR.Reference") #f)
     ("reason" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse"
    "FHIR.DomainResource"
@@ -1251,7 +1322,8 @@
     ("requestor" "requestor")
     ("status" "status")
     ("disposition" "disposition")
-    ("identifier" "identifier")))
+    ("identifier" "identifier"))
+   #f)
   (type
    "FHIR.ClaimResponse.AddItem"
    "FHIR.BackboneElement"
@@ -1278,7 +1350,8 @@
     ("adjudication" (list "FHIR.ClaimResponse.Item.Adjudication") #f)
     ("detail" (list "FHIR.ClaimResponse.AddItem.Detail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.AddItem.Detail"
    "FHIR.BackboneElement"
@@ -1296,7 +1369,8 @@
     ("adjudication" (list "FHIR.ClaimResponse.Item.Adjudication") #f)
     ("subDetail" (list "FHIR.ClaimResponse.AddItem.Detail.SubDetail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.AddItem.Detail.SubDetail"
    "FHIR.BackboneElement"
@@ -1313,7 +1387,8 @@
     ("noteNumber" (list "FHIR.positiveInt") #f)
     ("adjudication" (list "FHIR.ClaimResponse.Item.Adjudication") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Error"
    "FHIR.BackboneElement"
@@ -1323,7 +1398,8 @@
    #f
    (("itemSequence" "FHIR.positiveInt" #f) ("detailSequence" "FHIR.positiveInt" #f) ("subDetailSequence" "FHIR.positiveInt" #f) ("code" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Insurance"
    "FHIR.BackboneElement"
@@ -1333,7 +1409,8 @@
    #f
    (("sequence" "FHIR.positiveInt" #f) ("focal" "FHIR.boolean" #f) ("coverage" "FHIR.Reference" #f) ("businessArrangement" "FHIR.string" #f) ("claimResponse" "FHIR.Reference" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Item"
    "FHIR.BackboneElement"
@@ -1346,7 +1423,8 @@
     ("adjudication" (list "FHIR.ClaimResponse.Item.Adjudication") #f)
     ("detail" (list "FHIR.ClaimResponse.Item.Detail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Item.Adjudication"
    "FHIR.BackboneElement"
@@ -1356,7 +1434,8 @@
    #f
    (("category" "FHIR.CodeableConcept" #f) ("reason" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Money" #f) ("value" "FHIR.decimal" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Item.Detail"
    "FHIR.BackboneElement"
@@ -1369,7 +1448,8 @@
     ("adjudication" (list "FHIR.ClaimResponse.Item.Adjudication") #f)
     ("subDetail" (list "FHIR.ClaimResponse.Item.Detail.SubDetail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Item.Detail.SubDetail"
    "FHIR.BackboneElement"
@@ -1379,7 +1459,8 @@
    #f
    (("subDetailSequence" "FHIR.positiveInt" #f) ("noteNumber" (list "FHIR.positiveInt") #f) ("adjudication" (list "FHIR.ClaimResponse.Item.Adjudication") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.Payment"
    "FHIR.BackboneElement"
@@ -1394,7 +1475,8 @@
     ("amount" "FHIR.Money" #f)
     ("identifier" "FHIR.Identifier" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ClaimResponse.ProcessNote"
    "FHIR.BackboneElement"
@@ -1404,10 +1486,11 @@
    #f
    (("number" "FHIR.positiveInt" #f) ("type" "FHIR.NoteType" #f) ("text" "FHIR.string" #f) ("language" "FHIR.CodeableConcept" #f))
    ()
-   ())
-  (type "FHIR.ClaimResponse.Total" "FHIR.BackboneElement" #f #f #f #f (("category" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Money" #f)) () ())
-  (type "FHIR.ClaimResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ClaimStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ClaimResponse.Total" "FHIR.BackboneElement" #f #f #f #f (("category" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Money" #f)) () () #f)
+  (type "FHIR.ClaimResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ClaimStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ClinicalImpression"
    "FHIR.DomainResource"
@@ -1448,11 +1531,22 @@
     ("problem" "problem")
     ("finding-ref" "finding.itemReference")
     ("patient" "subject.where(resolve() is Patient)")
-    ("supporting-info" "supportingInfo")))
-  (type "FHIR.ClinicalImpression.Finding" "FHIR.BackboneElement" #f #f #f #f (("itemCodeableConcept" "FHIR.CodeableConcept" #f) ("itemReference" "FHIR.Reference" #f) ("basis" "FHIR.string" #f)) () ())
-  (type "FHIR.ClinicalImpression.Investigation" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("item" (list "FHIR.Reference") #f)) () ())
-  (type "FHIR.ClinicalImpressionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CodeSearchSupport" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("supporting-info" "supportingInfo"))
+   #f)
+  (type
+   "FHIR.ClinicalImpression.Finding"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("itemCodeableConcept" "FHIR.CodeableConcept" #f) ("itemReference" "FHIR.Reference" #f) ("basis" "FHIR.string" #f))
+   ()
+   ()
+   #f)
+  (type "FHIR.ClinicalImpression.Investigation" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("item" (list "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.ClinicalImpressionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CodeSearchSupport" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CodeSystem"
    "FHIR.DomainResource"
@@ -1502,7 +1596,8 @@
     ("system" "url")
     ("jurisdiction" "jurisdiction")
     ("identifier" "identifier")
-    ("version" "version")))
+    ("version" "version"))
+   #f)
   (type
    "FHIR.CodeSystem.Concept"
    "FHIR.BackboneElement"
@@ -1517,8 +1612,9 @@
     ("property" (list "FHIR.CodeSystem.Concept.Property") #f)
     ("concept" (list "FHIR.CodeSystem.Concept") #f))
    ()
-   ())
-  (type "FHIR.CodeSystem.Concept.Designation" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.code" #f) ("use" "FHIR.Coding" #f) ("value" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CodeSystem.Concept.Designation" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.code" #f) ("use" "FHIR.Coding" #f) ("value" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.CodeSystem.Concept.Property"
    "FHIR.BackboneElement"
@@ -1528,7 +1624,8 @@
    #f
    (("code" "FHIR.code" #f) ("value" (choice "FHIR.code" "FHIR.Coding" "FHIR.string" "FHIR.integer" "FHIR.boolean" "FHIR.dateTime" "FHIR.decimal") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.CodeSystem.Filter"
    "FHIR.BackboneElement"
@@ -1538,11 +1635,12 @@
    #f
    (("code" "FHIR.code" #f) ("description" "FHIR.string" #f) ("operator" (list "FHIR.FilterOperator") #f) ("value" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.CodeSystem.Property" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("uri" "FHIR.uri" #f) ("description" "FHIR.string" #f) ("type" "FHIR.PropertyType" #f)) () ())
-  (type "FHIR.CodeSystemContentMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CodeSystemHierarchyMeaning" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CodeableConcept" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/CodeableConcept" "CodeableConcept" #f #f (("coding" (list "FHIR.Coding") #f) ("text" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CodeSystem.Property" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("uri" "FHIR.uri" #f) ("description" "FHIR.string" #f) ("type" "FHIR.PropertyType" #f)) () () #f)
+  (type "FHIR.CodeSystemContentMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CodeSystemHierarchyMeaning" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CodeableConcept" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/CodeableConcept" "CodeableConcept" #f #f (("coding" (list "FHIR.Coding") #f) ("text" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.Coding"
    "FHIR.Element"
@@ -1552,7 +1650,8 @@
    #f
    (("system" "FHIR.uri" #f) ("version" "FHIR.string" #f) ("code" "FHIR.code" #f) ("display" "FHIR.string" #f) ("userSelected" "FHIR.boolean" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Communication"
    "FHIR.DomainResource"
@@ -1607,9 +1706,10 @@
     ("category" "category")
     ("sender" "sender")
     ("medium" "medium")
-    ("sent" "sent")))
-  (type "FHIR.Communication.Payload" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.string" "FHIR.Attachment" "FHIR.Reference") #f)) () ())
-  (type "FHIR.CommunicationPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("sent" "sent"))
+   #f)
+  (type "FHIR.Communication.Payload" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.string" "FHIR.Attachment" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.CommunicationPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CommunicationRequest"
    "FHIR.DomainResource"
@@ -1666,11 +1766,12 @@
     ("sender" "sender")
     ("priority" "priority")
     ("subject" "subject")
-    ("based-on" "basedOn")))
-  (type "FHIR.CommunicationRequest.Payload" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.string" "FHIR.Attachment" "FHIR.Reference") #f)) () ())
-  (type "FHIR.CommunicationRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CommunicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CompartmentCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("based-on" "basedOn"))
+   #f)
+  (type "FHIR.CommunicationRequest.Payload" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.string" "FHIR.Attachment" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.CommunicationRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CommunicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CompartmentCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.CompartmentDefinition"
    "FHIR.DomainResource"
@@ -1702,9 +1803,10 @@
     ("resource" "resource.code")
     ("publisher" "publisher")
     ("name" "name")
-    ("version" "version")))
-  (type "FHIR.CompartmentDefinition.Resource" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.ResourceType" #f) ("param" (list "FHIR.string") #f) ("documentation" "FHIR.string" #f)) () ())
-  (type "FHIR.CompartmentType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("version" "version"))
+   #f)
+  (type "FHIR.CompartmentDefinition.Resource" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.ResourceType" #f) ("param" (list "FHIR.string") #f) ("documentation" "FHIR.string" #f)) () () #f)
+  (type "FHIR.CompartmentType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Composition"
    "FHIR.DomainResource"
@@ -1751,10 +1853,11 @@
     ("period" "event.period")
     ("subject" "subject")
     ("section" "section.code")
-    ("entry" "section.entry")))
-  (type "FHIR.Composition.Attester" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.CompositionAttestationMode" #f) ("time" "FHIR.dateTime" #f) ("party" "FHIR.Reference" #f)) () ())
-  (type "FHIR.Composition.Event" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("period" "FHIR.Period" #f) ("detail" (list "FHIR.Reference") #f)) () ())
-  (type "FHIR.Composition.RelatesTo" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.DocumentRelationshipType" #f) ("target" (choice "FHIR.Identifier" "FHIR.Reference") #f)) () ())
+    ("entry" "section.entry"))
+   #f)
+  (type "FHIR.Composition.Attester" "FHIR.BackboneElement" #f #f #f #f (("mode" "FHIR.CompositionAttestationMode" #f) ("time" "FHIR.dateTime" #f) ("party" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.Composition.Event" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("period" "FHIR.Period" #f) ("detail" (list "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.Composition.RelatesTo" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.DocumentRelationshipType" #f) ("target" (choice "FHIR.Identifier" "FHIR.Reference") #f)) () () #f)
   (type
    "FHIR.Composition.Section"
    "FHIR.BackboneElement"
@@ -1773,9 +1876,10 @@
     ("emptyReason" "FHIR.CodeableConcept" #f)
     ("section" (list "FHIR.Composition.Section") #f))
    ()
-   ())
-  (type "FHIR.CompositionAttestationMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CompositionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CompositionAttestationMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CompositionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ConceptMap"
    "FHIR.DomainResource"
@@ -1819,7 +1923,8 @@
     ("name" "name")
     ("jurisdiction" "jurisdiction")
     ("identifier" "identifier")
-    ("version" "version")))
+    ("version" "version"))
+   #f)
   (type
    "FHIR.ConceptMap.Group"
    "FHIR.BackboneElement"
@@ -1834,8 +1939,9 @@
     ("element" (list "FHIR.ConceptMap.Group.Element") #f)
     ("unmapped" "FHIR.ConceptMap.Group.Unmapped" #f))
    ()
-   ())
-  (type "FHIR.ConceptMap.Group.Element" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("display" "FHIR.string" #f) ("target" (list "FHIR.ConceptMap.Group.Element.Target") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ConceptMap.Group.Element" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("display" "FHIR.string" #f) ("target" (list "FHIR.ConceptMap.Group.Element.Target") #f)) () () #f)
   (type
    "FHIR.ConceptMap.Group.Element.Target"
    "FHIR.BackboneElement"
@@ -1850,7 +1956,8 @@
     ("dependsOn" (list "FHIR.ConceptMap.Group.Element.Target.DependsOn") #f)
     ("product" (list "FHIR.ConceptMap.Group.Element.Target.DependsOn") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ConceptMap.Group.Element.Target.DependsOn"
    "FHIR.BackboneElement"
@@ -1860,7 +1967,8 @@
    #f
    (("property" "FHIR.uri" #f) ("system" "FHIR.canonical" #f) ("value" "FHIR.string" #f) ("display" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ConceptMap.Group.Unmapped"
    "FHIR.BackboneElement"
@@ -1870,9 +1978,10 @@
    #f
    (("mode" "FHIR.ConceptMapGroupUnmappedMode" #f) ("code" "FHIR.code" #f) ("display" "FHIR.string" #f) ("url" "FHIR.canonical" #f))
    ()
-   ())
-  (type "FHIR.ConceptMapEquivalence" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ConceptMapGroupUnmappedMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ConceptMapEquivalence" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ConceptMapGroupUnmappedMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Condition"
    "FHIR.DomainResource"
@@ -1918,11 +2027,12 @@
     ("category" "category")
     ("asserter" "asserter")
     ("stage" "stage.summary")
-    ("onset-info" "onset.as(string)")))
-  (type "FHIR.Condition.Evidence" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("detail" (list "FHIR.Reference") #f)) () ())
-  (type "FHIR.Condition.Stage" "FHIR.BackboneElement" #f #f #f #f (("summary" "FHIR.CodeableConcept" #f) ("assessment" (list "FHIR.Reference") #f) ("type" "FHIR.CodeableConcept" #f)) () ())
-  (type "FHIR.ConditionalDeleteStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ConditionalReadStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("onset-info" "onset.as(string)"))
+   #f)
+  (type "FHIR.Condition.Evidence" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("detail" (list "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.Condition.Stage" "FHIR.BackboneElement" #f #f #f #f (("summary" "FHIR.CodeableConcept" #f) ("assessment" (list "FHIR.Reference") #f) ("type" "FHIR.CodeableConcept" #f)) () () #f)
+  (type "FHIR.ConditionalDeleteStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ConditionalReadStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Consent"
    "FHIR.DomainResource"
@@ -1958,8 +2068,9 @@
     ("status" "status")
     ("organization" "organization")
     ("actor" "provision.actor.reference")
-    ("security-label" "provision.securityLabel")))
-  (type "FHIR.Consent.Policy" "FHIR.BackboneElement" #f #f #f #f (("authority" "FHIR.uri" #f) ("uri" "FHIR.uri" #f)) () ())
+    ("security-label" "provision.securityLabel"))
+   #f)
+  (type "FHIR.Consent.Policy" "FHIR.BackboneElement" #f #f #f #f (("authority" "FHIR.uri" #f) ("uri" "FHIR.uri" #f)) () () #f)
   (type
    "FHIR.Consent.Provision"
    "FHIR.BackboneElement"
@@ -1979,15 +2090,26 @@
     ("data" (list "FHIR.Consent.Provision.Data") #f)
     ("provision" (list "FHIR.Consent.Provision") #f))
    ()
-   ())
-  (type "FHIR.Consent.Provision.Actor" "FHIR.BackboneElement" #f #f #f #f (("role" "FHIR.CodeableConcept" #f) ("reference" "FHIR.Reference" #f)) () ())
-  (type "FHIR.Consent.Provision.Data" "FHIR.BackboneElement" #f #f #f #f (("meaning" "FHIR.ConsentDataMeaning" #f) ("reference" "FHIR.Reference" #f)) () ())
-  (type "FHIR.Consent.Verification" "FHIR.BackboneElement" #f #f #f #f (("verified" "FHIR.boolean" #f) ("verifiedWith" "FHIR.Reference" #f) ("verificationDate" "FHIR.dateTime" #f)) () ())
-  (type "FHIR.ConsentDataMeaning" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ConsentProvisionType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ConsentState" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ConstraintSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ContactDetail" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/ContactDetail" "ContactDetail" #f #f (("name" "FHIR.string" #f) ("telecom" (list "FHIR.ContactPoint") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Consent.Provision.Actor" "FHIR.BackboneElement" #f #f #f #f (("role" "FHIR.CodeableConcept" #f) ("reference" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.Consent.Provision.Data" "FHIR.BackboneElement" #f #f #f #f (("meaning" "FHIR.ConsentDataMeaning" #f) ("reference" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.Consent.Verification" "FHIR.BackboneElement" #f #f #f #f (("verified" "FHIR.boolean" #f) ("verifiedWith" "FHIR.Reference" #f) ("verificationDate" "FHIR.dateTime" #f)) () () #f)
+  (type "FHIR.ConsentDataMeaning" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ConsentProvisionType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ConsentState" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ConstraintSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type
+   "FHIR.ContactDetail"
+   "FHIR.Element"
+   "http://hl7.org/fhir/StructureDefinition/ContactDetail"
+   "ContactDetail"
+   #f
+   #f
+   (("name" "FHIR.string" #f) ("telecom" (list "FHIR.ContactPoint") #f))
+   ()
+   ()
+   #f)
   (type
    "FHIR.ContactPoint"
    "FHIR.Element"
@@ -1997,9 +2119,10 @@
    #f
    (("system" "FHIR.ContactPointSystem" #f) ("value" "FHIR.string" #f) ("use" "FHIR.ContactPointUse" #f) ("rank" "FHIR.positiveInt" #f) ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.ContactPointSystem" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ContactPointUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ContactPointSystem" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ContactPointUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Contract"
    "FHIR.DomainResource"
@@ -2050,7 +2173,8 @@
     ("identifier" "identifier")
     ("patient" "subject.where(resolve() is Patient)")
     ("instantiates" "instantiatesUri")
-    ("authority" "authority")))
+    ("authority" "authority"))
+   #f)
   (type
    "FHIR.Contract.ContentDefinition"
    "FHIR.BackboneElement"
@@ -2065,11 +2189,12 @@
     ("publicationStatus" "FHIR.ContractPublicationStatus" #f)
     ("copyright" "FHIR.markdown" #f))
    ()
-   ())
-  (type "FHIR.Contract.Friendly" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.Attachment" "FHIR.Reference") #f)) () ())
-  (type "FHIR.Contract.Legal" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.Attachment" "FHIR.Reference") #f)) () ())
-  (type "FHIR.Contract.Rule" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.Attachment" "FHIR.Reference") #f)) () ())
-  (type "FHIR.Contract.Signer" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.Coding" #f) ("party" "FHIR.Reference" #f) ("signature" (list "FHIR.Signature") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Contract.Friendly" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.Attachment" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.Contract.Legal" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.Attachment" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.Contract.Rule" "FHIR.BackboneElement" #f #f #f #f (("content" (choice "FHIR.Attachment" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.Contract.Signer" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.Coding" #f) ("party" "FHIR.Reference" #f) ("signature" (list "FHIR.Signature") #f)) () () #f)
   (type
    "FHIR.Contract.Term"
    "FHIR.BackboneElement"
@@ -2090,7 +2215,8 @@
     ("action" (list "FHIR.Contract.Term.Action") #f)
     ("group" (list "FHIR.Contract.Term") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Contract.Term.Action"
    "FHIR.BackboneElement"
@@ -2120,8 +2246,9 @@
     ("note" (list "FHIR.Annotation") #f)
     ("securityLabelNumber" (list "FHIR.unsignedInt") #f))
    ()
-   ())
-  (type "FHIR.Contract.Term.Action.Subject" "FHIR.BackboneElement" #f #f #f #f (("reference" (list "FHIR.Reference") #f) ("role" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Contract.Term.Action.Subject" "FHIR.BackboneElement" #f #f #f #f (("reference" (list "FHIR.Reference") #f) ("role" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.Contract.Term.Asset"
    "FHIR.BackboneElement"
@@ -2145,8 +2272,9 @@
     ("securityLabelNumber" (list "FHIR.unsignedInt") #f)
     ("valuedItem" (list "FHIR.Contract.Term.Asset.ValuedItem") #f))
    ()
-   ())
-  (type "FHIR.Contract.Term.Asset.Context" "FHIR.BackboneElement" #f #f #f #f (("reference" "FHIR.Reference" #f) ("code" (list "FHIR.CodeableConcept") #f) ("text" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Contract.Term.Asset.Context" "FHIR.BackboneElement" #f #f #f #f (("reference" "FHIR.Reference" #f) ("code" (list "FHIR.CodeableConcept") #f) ("text" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.Contract.Term.Asset.ValuedItem"
    "FHIR.BackboneElement"
@@ -2169,7 +2297,8 @@
     ("linkId" (list "FHIR.string") #f)
     ("securityLabelNumber" (list "FHIR.unsignedInt") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Contract.Term.Offer"
    "FHIR.BackboneElement"
@@ -2188,7 +2317,8 @@
     ("linkId" (list "FHIR.string") #f)
     ("securityLabelNumber" (list "FHIR.unsignedInt") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Contract.Term.Offer.Answer"
    "FHIR.BackboneElement"
@@ -2200,8 +2330,9 @@
      (choice "FHIR.boolean" "FHIR.decimal" "FHIR.integer" "FHIR.date" "FHIR.dateTime" "FHIR.time" "FHIR.string" "FHIR.uri" "FHIR.Attachment" "FHIR.Coding" "FHIR.Quantity" "FHIR.Reference")
      #f))
    ()
-   ())
-  (type "FHIR.Contract.Term.Offer.Party" "FHIR.BackboneElement" #f #f #f #f (("reference" (list "FHIR.Reference") #f) ("role" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Contract.Term.Offer.Party" "FHIR.BackboneElement" #f #f #f #f (("reference" (list "FHIR.Reference") #f) ("role" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.Contract.Term.SecurityLabel"
    "FHIR.BackboneElement"
@@ -2211,9 +2342,10 @@
    #f
    (("number" (list "FHIR.unsignedInt") #f) ("classification" "FHIR.Coding" #f) ("category" (list "FHIR.Coding") #f) ("control" (list "FHIR.Coding") #f))
    ()
-   ())
-  (type "FHIR.ContractPublicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ContractStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ContractPublicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ContractStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Contributor"
    "FHIR.Element"
@@ -2223,9 +2355,10 @@
    #f
    (("type" "FHIR.ContributorType" #f) ("name" "FHIR.string" #f) ("contact" (list "FHIR.ContactDetail") #f))
    ()
-   ())
-  (type "FHIR.ContributorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Count" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Count" "Count" #f #f () () ())
+   ()
+   #f)
+  (type "FHIR.ContributorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Count" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Count" "Count" #f #f () () () #f)
   (type
    "FHIR.Coverage"
    "FHIR.DomainResource"
@@ -2261,8 +2394,9 @@
     ("identifier" "identifier")
     ("subscriber" "subscriber")
     ("policy-holder" "policyHolder")
-    ("dependent" "dependent")))
-  (type "FHIR.Coverage.Class" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("value" "FHIR.string" #f) ("name" "FHIR.string" #f)) () ())
+    ("dependent" "dependent"))
+   #f)
+  (type "FHIR.Coverage.Class" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("value" "FHIR.string" #f) ("name" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.Coverage.CostToBeneficiary"
    "FHIR.BackboneElement"
@@ -2272,8 +2406,9 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("value" (choice "FHIR.SimpleQuantity" "FHIR.Money") #f) ("exception" (list "FHIR.Coverage.CostToBeneficiary.Exception") #f))
    ()
-   ())
-  (type "FHIR.Coverage.CostToBeneficiary.Exception" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("period" "FHIR.Period" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Coverage.CostToBeneficiary.Exception" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("period" "FHIR.Period" #f)) () () #f)
   (type
    "FHIR.CoverageEligibilityRequest"
    "FHIR.DomainResource"
@@ -2296,8 +2431,9 @@
     ("insurance" (list "FHIR.CoverageEligibilityRequest.Insurance") #f)
     ("item" (list "FHIR.CoverageEligibilityRequest.Item") #f))
    (("Practitioner" "enterer") ("Practitioner" "provider") ("Patient" "patient"))
-   (("created" "created") ("enterer" "enterer") ("status" "status") ("facility" "facility") ("patient" "patient") ("identifier" "identifier") ("provider" "provider")))
-  (type "FHIR.CoverageEligibilityRequest.Insurance" "FHIR.BackboneElement" #f #f #f #f (("focal" "FHIR.boolean" #f) ("coverage" "FHIR.Reference" #f) ("businessArrangement" "FHIR.string" #f)) () ())
+   (("created" "created") ("enterer" "enterer") ("status" "status") ("facility" "facility") ("patient" "patient") ("identifier" "identifier") ("provider" "provider"))
+   #f)
+  (type "FHIR.CoverageEligibilityRequest.Insurance" "FHIR.BackboneElement" #f #f #f #f (("focal" "FHIR.boolean" #f) ("coverage" "FHIR.Reference" #f) ("businessArrangement" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.CoverageEligibilityRequest.Item"
    "FHIR.BackboneElement"
@@ -2316,8 +2452,9 @@
     ("diagnosis" (list "FHIR.CoverageEligibilityRequest.Item.Diagnosis") #f)
     ("detail" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.CoverageEligibilityRequest.Item.Diagnosis" "FHIR.BackboneElement" #f #f #f #f (("diagnosis" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CoverageEligibilityRequest.Item.Diagnosis" "FHIR.BackboneElement" #f #f #f #f (("diagnosis" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () () #f)
   (type
    "FHIR.CoverageEligibilityRequest.SupportingInfo"
    "FHIR.BackboneElement"
@@ -2327,7 +2464,8 @@
    #f
    (("sequence" "FHIR.positiveInt" #f) ("information" "FHIR.Reference" #f) ("appliesToAll" "FHIR.boolean" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.CoverageEligibilityResponse"
    "FHIR.DomainResource"
@@ -2359,8 +2497,9 @@
     ("patient" "patient")
     ("outcome" "outcome")
     ("identifier" "identifier")
-    ("status" "status")))
-  (type "FHIR.CoverageEligibilityResponse.Error" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f)) () ())
+    ("status" "status"))
+   #f)
+  (type "FHIR.CoverageEligibilityResponse.Error" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.CoverageEligibilityResponse.Insurance"
    "FHIR.BackboneElement"
@@ -2370,7 +2509,8 @@
    #f
    (("coverage" "FHIR.Reference" #f) ("inforce" "FHIR.boolean" #f) ("benefitPeriod" "FHIR.Period" #f) ("item" (list "FHIR.CoverageEligibilityResponse.Insurance.Item") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.CoverageEligibilityResponse.Insurance.Item"
    "FHIR.BackboneElement"
@@ -2393,7 +2533,8 @@
     ("authorizationSupporting" (list "FHIR.CodeableConcept") #f)
     ("authorizationUrl" "FHIR.uri" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.CoverageEligibilityResponse.Insurance.Item.Benefit"
    "FHIR.BackboneElement"
@@ -2403,9 +2544,10 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("allowed" (choice "FHIR.unsignedInt" "FHIR.string" "FHIR.Money") #f) ("used" (choice "FHIR.unsignedInt" "FHIR.string" "FHIR.Money") #f))
    ()
-   ())
-  (type "FHIR.CoverageStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.CurrencyCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.CoverageStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.CurrencyCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DataRequirement"
    "FHIR.Element"
@@ -2422,7 +2564,8 @@
     ("limit" "FHIR.positiveInt" #f)
     ("sort" (list "FHIR.DataRequirement.Sort") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.DataRequirement.CodeFilter"
    "FHIR.Element"
@@ -2432,7 +2575,8 @@
    #f
    (("path" "FHIR.string" #f) ("searchParam" "FHIR.string" #f) ("valueSet" "FHIR.canonical" #f) ("code" (list "FHIR.Coding") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.DataRequirement.DateFilter"
    "FHIR.Element"
@@ -2442,10 +2586,11 @@
    #f
    (("path" "FHIR.string" #f) ("searchParam" "FHIR.string" #f) ("value" (choice "FHIR.dateTime" "FHIR.Period" "FHIR.Duration") #f))
    ()
-   ())
-  (type "FHIR.DataRequirement.Sort" "FHIR.Element" #f #f #f #f (("path" "FHIR.string" #f) ("direction" "FHIR.SortDirection" #f)) () ())
-  (type "FHIR.DayOfWeek" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DaysOfWeek" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.DataRequirement.Sort" "FHIR.Element" #f #f #f #f (("path" "FHIR.string" #f) ("direction" "FHIR.SortDirection" #f)) () () #f)
+  (type "FHIR.DayOfWeek" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DaysOfWeek" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DetectedIssue"
    "FHIR.DomainResource"
@@ -2466,11 +2611,12 @@
     ("reference" "FHIR.uri" #f)
     ("mitigation" (list "FHIR.DetectedIssue.Mitigation") #f))
    (("Practitioner" "author") ("Patient" "patient") ("Device" "author"))
-   (("identifier" "identifier") ("patient" "patient") ("author" "author") ("implicated" "implicated") ("identified" "identified") ("code" "code")))
-  (type "FHIR.DetectedIssue.Evidence" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("detail" (list "FHIR.Reference") #f)) () ())
-  (type "FHIR.DetectedIssue.Mitigation" "FHIR.BackboneElement" #f #f #f #f (("action" "FHIR.CodeableConcept" #f) ("date" "FHIR.dateTime" #f) ("author" "FHIR.Reference" #f)) () ())
-  (type "FHIR.DetectedIssueSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DetectedIssueStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("identifier" "identifier") ("patient" "patient") ("author" "author") ("implicated" "implicated") ("identified" "identified") ("code" "code"))
+   #f)
+  (type "FHIR.DetectedIssue.Evidence" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("detail" (list "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.DetectedIssue.Mitigation" "FHIR.BackboneElement" #f #f #f #f (("action" "FHIR.CodeableConcept" #f) ("date" "FHIR.dateTime" #f) ("author" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.DetectedIssueSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DetectedIssueStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Device"
    "FHIR.DomainResource"
@@ -2516,10 +2662,21 @@
     ("udi-di" "udiCarrier.deviceIdentifier")
     ("device-name" "deviceName.name|type.coding.display|type.text")
     ("status" "status")
-    ("organization" "owner")))
-  (type "FHIR.Device.DeviceName" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.DeviceNameType" #f)) () ())
-  (type "FHIR.Device.Property" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("valueQuantity" (list "FHIR.Quantity") #f) ("valueCode" (list "FHIR.CodeableConcept") #f)) () ())
-  (type "FHIR.Device.Specialization" "FHIR.BackboneElement" #f #f #f #f (("systemType" "FHIR.CodeableConcept" #f) ("version" "FHIR.string" #f)) () ())
+    ("organization" "owner"))
+   #f)
+  (type "FHIR.Device.DeviceName" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.DeviceNameType" #f)) () () #f)
+  (type
+   "FHIR.Device.Property"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("type" "FHIR.CodeableConcept" #f) ("valueQuantity" (list "FHIR.Quantity") #f) ("valueCode" (list "FHIR.CodeableConcept") #f))
+   ()
+   ()
+   #f)
+  (type "FHIR.Device.Specialization" "FHIR.BackboneElement" #f #f #f #f (("systemType" "FHIR.CodeableConcept" #f) ("version" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.Device.UdiCarrier"
    "FHIR.BackboneElement"
@@ -2534,8 +2691,9 @@
     ("carrierHRF" "FHIR.string" #f)
     ("entryType" "FHIR.UDIEntryType" #f))
    ()
-   ())
-  (type "FHIR.Device.Version" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("component" "FHIR.Identifier" #f) ("value" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Device.Version" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("component" "FHIR.Identifier" #f) ("value" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.DeviceDefinition"
    "FHIR.DomainResource"
@@ -2566,10 +2724,21 @@
     ("parentDevice" "FHIR.Reference" #f)
     ("material" (list "FHIR.DeviceDefinition.Material") #f))
    ()
-   (("identifier" "identifier") ("parent" "parentDevice") ("type" "type")))
-  (type "FHIR.DeviceDefinition.Capability" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("description" (list "FHIR.CodeableConcept") #f)) () ())
-  (type "FHIR.DeviceDefinition.DeviceName" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.DeviceNameType" #f)) () ())
-  (type "FHIR.DeviceDefinition.Material" "FHIR.BackboneElement" #f #f #f #f (("substance" "FHIR.CodeableConcept" #f) ("alternate" "FHIR.boolean" #f) ("allergenicIndicator" "FHIR.boolean" #f)) () ())
+   (("identifier" "identifier") ("parent" "parentDevice") ("type" "type"))
+   #f)
+  (type "FHIR.DeviceDefinition.Capability" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("description" (list "FHIR.CodeableConcept") #f)) () () #f)
+  (type "FHIR.DeviceDefinition.DeviceName" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.DeviceNameType" #f)) () () #f)
+  (type
+   "FHIR.DeviceDefinition.Material"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("substance" "FHIR.CodeableConcept" #f) ("alternate" "FHIR.boolean" #f) ("allergenicIndicator" "FHIR.boolean" #f))
+   ()
+   ()
+   #f)
   (type
    "FHIR.DeviceDefinition.Property"
    "FHIR.BackboneElement"
@@ -2579,9 +2748,10 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("valueQuantity" (list "FHIR.Quantity") #f) ("valueCode" (list "FHIR.CodeableConcept") #f))
    ()
-   ())
-  (type "FHIR.DeviceDefinition.Specialization" "FHIR.BackboneElement" #f #f #f #f (("systemType" "FHIR.string" #f) ("version" "FHIR.string" #f)) () ())
-  (type "FHIR.DeviceDefinition.UdiDeviceIdentifier" "FHIR.BackboneElement" #f #f #f #f (("deviceIdentifier" "FHIR.string" #f) ("issuer" "FHIR.uri" #f) ("jurisdiction" "FHIR.uri" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.DeviceDefinition.Specialization" "FHIR.BackboneElement" #f #f #f #f (("systemType" "FHIR.string" #f) ("version" "FHIR.string" #f)) () () #f)
+  (type "FHIR.DeviceDefinition.UdiDeviceIdentifier" "FHIR.BackboneElement" #f #f #f #f (("deviceIdentifier" "FHIR.string" #f) ("issuer" "FHIR.uri" #f) ("jurisdiction" "FHIR.uri" #f)) () () #f)
   (type
    "FHIR.DeviceMetric"
    "FHIR.DomainResource"
@@ -2600,7 +2770,8 @@
     ("measurementPeriod" "FHIR.Timing" #f)
     ("calibration" (list "FHIR.DeviceMetric.Calibration") #f))
    ()
-   (("identifier" "identifier") ("type" "type") ("category" "category") ("source" "source") ("parent" "parent")))
+   (("identifier" "identifier") ("type" "type") ("category" "category") ("source" "source") ("parent" "parent"))
+   #f)
   (type
    "FHIR.DeviceMetric.Calibration"
    "FHIR.BackboneElement"
@@ -2610,13 +2781,14 @@
    #f
    (("type" "FHIR.DeviceMetricCalibrationType" #f) ("state" "FHIR.DeviceMetricCalibrationState" #f) ("time" "FHIR.instant" #f))
    ()
-   ())
-  (type "FHIR.DeviceMetricCalibrationState" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DeviceMetricCalibrationType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DeviceMetricCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DeviceMetricColor" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DeviceMetricOperationalStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DeviceNameType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.DeviceMetricCalibrationState" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DeviceMetricCalibrationType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DeviceMetricCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DeviceMetricColor" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DeviceMetricOperationalStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DeviceNameType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DeviceRequest"
    "FHIR.DomainResource"
@@ -2671,7 +2843,8 @@
     ("performer" "performer")
     ("status" "status")
     ("group-identifier" "groupIdentifier")
-    ("insurance" "insurance")))
+    ("insurance" "insurance"))
+   #f)
   (type
    "FHIR.DeviceRequest.Parameter"
    "FHIR.BackboneElement"
@@ -2681,8 +2854,9 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("value" (choice "FHIR.CodeableConcept" "FHIR.Quantity" "FHIR.Range" "FHIR.boolean") #f))
    ()
-   ())
-  (type "FHIR.DeviceRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.DeviceRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DeviceUseStatement"
    "FHIR.DomainResource"
@@ -2704,8 +2878,9 @@
     ("bodySite" "FHIR.CodeableConcept" #f)
     ("note" (list "FHIR.Annotation") #f))
    (("Patient" "subject") ("Device" "device"))
-   (("patient" "subject") ("subject" "subject") ("identifier" "identifier") ("device" "device")))
-  (type "FHIR.DeviceUseStatementStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("patient" "subject") ("subject" "subject") ("identifier" "identifier") ("device" "device"))
+   #f)
+  (type "FHIR.DeviceUseStatementStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DiagnosticReport"
    "FHIR.DomainResource"
@@ -2747,12 +2922,13 @@
     ("category" "category")
     ("specimen" "specimen")
     ("performer" "performer")
-    ("status" "status")))
-  (type "FHIR.DiagnosticReport.Media" "FHIR.BackboneElement" #f #f #f #f (("comment" "FHIR.string" #f) ("link" "FHIR.Reference" #f)) () ())
-  (type "FHIR.DiagnosticReportStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DiscriminatorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Distance" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Distance" "Distance" #f #f () () ())
-  (type "FHIR.DocumentConfidentiality" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("status" "status"))
+   #f)
+  (type "FHIR.DiagnosticReport.Media" "FHIR.BackboneElement" #f #f #f #f (("comment" "FHIR.string" #f) ("link" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.DiagnosticReportStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DiscriminatorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Distance" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Distance" "Distance" #f #f () () () #f)
+  (type "FHIR.DocumentConfidentiality" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DocumentManifest"
    "FHIR.DomainResource"
@@ -2795,9 +2971,10 @@
     ("subject" "subject")
     ("status" "status")
     ("description" "description")
-    ("recipient" "recipient")))
-  (type "FHIR.DocumentManifest.Related" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.Identifier" #f) ("ref" "FHIR.Reference" #f)) () ())
-  (type "FHIR.DocumentMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("recipient" "recipient"))
+   #f)
+  (type "FHIR.DocumentManifest.Related" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.Identifier" #f) ("ref" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.DocumentMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DocumentReference"
    "FHIR.DomainResource"
@@ -2853,8 +3030,9 @@
     ("relatesto" "relatesTo.target")
     ("subject" "subject")
     ("language" "content.attachment.language")
-    ("period" "context.period")))
-  (type "FHIR.DocumentReference.Content" "FHIR.BackboneElement" #f #f #f #f (("attachment" "FHIR.Attachment" #f) ("format" "FHIR.Coding" #f)) () ())
+    ("period" "context.period"))
+   #f)
+  (type "FHIR.DocumentReference.Content" "FHIR.BackboneElement" #f #f #f #f (("attachment" "FHIR.Attachment" #f) ("format" "FHIR.Coding" #f)) () () #f)
   (type
    "FHIR.DocumentReference.Context"
    "FHIR.BackboneElement"
@@ -2870,10 +3048,11 @@
     ("sourcePatientInfo" "FHIR.Reference" #f)
     ("related" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.DocumentReference.RelatesTo" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.DocumentRelationshipType" #f) ("target" "FHIR.Reference" #f)) () ())
-  (type "FHIR.DocumentReferenceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.DocumentRelationshipType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.DocumentReference.RelatesTo" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.DocumentRelationshipType" #f) ("target" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.DocumentReferenceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.DocumentRelationshipType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.DomainResource"
    "FHIR.Resource"
@@ -2883,7 +3062,8 @@
    #f
    (("text" "FHIR.Narrative" #f) ("contained" (list "FHIR.Resource") #f) ("extension" (list "FHIR.Extension") #f) ("modifierExtension" (list "FHIR.Extension") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Dosage"
    "FHIR.BackboneElement"
@@ -2905,7 +3085,8 @@
     ("maxDosePerAdministration" "FHIR.SimpleQuantity" #f)
     ("maxDosePerLifetime" "FHIR.SimpleQuantity" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Dosage.DoseAndRate"
    "FHIR.Element"
@@ -2915,8 +3096,9 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("dose" (choice "FHIR.Range" "FHIR.SimpleQuantity") #f) ("rate" (choice "FHIR.Ratio" "FHIR.Range" "FHIR.SimpleQuantity") #f))
    ()
-   ())
-  (type "FHIR.Duration" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Duration" "Duration" #f #f () () ())
+   ()
+   #f)
+  (type "FHIR.Duration" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/Duration" "Duration" #f #f () () () #f)
   (type
    "FHIR.EffectEvidenceSynthesis"
    "FHIR.DomainResource"
@@ -2969,7 +3151,8 @@
     ("identifier" "identifier")
     ("jurisdiction" "jurisdiction")
     ("version" "version")
-    ("date" "date")))
+    ("date" "date"))
+   #f)
   (type
    "FHIR.EffectEvidenceSynthesis.Certainty"
    "FHIR.BackboneElement"
@@ -2979,7 +3162,8 @@
    #f
    (("rating" (list "FHIR.CodeableConcept") #f) ("note" (list "FHIR.Annotation") #f) ("certaintySubcomponent" (list "FHIR.EffectEvidenceSynthesis.Certainty.CertaintySubcomponent") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.EffectEvidenceSynthesis.Certainty.CertaintySubcomponent"
    "FHIR.BackboneElement"
@@ -2989,7 +3173,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("rating" (list "FHIR.CodeableConcept") #f) ("note" (list "FHIR.Annotation") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.EffectEvidenceSynthesis.EffectEstimate"
    "FHIR.BackboneElement"
@@ -3004,7 +3189,8 @@
     ("unitOfMeasure" "FHIR.CodeableConcept" #f)
     ("precisionEstimate" (list "FHIR.EffectEvidenceSynthesis.EffectEstimate.PrecisionEstimate") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.EffectEvidenceSynthesis.EffectEstimate.PrecisionEstimate"
    "FHIR.BackboneElement"
@@ -3014,7 +3200,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("level" "FHIR.decimal" #f) ("from" "FHIR.decimal" #f) ("to" "FHIR.decimal" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.EffectEvidenceSynthesis.ResultsByExposure"
    "FHIR.BackboneElement"
@@ -3024,7 +3211,8 @@
    #f
    (("description" "FHIR.string" #f) ("exposureState" "FHIR.ExposureState" #f) ("variantState" "FHIR.CodeableConcept" #f) ("riskEvidenceSynthesis" "FHIR.Reference" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.EffectEvidenceSynthesis.SampleSize"
    "FHIR.BackboneElement"
@@ -3034,8 +3222,9 @@
    #f
    (("description" "FHIR.string" #f) ("numberOfStudies" "FHIR.integer" #f) ("numberOfParticipants" "FHIR.integer" #f))
    ()
-   ())
-  (type "FHIR.Element" "System.Any" "http://hl7.org/fhir/StructureDefinition/Element" "Element" #f #f (("id" "System.String" #f) ("extension" (list "FHIR.Extension") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Element" "System.Any" "http://hl7.org/fhir/StructureDefinition/Element" "Element" #f #f (("id" "System.String" #f) ("extension" (list "FHIR.Extension") #f)) () () #f)
   (type
    "FHIR.ElementDefinition"
    "FHIR.BackboneElement"
@@ -3234,9 +3423,10 @@
     ("binding" "FHIR.ElementDefinition.Binding" #f)
     ("mapping" (list "FHIR.ElementDefinition.Mapping") #f))
    ()
-   ())
-  (type "FHIR.ElementDefinition.Base" "FHIR.Element" #f #f #f #f (("path" "FHIR.string" #f) ("min" "FHIR.unsignedInt" #f) ("max" "FHIR.string" #f)) () ())
-  (type "FHIR.ElementDefinition.Binding" "FHIR.Element" #f #f #f #f (("strength" "FHIR.BindingStrength" #f) ("description" "FHIR.string" #f) ("valueSet" "FHIR.canonical" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ElementDefinition.Base" "FHIR.Element" #f #f #f #f (("path" "FHIR.string" #f) ("min" "FHIR.unsignedInt" #f) ("max" "FHIR.string" #f)) () () #f)
+  (type "FHIR.ElementDefinition.Binding" "FHIR.Element" #f #f #f #f (("strength" "FHIR.BindingStrength" #f) ("description" "FHIR.string" #f) ("valueSet" "FHIR.canonical" #f)) () () #f)
   (type
    "FHIR.ElementDefinition.Constraint"
    "FHIR.Element"
@@ -3252,7 +3442,8 @@
     ("xpath" "FHIR.string" #f)
     ("source" "FHIR.canonical" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ElementDefinition.Example"
    "FHIR.Element"
@@ -3315,8 +3506,9 @@
       "FHIR.Meta")
      #f))
    ()
-   ())
-  (type "FHIR.ElementDefinition.Mapping" "FHIR.Element" #f #f #f #f (("identity" "FHIR.id" #f) ("language" "FHIR.MimeType" #f) ("map" "FHIR.string" #f) ("comment" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ElementDefinition.Mapping" "FHIR.Element" #f #f #f #f (("identity" "FHIR.id" #f) ("language" "FHIR.MimeType" #f) ("map" "FHIR.string" #f) ("comment" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.ElementDefinition.Slicing"
    "FHIR.Element"
@@ -3326,8 +3518,9 @@
    #f
    (("discriminator" (list "FHIR.ElementDefinition.Slicing.Discriminator") #f) ("description" "FHIR.string" #f) ("ordered" "FHIR.boolean" #f) ("rules" "FHIR.SlicingRules" #f))
    ()
-   ())
-  (type "FHIR.ElementDefinition.Slicing.Discriminator" "FHIR.Element" #f #f #f #f (("type" "FHIR.DiscriminatorType" #f) ("path" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ElementDefinition.Slicing.Discriminator" "FHIR.Element" #f #f #f #f (("type" "FHIR.DiscriminatorType" #f) ("path" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.ElementDefinition.Type"
    "FHIR.Element"
@@ -3341,12 +3534,13 @@
     ("aggregation" (list "FHIR.AggregationMode") #f)
     ("versioning" "FHIR.ReferenceVersionRules" #f))
    ()
-   ())
-  (type "FHIR.EligibilityRequestPurpose" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.EligibilityRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.EligibilityResponsePurpose" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.EligibilityResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.EnableWhenBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.EligibilityRequestPurpose" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.EligibilityRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.EligibilityResponsePurpose" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.EligibilityResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.EnableWhenBehavior" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Encounter"
    "FHIR.DomainResource"
@@ -3400,9 +3594,10 @@
     ("location" "location.location")
     ("participant-type" "participant.type")
     ("part-of" "partOf")
-    ("length" "length")))
-  (type "FHIR.Encounter.ClassHistory" "FHIR.BackboneElement" #f #f #f #f (("class" "FHIR.Coding" #f) ("period" "FHIR.Period" #f)) () ())
-  (type "FHIR.Encounter.Diagnosis" "FHIR.BackboneElement" #f #f #f #f (("condition" "FHIR.Reference" #f) ("use" "FHIR.CodeableConcept" #f) ("rank" "FHIR.positiveInt" #f)) () ())
+    ("length" "length"))
+   #f)
+  (type "FHIR.Encounter.ClassHistory" "FHIR.BackboneElement" #f #f #f #f (("class" "FHIR.Coding" #f) ("period" "FHIR.Period" #f)) () () #f)
+  (type "FHIR.Encounter.Diagnosis" "FHIR.BackboneElement" #f #f #f #f (("condition" "FHIR.Reference" #f) ("use" "FHIR.CodeableConcept" #f) ("rank" "FHIR.positiveInt" #f)) () () #f)
   (type
    "FHIR.Encounter.Hospitalization"
    "FHIR.BackboneElement"
@@ -3420,7 +3615,8 @@
     ("destination" "FHIR.Reference" #f)
     ("dischargeDisposition" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Encounter.Location"
    "FHIR.BackboneElement"
@@ -3430,11 +3626,12 @@
    #f
    (("location" "FHIR.Reference" #f) ("status" "FHIR.EncounterLocationStatus" #f) ("physicalType" "FHIR.CodeableConcept" #f) ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.Encounter.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" (list "FHIR.CodeableConcept") #f) ("period" "FHIR.Period" #f) ("individual" "FHIR.Reference" #f)) () ())
-  (type "FHIR.Encounter.StatusHistory" "FHIR.BackboneElement" #f #f #f #f (("status" "FHIR.EncounterStatus" #f) ("period" "FHIR.Period" #f)) () ())
-  (type "FHIR.EncounterLocationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.EncounterStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Encounter.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" (list "FHIR.CodeableConcept") #f) ("period" "FHIR.Period" #f) ("individual" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.Encounter.StatusHistory" "FHIR.BackboneElement" #f #f #f #f (("status" "FHIR.EncounterStatus" #f) ("period" "FHIR.Period" #f)) () () #f)
+  (type "FHIR.EncounterLocationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.EncounterStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Endpoint"
    "FHIR.DomainResource"
@@ -3454,8 +3651,9 @@
     ("address" "FHIR.url" #f)
     ("header" (list "FHIR.string") #f))
    ()
-   (("name" "name") ("payload-type" "payloadType") ("status" "status") ("identifier" "identifier") ("connection-type" "connectionType") ("organization" "managingOrganization")))
-  (type "FHIR.EndpointStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("name" "name") ("payload-type" "payloadType") ("status" "status") ("identifier" "identifier") ("connection-type" "connectionType") ("organization" "managingOrganization"))
+   #f)
+  (type "FHIR.EndpointStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.EnrollmentRequest"
    "FHIR.DomainResource"
@@ -3471,8 +3669,9 @@
     ("candidate" "FHIR.Reference" #f)
     ("coverage" "FHIR.Reference" #f))
    (("Patient" "candidate"))
-   (("identifier" "identifier") ("patient" "candidate") ("subject" "candidate") ("status" "status")))
-  (type "FHIR.EnrollmentRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("identifier" "identifier") ("patient" "candidate") ("subject" "candidate") ("status" "status"))
+   #f)
+  (type "FHIR.EnrollmentRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.EnrollmentResponse"
    "FHIR.DomainResource"
@@ -3489,8 +3688,9 @@
     ("organization" "FHIR.Reference" #f)
     ("requestProvider" "FHIR.Reference" #f))
    ()
-   (("request" "request") ("identifier" "identifier") ("status" "status")))
-  (type "FHIR.EnrollmentResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("request" "request") ("identifier" "identifier") ("status" "status"))
+   #f)
+  (type "FHIR.EnrollmentResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.EpisodeOfCare"
    "FHIR.DomainResource"
@@ -3519,11 +3719,12 @@
     ("patient" "patient")
     ("status" "status")
     ("care-manager" "careManager.where(resolve() is Practitioner)")
-    ("incoming-referral" "referralRequest")))
-  (type "FHIR.EpisodeOfCare.Diagnosis" "FHIR.BackboneElement" #f #f #f #f (("condition" "FHIR.Reference" #f) ("role" "FHIR.CodeableConcept" #f) ("rank" "FHIR.positiveInt" #f)) () ())
-  (type "FHIR.EpisodeOfCare.StatusHistory" "FHIR.BackboneElement" #f #f #f #f (("status" "FHIR.EpisodeOfCareStatus" #f) ("period" "FHIR.Period" #f)) () ())
-  (type "FHIR.EpisodeOfCareStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.EventCapabilityMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("incoming-referral" "referralRequest"))
+   #f)
+  (type "FHIR.EpisodeOfCare.Diagnosis" "FHIR.BackboneElement" #f #f #f #f (("condition" "FHIR.Reference" #f) ("role" "FHIR.CodeableConcept" #f) ("rank" "FHIR.positiveInt" #f)) () () #f)
+  (type "FHIR.EpisodeOfCare.StatusHistory" "FHIR.BackboneElement" #f #f #f #f (("status" "FHIR.EpisodeOfCareStatus" #f) ("period" "FHIR.Period" #f)) () () #f)
+  (type "FHIR.EpisodeOfCareStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.EventCapabilityMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.EventDefinition"
    "FHIR.DomainResource"
@@ -3577,8 +3778,9 @@
     ("description" "description")
     ("date" "date")
     ("derived-from" "relatedArtifact.where(type='derived-from').resource")
-    ("title" "title")))
-  (type "FHIR.EventTiming" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("title" "title"))
+   #f)
+  (type "FHIR.EventTiming" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Evidence"
    "FHIR.DomainResource"
@@ -3632,7 +3834,8 @@
     ("successor" "relatedArtifact.where(type='successor').resource")
     ("effective" "effectivePeriod")
     ("url" "url")
-    ("jurisdiction" "jurisdiction")))
+    ("jurisdiction" "jurisdiction"))
+   #f)
   (type
    "FHIR.EvidenceVariable"
    "FHIR.DomainResource"
@@ -3685,7 +3888,8 @@
     ("description" "description")
     ("depends-on" "relatedArtifact.where(type='depends-on').resource")
     ("status" "status")
-    ("derived-from" "relatedArtifact.where(type='derived-from').resource")))
+    ("derived-from" "relatedArtifact.where(type='derived-from').resource"))
+   #f)
   (type
    "FHIR.EvidenceVariable.Characteristic"
    "FHIR.BackboneElement"
@@ -3701,8 +3905,9 @@
     ("timeFromStart" "FHIR.Duration" #f)
     ("groupMeasure" "FHIR.GroupMeasure" #f))
    ()
-   ())
-  (type "FHIR.EvidenceVariableType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.EvidenceVariableType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ExampleScenario"
    "FHIR.DomainResource"
@@ -3736,7 +3941,8 @@
     ("publisher" "publisher")
     ("name" "name")
     ("context-type" "useContext.code")
-    ("jurisdiction" "jurisdiction")))
+    ("jurisdiction" "jurisdiction"))
+   #f)
   (type
    "FHIR.ExampleScenario.Actor"
    "FHIR.BackboneElement"
@@ -3746,7 +3952,8 @@
    #f
    (("actorId" "FHIR.string" #f) ("type" "FHIR.ExampleScenarioActorType" #f) ("name" "FHIR.string" #f) ("description" "FHIR.markdown" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExampleScenario.Instance"
    "FHIR.BackboneElement"
@@ -3761,9 +3968,10 @@
     ("version" (list "FHIR.ExampleScenario.Instance.Version") #f)
     ("containedInstance" (list "FHIR.ExampleScenario.Instance.ContainedInstance") #f))
    ()
-   ())
-  (type "FHIR.ExampleScenario.Instance.ContainedInstance" "FHIR.BackboneElement" #f #f #f #f (("resourceId" "FHIR.string" #f) ("versionId" "FHIR.string" #f)) () ())
-  (type "FHIR.ExampleScenario.Instance.Version" "FHIR.BackboneElement" #f #f #f #f (("versionId" "FHIR.string" #f) ("description" "FHIR.markdown" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExampleScenario.Instance.ContainedInstance" "FHIR.BackboneElement" #f #f #f #f (("resourceId" "FHIR.string" #f) ("versionId" "FHIR.string" #f)) () () #f)
+  (type "FHIR.ExampleScenario.Instance.Version" "FHIR.BackboneElement" #f #f #f #f (("versionId" "FHIR.string" #f) ("description" "FHIR.markdown" #f)) () () #f)
   (type
    "FHIR.ExampleScenario.Process"
    "FHIR.BackboneElement"
@@ -3773,7 +3981,8 @@
    #f
    (("title" "FHIR.string" #f) ("description" "FHIR.markdown" #f) ("preConditions" "FHIR.markdown" #f) ("postConditions" "FHIR.markdown" #f) ("step" (list "FHIR.ExampleScenario.Process.Step") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExampleScenario.Process.Step"
    "FHIR.BackboneElement"
@@ -3786,7 +3995,8 @@
     ("operation" "FHIR.ExampleScenario.Process.Step.Operation" #f)
     ("alternative" (list "FHIR.ExampleScenario.Process.Step.Alternative") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExampleScenario.Process.Step.Alternative"
    "FHIR.BackboneElement"
@@ -3796,7 +4006,8 @@
    #f
    (("title" "FHIR.string" #f) ("description" "FHIR.markdown" #f) ("step" (list "FHIR.ExampleScenario.Process.Step") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExampleScenario.Process.Step.Operation"
    "FHIR.BackboneElement"
@@ -3815,8 +4026,9 @@
     ("request" "FHIR.ExampleScenario.Instance.ContainedInstance" #f)
     ("response" "FHIR.ExampleScenario.Instance.ContainedInstance" #f))
    ()
-   ())
-  (type "FHIR.ExampleScenarioActorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExampleScenarioActorType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ExplanationOfBenefit"
    "FHIR.DomainResource"
@@ -3895,7 +4107,8 @@
     ("item-udi" "item.udi")
     ("detail-udi" "item.detail.udi")
     ("coverage" "insurance.coverage")
-    ("status" "status")))
+    ("status" "status"))
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.Accident"
    "FHIR.BackboneElement"
@@ -3905,7 +4118,8 @@
    #f
    (("date" "FHIR.date" #f) ("type" "FHIR.CodeableConcept" #f) ("location" (choice "FHIR.Address" "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.AddItem"
    "FHIR.BackboneElement"
@@ -3932,7 +4146,8 @@
     ("adjudication" (list "FHIR.ExplanationOfBenefit.Item.Adjudication") #f)
     ("detail" (list "FHIR.ExplanationOfBenefit.AddItem.Detail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.AddItem.Detail"
    "FHIR.BackboneElement"
@@ -3950,7 +4165,8 @@
     ("adjudication" (list "FHIR.ExplanationOfBenefit.Item.Adjudication") #f)
     ("subDetail" (list "FHIR.ExplanationOfBenefit.AddItem.Detail.SubDetail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.AddItem.Detail.SubDetail"
    "FHIR.BackboneElement"
@@ -3967,7 +4183,8 @@
     ("noteNumber" (list "FHIR.positiveInt") #f)
     ("adjudication" (list "FHIR.ExplanationOfBenefit.Item.Adjudication") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.BenefitBalance"
    "FHIR.BackboneElement"
@@ -3984,7 +4201,8 @@
     ("term" "FHIR.CodeableConcept" #f)
     ("financial" (list "FHIR.ExplanationOfBenefit.BenefitBalance.Financial") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.BenefitBalance.Financial"
    "FHIR.BackboneElement"
@@ -3994,7 +4212,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("allowed" (choice "FHIR.unsignedInt" "FHIR.string" "FHIR.Money") #f) ("used" (choice "FHIR.unsignedInt" "FHIR.Money") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.CareTeam"
    "FHIR.BackboneElement"
@@ -4004,7 +4223,8 @@
    #f
    (("sequence" "FHIR.positiveInt" #f) ("provider" "FHIR.Reference" #f) ("responsible" "FHIR.boolean" #f) ("role" "FHIR.CodeableConcept" #f) ("qualification" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.Diagnosis"
    "FHIR.BackboneElement"
@@ -4018,8 +4238,9 @@
     ("onAdmission" "FHIR.CodeableConcept" #f)
     ("packageCode" "FHIR.CodeableConcept" #f))
    ()
-   ())
-  (type "FHIR.ExplanationOfBenefit.Insurance" "FHIR.BackboneElement" #f #f #f #f (("focal" "FHIR.boolean" #f) ("coverage" "FHIR.Reference" #f) ("preAuthRef" (list "FHIR.string") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExplanationOfBenefit.Insurance" "FHIR.BackboneElement" #f #f #f #f (("focal" "FHIR.boolean" #f) ("coverage" "FHIR.Reference" #f) ("preAuthRef" (list "FHIR.string") #f)) () () #f)
   (type
    "FHIR.ExplanationOfBenefit.Item"
    "FHIR.BackboneElement"
@@ -4051,7 +4272,8 @@
     ("adjudication" (list "FHIR.ExplanationOfBenefit.Item.Adjudication") #f)
     ("detail" (list "FHIR.ExplanationOfBenefit.Item.Detail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.Item.Adjudication"
    "FHIR.BackboneElement"
@@ -4061,7 +4283,8 @@
    #f
    (("category" "FHIR.CodeableConcept" #f) ("reason" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Money" #f) ("value" "FHIR.decimal" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.Item.Detail"
    "FHIR.BackboneElement"
@@ -4084,7 +4307,8 @@
     ("adjudication" (list "FHIR.ExplanationOfBenefit.Item.Adjudication") #f)
     ("subDetail" (list "FHIR.ExplanationOfBenefit.Item.Detail.SubDetail") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.Item.Detail.SubDetail"
    "FHIR.BackboneElement"
@@ -4106,8 +4330,9 @@
     ("noteNumber" (list "FHIR.positiveInt") #f)
     ("adjudication" (list "FHIR.ExplanationOfBenefit.Item.Adjudication") #f))
    ()
-   ())
-  (type "FHIR.ExplanationOfBenefit.Payee" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("party" "FHIR.Reference" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExplanationOfBenefit.Payee" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("party" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.ExplanationOfBenefit.Payment"
    "FHIR.BackboneElement"
@@ -4122,7 +4347,8 @@
     ("amount" "FHIR.Money" #f)
     ("identifier" "FHIR.Identifier" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.Procedure"
    "FHIR.BackboneElement"
@@ -4136,7 +4362,8 @@
     ("procedure" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)
     ("udi" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ExplanationOfBenefit.ProcessNote"
    "FHIR.BackboneElement"
@@ -4146,8 +4373,9 @@
    #f
    (("number" "FHIR.positiveInt" #f) ("type" "FHIR.NoteType" #f) ("text" "FHIR.string" #f) ("language" "FHIR.CodeableConcept" #f))
    ()
-   ())
-  (type "FHIR.ExplanationOfBenefit.Related" "FHIR.BackboneElement" #f #f #f #f (("claim" "FHIR.Reference" #f) ("relationship" "FHIR.CodeableConcept" #f) ("reference" "FHIR.Identifier" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExplanationOfBenefit.Related" "FHIR.BackboneElement" #f #f #f #f (("claim" "FHIR.Reference" #f) ("relationship" "FHIR.CodeableConcept" #f) ("reference" "FHIR.Identifier" #f)) () () #f)
   (type
    "FHIR.ExplanationOfBenefit.SupportingInfo"
    "FHIR.BackboneElement"
@@ -4162,10 +4390,11 @@
     ("value" (choice "FHIR.boolean" "FHIR.string" "FHIR.Quantity" "FHIR.Attachment" "FHIR.Reference") #f)
     ("reason" "FHIR.Coding" #f))
    ()
-   ())
-  (type "FHIR.ExplanationOfBenefit.Total" "FHIR.BackboneElement" #f #f #f #f (("category" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Money" #f)) () ())
-  (type "FHIR.ExplanationOfBenefitStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ExposureState" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExplanationOfBenefit.Total" "FHIR.BackboneElement" #f #f #f #f (("category" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Money" #f)) () () #f)
+  (type "FHIR.ExplanationOfBenefitStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ExposureState" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Expression"
    "FHIR.Element"
@@ -4175,7 +4404,8 @@
    #f
    (("description" "FHIR.string" #f) ("name" "FHIR.id" #f) ("language" "FHIR.code" #f) ("expression" "FHIR.string" #f) ("reference" "FHIR.uri" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Extension"
    "FHIR.Element"
@@ -4238,15 +4468,16 @@
       "FHIR.Meta")
      #f))
    ()
-   ())
-  (type "FHIR.ExtensionContextType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FHIRAllTypes" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FHIRDefinedType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FHIRDeviceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FHIRResourceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FHIRSubstanceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FHIRVersion" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.FamilyHistoryStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ExtensionContextType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FHIRAllTypes" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FHIRDefinedType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FHIRDeviceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FHIRResourceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FHIRSubstanceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FHIRVersion" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.FamilyHistoryStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.FamilyMemberHistory"
    "FHIR.DomainResource"
@@ -4281,7 +4512,8 @@
     ("relationship" "relationship")
     ("code" "condition.code")
     ("status" "status")
-    ("instantiates-uri" "instantiatesUri")))
+    ("instantiates-uri" "instantiatesUri"))
+   #f)
   (type
    "FHIR.FamilyMemberHistory.Condition"
    "FHIR.BackboneElement"
@@ -4295,8 +4527,9 @@
     ("onset" (choice "FHIR.Age" "FHIR.Range" "FHIR.Period" "FHIR.string") #f)
     ("note" (list "FHIR.Annotation") #f))
    ()
-   ())
-  (type "FHIR.FilterOperator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.FilterOperator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Flag"
    "FHIR.DomainResource"
@@ -4313,8 +4546,9 @@
     ("encounter" "FHIR.Reference" #f)
     ("author" "FHIR.Reference" #f))
    (("Practitioner" "author") ("Patient" "patient") ("Device" "author"))
-   (("date" "period") ("subject" "subject") ("encounter" "encounter") ("identifier" "identifier") ("patient" "subject.where(resolve() is Patient)") ("author" "author")))
-  (type "FHIR.FlagStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("date" "period") ("subject" "subject") ("encounter" "encounter") ("identifier" "identifier") ("patient" "subject.where(resolve() is Patient)") ("author" "author"))
+   #f)
+  (type "FHIR.FlagStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Goal"
    "FHIR.DomainResource"
@@ -4344,7 +4578,8 @@
     ("achievement-status" "achievementStatus")
     ("lifecycle-status" "lifecycleStatus")
     ("patient" "subject.where(resolve() is Patient)")
-    ("category" "category")))
+    ("category" "category"))
+   #f)
   (type
    "FHIR.Goal.Target"
    "FHIR.BackboneElement"
@@ -4356,10 +4591,11 @@
     ("detail" (choice "FHIR.Quantity" "FHIR.Range" "FHIR.CodeableConcept" "FHIR.string" "FHIR.boolean" "FHIR.integer" "FHIR.Ratio") #f)
     ("due" (choice "FHIR.date" "FHIR.Duration") #f))
    ()
-   ())
-  (type "FHIR.GoalLifecycleStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.GraphCompartmentRule" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.GraphCompartmentUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.GoalLifecycleStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.GraphCompartmentRule" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.GraphCompartmentUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.GraphDefinition"
    "FHIR.DomainResource"
@@ -4392,7 +4628,8 @@
     ("publisher" "publisher")
     ("name" "name")
     ("jurisdiction" "jurisdiction")
-    ("version" "version")))
+    ("version" "version"))
+   #f)
   (type
    "FHIR.GraphDefinition.Link"
    "FHIR.BackboneElement"
@@ -4407,7 +4644,8 @@
     ("description" "FHIR.string" #f)
     ("target" (list "FHIR.GraphDefinition.Link.Target") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.GraphDefinition.Link.Target"
    "FHIR.BackboneElement"
@@ -4421,7 +4659,8 @@
     ("compartment" (list "FHIR.GraphDefinition.Link.Target.Compartment") #f)
     ("link" (list "FHIR.GraphDefinition.Link") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.GraphDefinition.Link.Target.Compartment"
    "FHIR.BackboneElement"
@@ -4431,7 +4670,8 @@
    #f
    (("use" "FHIR.GraphCompartmentUse" #f) ("code" "FHIR.CompartmentCode" #f) ("rule" "FHIR.GraphCompartmentRule" #f) ("expression" "FHIR.string" #f) ("description" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Group"
    "FHIR.DomainResource"
@@ -4457,7 +4697,8 @@
     ("type" "type")
     ("identifier" "identifier")
     ("actual" "actual")
-    ("managing-entity" "managingEntity")))
+    ("managing-entity" "managingEntity"))
+   #f)
   (type
    "FHIR.Group.Characteristic"
    "FHIR.BackboneElement"
@@ -4470,10 +4711,11 @@
     ("exclude" "FHIR.boolean" #f)
     ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.Group.Member" "FHIR.BackboneElement" #f #f #f #f (("entity" "FHIR.Reference" #f) ("period" "FHIR.Period" #f) ("inactive" "FHIR.boolean" #f)) () ())
-  (type "FHIR.GroupMeasure" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.GroupType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Group.Member" "FHIR.BackboneElement" #f #f #f #f (("entity" "FHIR.Reference" #f) ("period" "FHIR.Period" #f) ("inactive" "FHIR.boolean" #f)) () () #f)
+  (type "FHIR.GroupMeasure" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.GroupType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.GuidanceResponse"
    "FHIR.DomainResource"
@@ -4497,11 +4739,12 @@
     ("result" "FHIR.Reference" #f)
     ("dataRequirement" (list "FHIR.DataRequirement") #f))
    ()
-   (("patient" "subject.where(resolve() is Patient)") ("request" "requestIdentifier") ("subject" "subject") ("identifier" "identifier")))
-  (type "FHIR.GuidanceResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.GuidePageGeneration" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.GuideParameterCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.HTTPVerb" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("patient" "subject.where(resolve() is Patient)") ("request" "requestIdentifier") ("subject" "subject") ("identifier" "identifier"))
+   #f)
+  (type "FHIR.GuidanceResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.GuidePageGeneration" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.GuideParameterCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.HTTPVerb" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.HealthcareService"
    "FHIR.DomainResource"
@@ -4545,7 +4788,8 @@
     ("active" "active")
     ("specialty" "specialty")
     ("endpoint" "endpoint")
-    ("organization" "providedBy")))
+    ("organization" "providedBy"))
+   #f)
   (type
    "FHIR.HealthcareService.AvailableTime"
    "FHIR.BackboneElement"
@@ -4555,9 +4799,10 @@
    #f
    (("daysOfWeek" (list "FHIR.DaysOfWeek") #f) ("allDay" "FHIR.boolean" #f) ("availableStartTime" "FHIR.time" #f) ("availableEndTime" "FHIR.time" #f))
    ()
-   ())
-  (type "FHIR.HealthcareService.Eligibility" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("comment" "FHIR.markdown" #f)) () ())
-  (type "FHIR.HealthcareService.NotAvailable" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("during" "FHIR.Period" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.HealthcareService.Eligibility" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("comment" "FHIR.markdown" #f)) () () #f)
+  (type "FHIR.HealthcareService.NotAvailable" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("during" "FHIR.Period" #f)) () () #f)
   (type
    "FHIR.HumanName"
    "FHIR.Element"
@@ -4573,7 +4818,8 @@
     ("suffix" (list "FHIR.string") #f)
     ("period" "FHIR.Period" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Identifier"
    "FHIR.Element"
@@ -4583,9 +4829,10 @@
    #f
    (("use" "FHIR.IdentifierUse" #f) ("type" "FHIR.CodeableConcept" #f) ("system" "FHIR.uri" #f) ("value" "FHIR.string" #f) ("period" "FHIR.Period" #f) ("assigner" "FHIR.Reference" #f))
    ()
-   ())
-  (type "FHIR.IdentifierUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.IdentityAssuranceLevel" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.IdentifierUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.IdentityAssuranceLevel" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ImagingStudy"
    "FHIR.DomainResource"
@@ -4630,7 +4877,8 @@
     ("subject" "subject")
     ("endpoint" "endpoint|series.endpoint")
     ("encounter" "encounter")
-    ("started" "started")))
+    ("started" "started"))
+   #f)
   (type
    "FHIR.ImagingStudy.Series"
    "FHIR.BackboneElement"
@@ -4651,10 +4899,21 @@
     ("performer" (list "FHIR.ImagingStudy.Series.Performer") #f)
     ("instance" (list "FHIR.ImagingStudy.Series.Instance") #f))
    ()
-   ())
-  (type "FHIR.ImagingStudy.Series.Instance" "FHIR.BackboneElement" #f #f #f #f (("uid" "FHIR.id" #f) ("sopClass" "FHIR.Coding" #f) ("number" "FHIR.unsignedInt" #f) ("title" "FHIR.string" #f)) () ())
-  (type "FHIR.ImagingStudy.Series.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () ())
-  (type "FHIR.ImagingStudyStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type
+   "FHIR.ImagingStudy.Series.Instance"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("uid" "FHIR.id" #f) ("sopClass" "FHIR.Coding" #f) ("number" "FHIR.unsignedInt" #f) ("title" "FHIR.string" #f))
+   ()
+   ()
+   #f)
+  (type "FHIR.ImagingStudy.Series.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.ImagingStudyStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Immunization"
    "FHIR.DomainResource"
@@ -4706,7 +4965,8 @@
     ("manufacturer" "manufacturer")
     ("status-reason" "statusReason")
     ("reason-reference" "reasonReference")
-    ("performer" "performer.actor")))
+    ("performer" "performer.actor"))
+   #f)
   (type
    "FHIR.Immunization.Education"
    "FHIR.BackboneElement"
@@ -4716,8 +4976,9 @@
    #f
    (("documentType" "FHIR.string" #f) ("reference" "FHIR.uri" #f) ("publicationDate" "FHIR.dateTime" #f) ("presentationDate" "FHIR.dateTime" #f))
    ()
-   ())
-  (type "FHIR.Immunization.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Immunization.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.Immunization.ProtocolApplied"
    "FHIR.BackboneElement"
@@ -4731,8 +4992,9 @@
     ("doseNumber" (choice "FHIR.positiveInt" "FHIR.string") #f)
     ("seriesDoses" (choice "FHIR.positiveInt" "FHIR.string") #f))
    ()
-   ())
-  (type "FHIR.Immunization.Reaction" "FHIR.BackboneElement" #f #f #f #f (("date" "FHIR.dateTime" #f) ("detail" "FHIR.Reference" #f) ("reported" "FHIR.boolean" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Immunization.Reaction" "FHIR.BackboneElement" #f #f #f #f (("date" "FHIR.dateTime" #f) ("detail" "FHIR.Reference" #f) ("reported" "FHIR.boolean" #f)) () () #f)
   (type
    "FHIR.ImmunizationEvaluation"
    "FHIR.DomainResource"
@@ -4754,8 +5016,9 @@
     ("doseNumber" (choice "FHIR.positiveInt" "FHIR.string") #f)
     ("seriesDoses" (choice "FHIR.positiveInt" "FHIR.string") #f))
    (("Patient" "patient"))
-   (("date" "date") ("immunization-event" "immunizationEvent") ("identifier" "identifier") ("dose-status" "doseStatus") ("patient" "patient") ("target-disease" "targetDisease") ("status" "status")))
-  (type "FHIR.ImmunizationEvaluationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("date" "date") ("immunization-event" "immunizationEvent") ("identifier" "identifier") ("dose-status" "doseStatus") ("patient" "patient") ("target-disease" "targetDisease") ("status" "status"))
+   #f)
+  (type "FHIR.ImmunizationEvaluationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ImmunizationRecommendation"
    "FHIR.DomainResource"
@@ -4776,7 +5039,8 @@
     ("date" "date")
     ("vaccine-type" "recommendation.vaccineCode")
     ("information" "recommendation.supportingPatientInformation")
-    ("identifier" "identifier")))
+    ("identifier" "identifier"))
+   #f)
   (type
    "FHIR.ImmunizationRecommendation.Recommendation"
    "FHIR.BackboneElement"
@@ -4797,9 +5061,10 @@
     ("supportingImmunization" (list "FHIR.Reference") #f)
     ("supportingPatientInformation" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.ImmunizationRecommendation.Recommendation.DateCriterion" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("value" "FHIR.dateTime" #f)) () ())
-  (type "FHIR.ImmunizationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ImmunizationRecommendation.Recommendation.DateCriterion" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("value" "FHIR.dateTime" #f)) () () #f)
+  (type "FHIR.ImmunizationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ImplementationGuide"
    "FHIR.DomainResource"
@@ -4841,7 +5106,8 @@
     ("experimental" "experimental")
     ("jurisdiction" "jurisdiction")
     ("global" "global.profile")
-    ("version" "version")))
+    ("version" "version"))
+   #f)
   (type
    "FHIR.ImplementationGuide.Definition"
    "FHIR.BackboneElement"
@@ -4855,8 +5121,9 @@
     ("parameter" (list "FHIR.ImplementationGuide.Definition.Parameter") #f)
     ("template" (list "FHIR.ImplementationGuide.Definition.Template") #f))
    ()
-   ())
-  (type "FHIR.ImplementationGuide.Definition.Grouping" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("description" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ImplementationGuide.Definition.Grouping" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("description" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.ImplementationGuide.Definition.Page"
    "FHIR.BackboneElement"
@@ -4866,8 +5133,9 @@
    #f
    (("name" (choice "FHIR.url" "FHIR.Reference") #f) ("title" "FHIR.string" #f) ("generation" "FHIR.GuidePageGeneration" #f) ("page" (list "FHIR.ImplementationGuide.Definition.Page") #f))
    ()
-   ())
-  (type "FHIR.ImplementationGuide.Definition.Parameter" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.GuideParameterCode" #f) ("value" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ImplementationGuide.Definition.Parameter" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.GuideParameterCode" #f) ("value" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.ImplementationGuide.Definition.Resource"
    "FHIR.BackboneElement"
@@ -4882,10 +5150,11 @@
     ("example" (choice "FHIR.boolean" "FHIR.canonical") #f)
     ("groupingId" "FHIR.id" #f))
    ()
-   ())
-  (type "FHIR.ImplementationGuide.Definition.Template" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("source" "FHIR.string" #f) ("scope" "FHIR.string" #f)) () ())
-  (type "FHIR.ImplementationGuide.DependsOn" "FHIR.BackboneElement" #f #f #f #f (("uri" "FHIR.canonical" #f) ("packageId" "FHIR.id" #f) ("version" "FHIR.string" #f)) () ())
-  (type "FHIR.ImplementationGuide.Global" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ResourceType" #f) ("profile" "FHIR.canonical" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ImplementationGuide.Definition.Template" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("source" "FHIR.string" #f) ("scope" "FHIR.string" #f)) () () #f)
+  (type "FHIR.ImplementationGuide.DependsOn" "FHIR.BackboneElement" #f #f #f #f (("uri" "FHIR.canonical" #f) ("packageId" "FHIR.id" #f) ("version" "FHIR.string" #f)) () () #f)
+  (type "FHIR.ImplementationGuide.Global" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ResourceType" #f) ("profile" "FHIR.canonical" #f)) () () #f)
   (type
    "FHIR.ImplementationGuide.Manifest"
    "FHIR.BackboneElement"
@@ -4899,8 +5168,9 @@
     ("image" (list "FHIR.string") #f)
     ("other" (list "FHIR.string") #f))
    ()
-   ())
-  (type "FHIR.ImplementationGuide.Manifest.Page" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("title" "FHIR.string" #f) ("anchor" (list "FHIR.string") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ImplementationGuide.Manifest.Page" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("title" "FHIR.string" #f) ("anchor" (list "FHIR.string") #f)) () () #f)
   (type
    "FHIR.ImplementationGuide.Manifest.Resource"
    "FHIR.BackboneElement"
@@ -4910,7 +5180,8 @@
    #f
    (("reference" "FHIR.Reference" #f) ("example" (choice "FHIR.boolean" "FHIR.canonical") #f) ("relativePath" "FHIR.url" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.InsurancePlan"
    "FHIR.DomainResource"
@@ -4945,7 +5216,8 @@
     ("type" "type")
     ("administered-by" "administeredBy")
     ("identifier" "identifier")
-    ("status" "status")))
+    ("status" "status"))
+   #f)
   (type
    "FHIR.InsurancePlan.Contact"
    "FHIR.BackboneElement"
@@ -4955,7 +5227,8 @@
    #f
    (("purpose" "FHIR.CodeableConcept" #f) ("name" "FHIR.HumanName" #f) ("telecom" (list "FHIR.ContactPoint") #f) ("address" "FHIR.Address" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.InsurancePlan.Coverage"
    "FHIR.BackboneElement"
@@ -4965,7 +5238,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("network" (list "FHIR.Reference") #f) ("benefit" (list "FHIR.InsurancePlan.Coverage.Benefit") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.InsurancePlan.Coverage.Benefit"
    "FHIR.BackboneElement"
@@ -4975,8 +5249,9 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("requirement" "FHIR.string" #f) ("limit" (list "FHIR.InsurancePlan.Coverage.Benefit.Limit") #f))
    ()
-   ())
-  (type "FHIR.InsurancePlan.Coverage.Benefit.Limit" "FHIR.BackboneElement" #f #f #f #f (("value" "FHIR.Quantity" #f) ("code" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.InsurancePlan.Coverage.Benefit.Limit" "FHIR.BackboneElement" #f #f #f #f (("value" "FHIR.Quantity" #f) ("code" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.InsurancePlan.Plan"
    "FHIR.BackboneElement"
@@ -4991,7 +5266,8 @@
     ("generalCost" (list "FHIR.InsurancePlan.Plan.GeneralCost") #f)
     ("specificCost" (list "FHIR.InsurancePlan.Plan.SpecificCost") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.InsurancePlan.Plan.GeneralCost"
    "FHIR.BackboneElement"
@@ -5001,8 +5277,19 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("groupSize" "FHIR.positiveInt" #f) ("cost" "FHIR.Money" #f) ("comment" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.InsurancePlan.Plan.SpecificCost" "FHIR.BackboneElement" #f #f #f #f (("category" "FHIR.CodeableConcept" #f) ("benefit" (list "FHIR.InsurancePlan.Plan.SpecificCost.Benefit") #f)) () ())
+   ()
+   #f)
+  (type
+   "FHIR.InsurancePlan.Plan.SpecificCost"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("category" "FHIR.CodeableConcept" #f) ("benefit" (list "FHIR.InsurancePlan.Plan.SpecificCost.Benefit") #f))
+   ()
+   ()
+   #f)
   (type
    "FHIR.InsurancePlan.Plan.SpecificCost.Benefit"
    "FHIR.BackboneElement"
@@ -5012,7 +5299,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("cost" (list "FHIR.InsurancePlan.Plan.SpecificCost.Benefit.Cost") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.InsurancePlan.Plan.SpecificCost.Benefit.Cost"
    "FHIR.BackboneElement"
@@ -5022,7 +5310,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("applicability" "FHIR.CodeableConcept" #f) ("qualifiers" (list "FHIR.CodeableConcept") #f) ("value" "FHIR.Quantity" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Invoice"
    "FHIR.DomainResource"
@@ -5059,7 +5348,8 @@
     ("totalgross" "totalGross")
     ("totalnet" "totalNet")
     ("participant" "participant.actor")
-    ("recipient" "recipient")))
+    ("recipient" "recipient"))
+   #f)
   (type
    "FHIR.Invoice.LineItem"
    "FHIR.BackboneElement"
@@ -5069,7 +5359,8 @@
    #f
    (("sequence" "FHIR.positiveInt" #f) ("chargeItem" (choice "FHIR.Reference" "FHIR.CodeableConcept") #f) ("priceComponent" (list "FHIR.Invoice.LineItem.PriceComponent") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Invoice.LineItem.PriceComponent"
    "FHIR.BackboneElement"
@@ -5079,12 +5370,13 @@
    #f
    (("type" "FHIR.InvoicePriceComponentType" #f) ("code" "FHIR.CodeableConcept" #f) ("factor" "FHIR.decimal" #f) ("amount" "FHIR.Money" #f))
    ()
-   ())
-  (type "FHIR.Invoice.Participant" "FHIR.BackboneElement" #f #f #f #f (("role" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () ())
-  (type "FHIR.InvoicePriceComponentType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.InvoiceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.IssueSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.IssueType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Invoice.Participant" "FHIR.BackboneElement" #f #f #f #f (("role" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.InvoicePriceComponentType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.InvoiceStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.IssueSeverity" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.IssueType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Library"
    "FHIR.DomainResource"
@@ -5143,8 +5435,9 @@
     ("composed-of" "relatedArtifact.where(type='composed-of').resource")
     ("identifier" "identifier")
     ("topic" "topic")
-    ("url" "url")))
-  (type "FHIR.LinkType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("url" "url"))
+   #f)
+  (type "FHIR.LinkType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Linkage"
    "FHIR.DomainResource"
@@ -5154,9 +5447,10 @@
    #t
    (("active" "FHIR.boolean" #f) ("author" "FHIR.Reference" #f) ("item" (list "FHIR.Linkage.Item") #f))
    (("Practitioner" "author"))
-   (("item" "item.resource") ("source" "item.resource") ("author" "author")))
-  (type "FHIR.Linkage.Item" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.LinkageType" #f) ("resource" "FHIR.Reference" #f)) () ())
-  (type "FHIR.LinkageType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("item" "item.resource") ("source" "item.resource") ("author" "author"))
+   #f)
+  (type "FHIR.Linkage.Item" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.LinkageType" #f) ("resource" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.LinkageType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.List"
    "FHIR.DomainResource"
@@ -5189,10 +5483,11 @@
     ("item" "entry.item")
     ("source" "source")
     ("subject" "subject")
-    ("title" "title")))
-  (type "FHIR.List.Entry" "FHIR.BackboneElement" #f #f #f #f (("flag" "FHIR.CodeableConcept" #f) ("deleted" "FHIR.boolean" #f) ("date" "FHIR.dateTime" #f) ("item" "FHIR.Reference" #f)) () ())
-  (type "FHIR.ListMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ListStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("title" "title"))
+   #f)
+  (type "FHIR.List.Entry" "FHIR.BackboneElement" #f #f #f #f (("flag" "FHIR.CodeableConcept" #f) ("deleted" "FHIR.boolean" #f) ("date" "FHIR.dateTime" #f) ("item" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.ListMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ListStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Location"
    "FHIR.DomainResource"
@@ -5232,7 +5527,8 @@
     ("operational-status" "operationalStatus")
     ("address-city" "address.city")
     ("address" "address")
-    ("address-country" "address.country")))
+    ("address-country" "address.country"))
+   #f)
   (type
    "FHIR.Location.HoursOfOperation"
    "FHIR.BackboneElement"
@@ -5242,10 +5538,11 @@
    #f
    (("daysOfWeek" (list "FHIR.DaysOfWeek") #f) ("allDay" "FHIR.boolean" #f) ("openingTime" "FHIR.time" #f) ("closingTime" "FHIR.time" #f))
    ()
-   ())
-  (type "FHIR.Location.Position" "FHIR.BackboneElement" #f #f #f #f (("longitude" "FHIR.decimal" #f) ("latitude" "FHIR.decimal" #f) ("altitude" "FHIR.decimal" #f)) () ())
-  (type "FHIR.LocationMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.LocationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Location.Position" "FHIR.BackboneElement" #f #f #f #f (("longitude" "FHIR.decimal" #f) ("latitude" "FHIR.decimal" #f) ("altitude" "FHIR.decimal" #f)) () () #f)
+  (type "FHIR.LocationMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.LocationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MarketingStatus"
    "FHIR.BackboneElement"
@@ -5255,7 +5552,8 @@
    #f
    (("country" "FHIR.CodeableConcept" #f) ("jurisdiction" "FHIR.CodeableConcept" #f) ("status" "FHIR.CodeableConcept" #f) ("dateRange" "FHIR.Period" #f) ("restoreDate" "FHIR.dateTime" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Measure"
    "FHIR.DomainResource"
@@ -5322,7 +5620,8 @@
     ("predecessor" "relatedArtifact.where(type='predecessor').resource")
     ("identifier" "identifier")
     ("status" "status")
-    ("url" "url")))
+    ("url" "url"))
+   #f)
   (type
    "FHIR.Measure.Group"
    "FHIR.BackboneElement"
@@ -5332,8 +5631,9 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f) ("population" (list "FHIR.Measure.Group.Population") #f) ("stratifier" (list "FHIR.Measure.Group.Stratifier") #f))
    ()
-   ())
-  (type "FHIR.Measure.Group.Population" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f) ("criteria" "FHIR.Expression" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Measure.Group.Population" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f) ("criteria" "FHIR.Expression" #f)) () () #f)
   (type
    "FHIR.Measure.Group.Stratifier"
    "FHIR.BackboneElement"
@@ -5343,8 +5643,9 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f) ("criteria" "FHIR.Expression" #f) ("component" (list "FHIR.Measure.Group.Stratifier.Component") #f))
    ()
-   ())
-  (type "FHIR.Measure.Group.Stratifier.Component" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f) ("criteria" "FHIR.Expression" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Measure.Group.Stratifier.Component" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f) ("criteria" "FHIR.Expression" #f)) () () #f)
   (type
    "FHIR.Measure.SupplementalData"
    "FHIR.BackboneElement"
@@ -5354,7 +5655,8 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("usage" (list "FHIR.CodeableConcept") #f) ("description" "FHIR.string" #f) ("criteria" "FHIR.Expression" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MeasureReport"
    "FHIR.DomainResource"
@@ -5382,7 +5684,8 @@
     ("reporter" "reporter")
     ("evaluated-resource" "evaluatedResource")
     ("identifier" "identifier")
-    ("period" "period")))
+    ("period" "period"))
+   #f)
   (type
    "FHIR.MeasureReport.Group"
    "FHIR.BackboneElement"
@@ -5395,9 +5698,20 @@
     ("measureScore" "FHIR.Quantity" #f)
     ("stratifier" (list "FHIR.MeasureReport.Group.Stratifier") #f))
    ()
-   ())
-  (type "FHIR.MeasureReport.Group.Population" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("count" "FHIR.integer" #f) ("subjectResults" "FHIR.Reference" #f)) () ())
-  (type "FHIR.MeasureReport.Group.Stratifier" "FHIR.BackboneElement" #f #f #f #f (("code" (list "FHIR.CodeableConcept") #f) ("stratum" (list "FHIR.MeasureReport.Group.Stratifier.Stratum") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MeasureReport.Group.Population" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("count" "FHIR.integer" #f) ("subjectResults" "FHIR.Reference" #f)) () () #f)
+  (type
+   "FHIR.MeasureReport.Group.Stratifier"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("code" (list "FHIR.CodeableConcept") #f) ("stratum" (list "FHIR.MeasureReport.Group.Stratifier.Stratum") #f))
+   ()
+   ()
+   #f)
   (type
    "FHIR.MeasureReport.Group.Stratifier.Stratum"
    "FHIR.BackboneElement"
@@ -5410,8 +5724,9 @@
     ("population" (list "FHIR.MeasureReport.Group.Stratifier.Stratum.Population") #f)
     ("measureScore" "FHIR.Quantity" #f))
    ()
-   ())
-  (type "FHIR.MeasureReport.Group.Stratifier.Stratum.Component" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("value" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MeasureReport.Group.Stratifier.Stratum.Component" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("value" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.MeasureReport.Group.Stratifier.Stratum.Population"
    "FHIR.BackboneElement"
@@ -5421,9 +5736,10 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("count" "FHIR.integer" #f) ("subjectResults" "FHIR.Reference" #f))
    ()
-   ())
-  (type "FHIR.MeasureReportStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.MeasureReportType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MeasureReportStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.MeasureReportType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Media"
    "FHIR.DomainResource"
@@ -5466,8 +5782,9 @@
     ("operator" "operator")
     ("identifier" "identifier")
     ("subject" "subject")
-    ("based-on" "basedOn")))
-  (type "FHIR.MediaStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("based-on" "basedOn"))
+   #f)
+  (type "FHIR.MediaStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Medication"
    "FHIR.DomainResource"
@@ -5484,8 +5801,9 @@
     ("ingredient" (list "FHIR.Medication.Ingredient") #f)
     ("batch" "FHIR.Medication.Batch" #f))
    ()
-   (("lot-number" "batch.lotNumber") ("code" "code") ("expiration-date" "batch.expirationDate") ("identifier" "identifier") ("status" "status") ("manufacturer" "manufacturer") ("form" "form")))
-  (type "FHIR.Medication.Batch" "FHIR.BackboneElement" #f #f #f #f (("lotNumber" "FHIR.string" #f) ("expirationDate" "FHIR.dateTime" #f)) () ())
+   (("lot-number" "batch.lotNumber") ("code" "code") ("expiration-date" "batch.expirationDate") ("identifier" "identifier") ("status" "status") ("manufacturer" "manufacturer") ("form" "form"))
+   #f)
+  (type "FHIR.Medication.Batch" "FHIR.BackboneElement" #f #f #f #f (("lotNumber" "FHIR.string" #f) ("expirationDate" "FHIR.dateTime" #f)) () () #f)
   (type
    "FHIR.Medication.Ingredient"
    "FHIR.BackboneElement"
@@ -5495,7 +5813,8 @@
    #f
    (("item" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f) ("isActive" "FHIR.boolean" #f) ("strength" "FHIR.Ratio" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicationAdministration"
    "FHIR.DomainResource"
@@ -5533,7 +5852,8 @@
     ("effective-time" "effective")
     ("reason-given" "reasonCode")
     ("subject" "subject")
-    ("context" "context")))
+    ("context" "context"))
+   #f)
   (type
    "FHIR.MedicationAdministration.Dosage"
    "FHIR.BackboneElement"
@@ -5548,9 +5868,10 @@
     ("dose" "FHIR.SimpleQuantity" #f)
     ("rate" (choice "FHIR.Ratio" "FHIR.SimpleQuantity") #f))
    ()
-   ())
-  (type "FHIR.MedicationAdministration.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () ())
-  (type "FHIR.MedicationAdministrationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationAdministration.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.MedicationAdministrationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MedicationDispense"
    "FHIR.DomainResource"
@@ -5595,8 +5916,9 @@
     ("responsibleparty" "substitution.responsibleParty")
     ("context" "context")
     ("performer" "performer.actor")
-    ("receiver" "receiver")))
-  (type "FHIR.MedicationDispense.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () ())
+    ("receiver" "receiver"))
+   #f)
+  (type "FHIR.MedicationDispense.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.MedicationDispense.Substitution"
    "FHIR.BackboneElement"
@@ -5606,8 +5928,9 @@
    #f
    (("wasSubstituted" "FHIR.boolean" #f) ("type" "FHIR.CodeableConcept" #f) ("reason" (list "FHIR.CodeableConcept") #f) ("responsibleParty" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.MedicationDispenseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationDispenseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MedicationKnowledge"
    "FHIR.DomainResource"
@@ -5648,7 +5971,8 @@
     ("classification-type" "medicineClassification.type")
     ("monitoring-program-type" "monitoringProgram.type")
     ("manufacturer" "manufacturer")
-    ("monograph-type" "monograph.type")))
+    ("monograph-type" "monograph.type"))
+   #f)
   (type
    "FHIR.MedicationKnowledge.AdministrationGuidelines"
    "FHIR.BackboneElement"
@@ -5660,8 +5984,9 @@
     ("indication" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)
     ("patientCharacteristics" (list "FHIR.MedicationKnowledge.AdministrationGuidelines.PatientCharacteristics") #f))
    ()
-   ())
-  (type "FHIR.MedicationKnowledge.AdministrationGuidelines.Dosage" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("dosage" (list "FHIR.Dosage") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationKnowledge.AdministrationGuidelines.Dosage" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("dosage" (list "FHIR.Dosage") #f)) () () #f)
   (type
    "FHIR.MedicationKnowledge.AdministrationGuidelines.PatientCharacteristics"
    "FHIR.BackboneElement"
@@ -5671,8 +5996,9 @@
    #f
    (("characteristic" (choice "FHIR.CodeableConcept" "FHIR.SimpleQuantity") #f) ("value" (list "FHIR.string") #f))
    ()
-   ())
-  (type "FHIR.MedicationKnowledge.Cost" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("source" "FHIR.string" #f) ("cost" "FHIR.Money" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationKnowledge.Cost" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("source" "FHIR.string" #f) ("cost" "FHIR.Money" #f)) () () #f)
   (type
    "FHIR.MedicationKnowledge.DrugCharacteristic"
    "FHIR.BackboneElement"
@@ -5682,7 +6008,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("value" (choice "FHIR.CodeableConcept" "FHIR.string" "FHIR.SimpleQuantity" "FHIR.base64Binary") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicationKnowledge.Ingredient"
    "FHIR.BackboneElement"
@@ -5692,7 +6019,8 @@
    #f
    (("item" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f) ("isActive" "FHIR.boolean" #f) ("strength" "FHIR.Ratio" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicationKnowledge.Kinetics"
    "FHIR.BackboneElement"
@@ -5702,11 +6030,12 @@
    #f
    (("areaUnderCurve" (list "FHIR.SimpleQuantity") #f) ("lethalDose50" (list "FHIR.SimpleQuantity") #f) ("halfLifePeriod" "FHIR.Duration" #f))
    ()
-   ())
-  (type "FHIR.MedicationKnowledge.MedicineClassification" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("classification" (list "FHIR.CodeableConcept") #f)) () ())
-  (type "FHIR.MedicationKnowledge.MonitoringProgram" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("name" "FHIR.string" #f)) () ())
-  (type "FHIR.MedicationKnowledge.Monograph" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("source" "FHIR.Reference" #f)) () ())
-  (type "FHIR.MedicationKnowledge.Packaging" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("quantity" "FHIR.SimpleQuantity" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationKnowledge.MedicineClassification" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("classification" (list "FHIR.CodeableConcept") #f)) () () #f)
+  (type "FHIR.MedicationKnowledge.MonitoringProgram" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("name" "FHIR.string" #f)) () () #f)
+  (type "FHIR.MedicationKnowledge.Monograph" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("source" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.MedicationKnowledge.Packaging" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("quantity" "FHIR.SimpleQuantity" #f)) () () #f)
   (type
    "FHIR.MedicationKnowledge.Regulatory"
    "FHIR.BackboneElement"
@@ -5719,12 +6048,13 @@
     ("schedule" (list "FHIR.MedicationKnowledge.Regulatory.Schedule") #f)
     ("maxDispense" "FHIR.MedicationKnowledge.Regulatory.MaxDispense" #f))
    ()
-   ())
-  (type "FHIR.MedicationKnowledge.Regulatory.MaxDispense" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.SimpleQuantity" #f) ("period" "FHIR.Duration" #f)) () ())
-  (type "FHIR.MedicationKnowledge.Regulatory.Schedule" "FHIR.BackboneElement" #f #f #f #f (("schedule" "FHIR.CodeableConcept" #f)) () ())
-  (type "FHIR.MedicationKnowledge.Regulatory.Substitution" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("allowed" "FHIR.boolean" #f)) () ())
-  (type "FHIR.MedicationKnowledge.RelatedMedicationKnowledge" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("reference" (list "FHIR.Reference") #f)) () ())
-  (type "FHIR.MedicationKnowledgeStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationKnowledge.Regulatory.MaxDispense" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.SimpleQuantity" #f) ("period" "FHIR.Duration" #f)) () () #f)
+  (type "FHIR.MedicationKnowledge.Regulatory.Schedule" "FHIR.BackboneElement" #f #f #f #f (("schedule" "FHIR.CodeableConcept" #f)) () () #f)
+  (type "FHIR.MedicationKnowledge.Regulatory.Substitution" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("allowed" "FHIR.boolean" #f)) () () #f)
+  (type "FHIR.MedicationKnowledge.RelatedMedicationKnowledge" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.CodeableConcept" #f) ("reference" (list "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.MedicationKnowledgeStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MedicationRequest"
    "FHIR.DomainResource"
@@ -5778,7 +6108,8 @@
     ("encounter" "encounter")
     ("category" "category")
     ("intended-dispenser" "dispenseRequest.performer")
-    ("requester" "requester")))
+    ("requester" "requester"))
+   #f)
   (type
    "FHIR.MedicationRequest.DispenseRequest"
    "FHIR.BackboneElement"
@@ -5794,12 +6125,13 @@
     ("expectedSupplyDuration" "FHIR.Duration" #f)
     ("performer" "FHIR.Reference" #f))
    ()
-   ())
-  (type "FHIR.MedicationRequest.DispenseRequest.InitialFill" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.SimpleQuantity" #f) ("duration" "FHIR.Duration" #f)) () ())
-  (type "FHIR.MedicationRequest.Substitution" "FHIR.BackboneElement" #f #f #f #f (("allowed" (choice "FHIR.boolean" "FHIR.CodeableConcept") #f) ("reason" "FHIR.CodeableConcept" #f)) () ())
-  (type "FHIR.MedicationRequestIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.MedicationRequestPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.MedicationRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicationRequest.DispenseRequest.InitialFill" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.SimpleQuantity" #f) ("duration" "FHIR.Duration" #f)) () () #f)
+  (type "FHIR.MedicationRequest.Substitution" "FHIR.BackboneElement" #f #f #f #f (("allowed" (choice "FHIR.boolean" "FHIR.CodeableConcept") #f) ("reason" "FHIR.CodeableConcept" #f)) () () #f)
+  (type "FHIR.MedicationRequestIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.MedicationRequestPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.MedicationRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MedicationStatement"
    "FHIR.DomainResource"
@@ -5833,9 +6165,10 @@
     ("effective" "effective")
     ("category" "category")
     ("context" "context")
-    ("source" "informationSource")))
-  (type "FHIR.MedicationStatementStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.MedicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("source" "informationSource"))
+   #f)
+  (type "FHIR.MedicationStatementStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.MedicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MedicinalProduct"
    "FHIR.DomainResource"
@@ -5864,7 +6197,8 @@
     ("manufacturingBusinessOperation" (list "FHIR.MedicinalProduct.ManufacturingBusinessOperation") #f)
     ("specialDesignation" (list "FHIR.MedicinalProduct.SpecialDesignation") #f))
    ()
-   (("identifier" "identifier") ("name" "name.productName") ("name-language" "name.countryLanguage.language")))
+   (("identifier" "identifier") ("name" "name.productName") ("name-language" "name.countryLanguage.language"))
+   #f)
   (type
    "FHIR.MedicinalProduct.ManufacturingBusinessOperation"
    "FHIR.BackboneElement"
@@ -5879,7 +6213,8 @@
     ("manufacturer" (list "FHIR.Reference") #f)
     ("regulator" "FHIR.Reference" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProduct.Name"
    "FHIR.BackboneElement"
@@ -5889,7 +6224,8 @@
    #f
    (("productName" "FHIR.string" #f) ("namePart" (list "FHIR.MedicinalProduct.Name.NamePart") #f) ("countryLanguage" (list "FHIR.MedicinalProduct.Name.CountryLanguage") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProduct.Name.CountryLanguage"
    "FHIR.BackboneElement"
@@ -5899,8 +6235,9 @@
    #f
    (("country" "FHIR.CodeableConcept" #f) ("jurisdiction" "FHIR.CodeableConcept" #f) ("language" "FHIR.CodeableConcept" #f))
    ()
-   ())
-  (type "FHIR.MedicinalProduct.Name.NamePart" "FHIR.BackboneElement" #f #f #f #f (("part" "FHIR.string" #f) ("type" "FHIR.Coding" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MedicinalProduct.Name.NamePart" "FHIR.BackboneElement" #f #f #f #f (("part" "FHIR.string" #f) ("type" "FHIR.Coding" #f)) () () #f)
   (type
    "FHIR.MedicinalProduct.SpecialDesignation"
    "FHIR.BackboneElement"
@@ -5916,7 +6253,8 @@
     ("date" "FHIR.dateTime" #f)
     ("species" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductAuthorization"
    "FHIR.DomainResource"
@@ -5941,7 +6279,8 @@
     ("regulator" "FHIR.Reference" #f)
     ("procedure" "FHIR.MedicinalProductAuthorization.Procedure" #f))
    ()
-   (("country" "country") ("status" "status") ("subject" "subject") ("holder" "holder") ("identifier" "identifier")))
+   (("country" "country") ("status" "status") ("subject" "subject") ("holder" "holder") ("identifier" "identifier"))
+   #f)
   (type
    "FHIR.MedicinalProductAuthorization.JurisdictionalAuthorization"
    "FHIR.BackboneElement"
@@ -5955,7 +6294,8 @@
     ("legalStatusOfSupply" "FHIR.CodeableConcept" #f)
     ("validityPeriod" "FHIR.Period" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductAuthorization.Procedure"
    "FHIR.BackboneElement"
@@ -5965,7 +6305,8 @@
    #f
    (("identifier" "FHIR.Identifier" #f) ("type" "FHIR.CodeableConcept" #f) ("date" (choice "FHIR.Period" "FHIR.dateTime") #f) ("application" (list "FHIR.MedicinalProductAuthorization.Procedure") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductContraindication"
    "FHIR.DomainResource"
@@ -5981,7 +6322,8 @@
     ("otherTherapy" (list "FHIR.MedicinalProductContraindication.OtherTherapy") #f)
     ("population" (list "FHIR.Population") #f))
    ()
-   (("subject" "subject")))
+   (("subject" "subject"))
+   #f)
   (type
    "FHIR.MedicinalProductContraindication.OtherTherapy"
    "FHIR.BackboneElement"
@@ -5991,7 +6333,8 @@
    #f
    (("therapyRelationshipType" "FHIR.CodeableConcept" #f) ("medication" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductIndication"
    "FHIR.DomainResource"
@@ -6009,7 +6352,8 @@
     ("undesirableEffect" (list "FHIR.Reference") #f)
     ("population" (list "FHIR.Population") #f))
    ()
-   (("subject" "subject")))
+   (("subject" "subject"))
+   #f)
   (type
    "FHIR.MedicinalProductIndication.OtherTherapy"
    "FHIR.BackboneElement"
@@ -6019,7 +6363,8 @@
    #f
    (("therapyRelationshipType" "FHIR.CodeableConcept" #f) ("medication" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductIngredient"
    "FHIR.DomainResource"
@@ -6034,7 +6379,8 @@
     ("specifiedSubstance" (list "FHIR.MedicinalProductIngredient.SpecifiedSubstance") #f)
     ("substance" "FHIR.MedicinalProductIngredient.Substance" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductIngredient.SpecifiedSubstance"
    "FHIR.BackboneElement"
@@ -6047,7 +6393,8 @@
     ("confidentiality" "FHIR.CodeableConcept" #f)
     ("strength" (list "FHIR.MedicinalProductIngredient.SpecifiedSubstance.Strength") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductIngredient.SpecifiedSubstance.Strength"
    "FHIR.BackboneElement"
@@ -6063,7 +6410,8 @@
     ("country" (list "FHIR.CodeableConcept") #f)
     ("referenceStrength" (list "FHIR.MedicinalProductIngredient.SpecifiedSubstance.Strength.ReferenceStrength") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductIngredient.SpecifiedSubstance.Strength.ReferenceStrength"
    "FHIR.BackboneElement"
@@ -6073,7 +6421,8 @@
    #f
    (("substance" "FHIR.CodeableConcept" #f) ("strength" "FHIR.Ratio" #f) ("strengthLowLimit" "FHIR.Ratio" #f) ("measurementPoint" "FHIR.string" #f) ("country" (list "FHIR.CodeableConcept") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductIngredient.Substance"
    "FHIR.BackboneElement"
@@ -6083,7 +6432,8 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("strength" (list "FHIR.MedicinalProductIngredient.SpecifiedSubstance.Strength") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductInteraction"
    "FHIR.DomainResource"
@@ -6099,8 +6449,9 @@
     ("incidence" "FHIR.CodeableConcept" #f)
     ("management" "FHIR.CodeableConcept" #f))
    ()
-   (("subject" "subject")))
-  (type "FHIR.MedicinalProductInteraction.Interactant" "FHIR.BackboneElement" #f #f #f #f (("item" (choice "FHIR.Reference" "FHIR.CodeableConcept") #f)) () ())
+   (("subject" "subject"))
+   #f)
+  (type "FHIR.MedicinalProductInteraction.Interactant" "FHIR.BackboneElement" #f #f #f #f (("item" (choice "FHIR.Reference" "FHIR.CodeableConcept") #f)) () () #f)
   (type
    "FHIR.MedicinalProductManufactured"
    "FHIR.DomainResource"
@@ -6116,7 +6467,8 @@
     ("physicalCharacteristics" "FHIR.ProdCharacteristic" #f)
     ("otherCharacteristics" (list "FHIR.CodeableConcept") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductPackaged"
    "FHIR.DomainResource"
@@ -6134,8 +6486,9 @@
     ("batchIdentifier" (list "FHIR.MedicinalProductPackaged.BatchIdentifier") #f)
     ("packageItem" (list "FHIR.MedicinalProductPackaged.PackageItem") #f))
    ()
-   (("identifier" "identifier") ("subject" "subject")))
-  (type "FHIR.MedicinalProductPackaged.BatchIdentifier" "FHIR.BackboneElement" #f #f #f #f (("outerPackaging" "FHIR.Identifier" #f) ("immediatePackaging" "FHIR.Identifier" #f)) () ())
+   (("identifier" "identifier") ("subject" "subject"))
+   #f)
+  (type "FHIR.MedicinalProductPackaged.BatchIdentifier" "FHIR.BackboneElement" #f #f #f #f (("outerPackaging" "FHIR.Identifier" #f) ("immediatePackaging" "FHIR.Identifier" #f)) () () #f)
   (type
    "FHIR.MedicinalProductPackaged.PackageItem"
    "FHIR.BackboneElement"
@@ -6156,7 +6509,8 @@
     ("shelfLifeStorage" (list "FHIR.ProductShelfLife") #f)
     ("manufacturer" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductPharmaceutical"
    "FHIR.DomainResource"
@@ -6172,8 +6526,9 @@
     ("characteristics" (list "FHIR.MedicinalProductPharmaceutical.Characteristics") #f)
     ("routeOfAdministration" (list "FHIR.MedicinalProductPharmaceutical.RouteOfAdministration") #f))
    ()
-   (("identifier" "identifier") ("route" "routeOfAdministration.code") ("target-species" "routeOfAdministration.targetSpecies.code")))
-  (type "FHIR.MedicinalProductPharmaceutical.Characteristics" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("status" "FHIR.CodeableConcept" #f)) () ())
+   (("identifier" "identifier") ("route" "routeOfAdministration.code") ("target-species" "routeOfAdministration.targetSpecies.code"))
+   #f)
+  (type "FHIR.MedicinalProductPharmaceutical.Characteristics" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.CodeableConcept" #f) ("status" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.MedicinalProductPharmaceutical.RouteOfAdministration"
    "FHIR.BackboneElement"
@@ -6189,7 +6544,8 @@
     ("maxTreatmentPeriod" "FHIR.Duration" #f)
     ("targetSpecies" (list "FHIR.MedicinalProductPharmaceutical.RouteOfAdministration.TargetSpecies") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductPharmaceutical.RouteOfAdministration.TargetSpecies"
    "FHIR.BackboneElement"
@@ -6199,7 +6555,8 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("withdrawalPeriod" (list "FHIR.MedicinalProductPharmaceutical.RouteOfAdministration.TargetSpecies.WithdrawalPeriod") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductPharmaceutical.RouteOfAdministration.TargetSpecies.WithdrawalPeriod"
    "FHIR.BackboneElement"
@@ -6209,7 +6566,8 @@
    #f
    (("tissue" "FHIR.CodeableConcept" #f) ("value" "FHIR.Quantity" #f) ("supportingInformation" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MedicinalProductUndesirableEffect"
    "FHIR.DomainResource"
@@ -6223,7 +6581,8 @@
     ("frequencyOfOccurrence" "FHIR.CodeableConcept" #f)
     ("population" (list "FHIR.Population") #f))
    ()
-   (("subject" "subject")))
+   (("subject" "subject"))
+   #f)
   (type
    "FHIR.MessageDefinition"
    "FHIR.DomainResource"
@@ -6270,8 +6629,9 @@
     ("jurisdiction" "jurisdiction")
     ("identifier" "identifier")
     ("version" "version")
-    ("parent" "parent")))
-  (type "FHIR.MessageDefinition.AllowedResponse" "FHIR.BackboneElement" #f #f #f #f (("message" "FHIR.canonical" #f) ("situation" "FHIR.markdown" #f)) () ())
+    ("parent" "parent"))
+   #f)
+  (type "FHIR.MessageDefinition.AllowedResponse" "FHIR.BackboneElement" #f #f #f #f (("message" "FHIR.canonical" #f) ("situation" "FHIR.markdown" #f)) () () #f)
   (type
    "FHIR.MessageDefinition.Focus"
    "FHIR.BackboneElement"
@@ -6281,7 +6641,8 @@
    #f
    (("code" "FHIR.ResourceType" #f) ("profile" "FHIR.canonical" #f) ("min" "FHIR.unsignedInt" #f) ("max" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MessageHeader"
    "FHIR.DomainResource"
@@ -6314,7 +6675,8 @@
     ("source-uri" "source.endpoint")
     ("destination-uri" "destination.endpoint")
     ("focus" "focus")
-    ("code" "response.code")))
+    ("code" "response.code"))
+   #f)
   (type
    "FHIR.MessageHeader.Destination"
    "FHIR.BackboneElement"
@@ -6324,8 +6686,9 @@
    #f
    (("name" "FHIR.string" #f) ("target" "FHIR.Reference" #f) ("endpoint" "FHIR.url" #f) ("receiver" "FHIR.Reference" #f))
    ()
-   ())
-  (type "FHIR.MessageHeader.Response" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.id" #f) ("code" "FHIR.ResponseType" #f) ("details" "FHIR.Reference" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MessageHeader.Response" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.id" #f) ("code" "FHIR.ResponseType" #f) ("details" "FHIR.Reference" #f)) () () #f)
   (type
    "FHIR.MessageHeader.Source"
    "FHIR.BackboneElement"
@@ -6335,9 +6698,10 @@
    #f
    (("name" "FHIR.string" #f) ("software" "FHIR.string" #f) ("version" "FHIR.string" #f) ("contact" "FHIR.ContactPoint" #f) ("endpoint" "FHIR.url" #f))
    ()
-   ())
-  (type "FHIR.MessageSignificanceCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Messageheader_Response_Request" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MessageSignificanceCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Messageheader_Response_Request" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Meta"
    "FHIR.Element"
@@ -6347,8 +6711,9 @@
    #f
    (("versionId" "FHIR.id" #f) ("lastUpdated" "FHIR.instant" #f) ("source" "FHIR.uri" #f) ("profile" (list "FHIR.canonical") #f) ("security" (list "FHIR.Coding") #f) ("tag" (list "FHIR.Coding") #f))
    ()
-   ())
-  (type "FHIR.MimeType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MimeType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.MolecularSequence"
    "FHIR.DomainResource"
@@ -6381,7 +6746,8 @@
     ("identifier" "identifier")
     ("variant-start" "variant.start")
     ("window-start" "referenceSeq.windowStart")
-    ("chromosome" "referenceSeq.chromosome")))
+    ("chromosome" "referenceSeq.chromosome"))
+   #f)
   (type
    "FHIR.MolecularSequence.Quality"
    "FHIR.BackboneElement"
@@ -6405,7 +6771,8 @@
     ("fScore" "FHIR.decimal" #f)
     ("roc" "FHIR.MolecularSequence.Quality.Roc" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MolecularSequence.Quality.Roc"
    "FHIR.BackboneElement"
@@ -6421,7 +6788,8 @@
     ("sensitivity" (list "FHIR.decimal") #f)
     ("fMeasure" (list "FHIR.decimal") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MolecularSequence.ReferenceSeq"
    "FHIR.BackboneElement"
@@ -6439,7 +6807,8 @@
     ("windowStart" "FHIR.integer" #f)
     ("windowEnd" "FHIR.integer" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MolecularSequence.Repository"
    "FHIR.BackboneElement"
@@ -6449,7 +6818,8 @@
    #f
    (("type" "FHIR.RepositoryType" #f) ("url" "FHIR.uri" #f) ("name" "FHIR.string" #f) ("datasetId" "FHIR.string" #f) ("variantsetId" "FHIR.string" #f) ("readsetId" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.MolecularSequence.StructureVariant"
    "FHIR.BackboneElement"
@@ -6463,9 +6833,10 @@
     ("outer" "FHIR.MolecularSequence.StructureVariant.Outer" #f)
     ("inner" "FHIR.MolecularSequence.StructureVariant.Inner" #f))
    ()
-   ())
-  (type "FHIR.MolecularSequence.StructureVariant.Inner" "FHIR.BackboneElement" #f #f #f #f (("start" "FHIR.integer" #f) ("end" "FHIR.integer" #f)) () ())
-  (type "FHIR.MolecularSequence.StructureVariant.Outer" "FHIR.BackboneElement" #f #f #f #f (("start" "FHIR.integer" #f) ("end" "FHIR.integer" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.MolecularSequence.StructureVariant.Inner" "FHIR.BackboneElement" #f #f #f #f (("start" "FHIR.integer" #f) ("end" "FHIR.integer" #f)) () () #f)
+  (type "FHIR.MolecularSequence.StructureVariant.Outer" "FHIR.BackboneElement" #f #f #f #f (("start" "FHIR.integer" #f) ("end" "FHIR.integer" #f)) () () #f)
   (type
    "FHIR.MolecularSequence.Variant"
    "FHIR.BackboneElement"
@@ -6475,10 +6846,11 @@
    #f
    (("start" "FHIR.integer" #f) ("end" "FHIR.integer" #f) ("observedAllele" "FHIR.string" #f) ("referenceAllele" "FHIR.string" #f) ("cigar" "FHIR.string" #f) ("variantPointer" "FHIR.Reference" #f))
    ()
-   ())
-  (type "FHIR.Money" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Money" "Money" #f #f (("value" "FHIR.decimal" #f) ("currency" "FHIR.CurrencyCode" #f)) () ())
-  (type "FHIR.MoneyQuantity" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/MoneyQuantity" "MoneyQuantity" #f #f () () ())
-  (type "FHIR.NameUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Money" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Money" "Money" #f #f (("value" "FHIR.decimal" #f) ("currency" "FHIR.CurrencyCode" #f)) () () #f)
+  (type "FHIR.MoneyQuantity" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/MoneyQuantity" "MoneyQuantity" #f #f () () () #f)
+  (type "FHIR.NameUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.NamingSystem"
    "FHIR.DomainResource"
@@ -6514,7 +6886,8 @@
     ("publisher" "publisher")
     ("kind" "kind")
     ("name" "name")
-    ("jurisdiction" "jurisdiction")))
+    ("jurisdiction" "jurisdiction"))
+   #f)
   (type
    "FHIR.NamingSystem.UniqueId"
    "FHIR.BackboneElement"
@@ -6524,13 +6897,14 @@
    #f
    (("type" "FHIR.NamingSystemIdentifierType" #f) ("value" "FHIR.string" #f) ("preferred" "FHIR.boolean" #f) ("comment" "FHIR.string" #f) ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.NamingSystemIdentifierType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.NamingSystemType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Narrative" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Narrative" "Narrative" #f #f (("status" "FHIR.NarrativeStatus" #f) ("div" "FHIR.xhtml" #f)) () ())
-  (type "FHIR.NarrativeStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.NoteType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.NutritiionOrderIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.NamingSystemIdentifierType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.NamingSystemType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Narrative" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Narrative" "Narrative" #f #f (("status" "FHIR.NarrativeStatus" #f) ("div" "FHIR.xhtml" #f)) () () #f)
+  (type "FHIR.NarrativeStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.NoteType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.NutritiionOrderIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.NutritionOrder"
    "FHIR.DomainResource"
@@ -6567,7 +6941,8 @@
     ("formula" "enteralFormula.baseFormulaType")
     ("instantiates-uri" "instantiatesUri")
     ("oraldiet" "oralDiet.type")
-    ("datetime" "dateTime")))
+    ("datetime" "dateTime"))
+   #f)
   (type
    "FHIR.NutritionOrder.EnteralFormula"
    "FHIR.BackboneElement"
@@ -6585,7 +6960,8 @@
     ("maxVolumeToDeliver" "FHIR.SimpleQuantity" #f)
     ("administrationInstruction" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.NutritionOrder.EnteralFormula.Administration"
    "FHIR.BackboneElement"
@@ -6595,7 +6971,8 @@
    #f
    (("schedule" "FHIR.Timing" #f) ("quantity" "FHIR.SimpleQuantity" #f) ("rate" (choice "FHIR.SimpleQuantity" "FHIR.Ratio") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.NutritionOrder.OralDiet"
    "FHIR.BackboneElement"
@@ -6610,9 +6987,10 @@
     ("fluidConsistencyType" (list "FHIR.CodeableConcept") #f)
     ("instruction" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.NutritionOrder.OralDiet.Nutrient" "FHIR.BackboneElement" #f #f #f #f (("modifier" "FHIR.CodeableConcept" #f) ("amount" "FHIR.SimpleQuantity" #f)) () ())
-  (type "FHIR.NutritionOrder.OralDiet.Texture" "FHIR.BackboneElement" #f #f #f #f (("modifier" "FHIR.CodeableConcept" #f) ("foodType" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.NutritionOrder.OralDiet.Nutrient" "FHIR.BackboneElement" #f #f #f #f (("modifier" "FHIR.CodeableConcept" #f) ("amount" "FHIR.SimpleQuantity" #f)) () () #f)
+  (type "FHIR.NutritionOrder.OralDiet.Texture" "FHIR.BackboneElement" #f #f #f #f (("modifier" "FHIR.CodeableConcept" #f) ("foodType" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.NutritionOrder.Supplement"
    "FHIR.BackboneElement"
@@ -6622,8 +7000,9 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("productName" "FHIR.string" #f) ("schedule" (list "FHIR.Timing") #f) ("quantity" "FHIR.SimpleQuantity" #f) ("instruction" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.NutritionOrderStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.NutritionOrderStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Observation"
    "FHIR.DomainResource"
@@ -6677,7 +7056,8 @@
     ("component-code" "component.code")
     ("device" "device")
     ("has-member" "hasMember")
-    ("based-on" "basedOn")))
+    ("based-on" "basedOn"))
+   #f)
   (type
    "FHIR.Observation.Component"
    "FHIR.BackboneElement"
@@ -6691,7 +7071,8 @@
     ("interpretation" (list "FHIR.CodeableConcept") #f)
     ("referenceRange" (list "FHIR.Observation.ReferenceRange") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Observation.ReferenceRange"
    "FHIR.BackboneElement"
@@ -6706,8 +7087,9 @@
     ("age" "FHIR.Range" #f)
     ("text" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.ObservationDataType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ObservationDataType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ObservationDefinition"
    "FHIR.DomainResource"
@@ -6729,7 +7111,8 @@
     ("abnormalCodedValueSet" "FHIR.Reference" #f)
     ("criticalCodedValueSet" "FHIR.Reference" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ObservationDefinition.QualifiedInterval"
    "FHIR.BackboneElement"
@@ -6746,7 +7129,8 @@
     ("gestationalAge" "FHIR.Range" #f)
     ("condition" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ObservationDefinition.QuantitativeDetails"
    "FHIR.BackboneElement"
@@ -6756,9 +7140,10 @@
    #f
    (("customaryUnit" "FHIR.CodeableConcept" #f) ("unit" "FHIR.CodeableConcept" #f) ("conversionFactor" "FHIR.decimal" #f) ("decimalPrecision" "FHIR.integer" #f))
    ()
-   ())
-  (type "FHIR.ObservationRangeCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ObservationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ObservationRangeCategory" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ObservationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.OperationDefinition"
    "FHIR.DomainResource"
@@ -6810,8 +7195,9 @@
     ("name" "name")
     ("jurisdiction" "jurisdiction")
     ("type" "type")
-    ("version" "version")))
-  (type "FHIR.OperationDefinition.Overload" "FHIR.BackboneElement" #f #f #f #f (("parameterName" (list "FHIR.string") #f) ("comment" "FHIR.string" #f)) () ())
+    ("version" "version"))
+   #f)
+  (type "FHIR.OperationDefinition.Overload" "FHIR.BackboneElement" #f #f #f #f (("parameterName" (list "FHIR.string") #f) ("comment" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.OperationDefinition.Parameter"
    "FHIR.BackboneElement"
@@ -6831,10 +7217,11 @@
     ("referencedFrom" (list "FHIR.OperationDefinition.Parameter.ReferencedFrom") #f)
     ("part" (list "FHIR.OperationDefinition.Parameter") #f))
    ()
-   ())
-  (type "FHIR.OperationDefinition.Parameter.Binding" "FHIR.BackboneElement" #f #f #f #f (("strength" "FHIR.BindingStrength" #f) ("valueSet" "FHIR.canonical" #f)) () ())
-  (type "FHIR.OperationDefinition.Parameter.ReferencedFrom" "FHIR.BackboneElement" #f #f #f #f (("source" "FHIR.string" #f) ("sourceId" "FHIR.string" #f)) () ())
-  (type "FHIR.OperationKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.OperationDefinition.Parameter.Binding" "FHIR.BackboneElement" #f #f #f #f (("strength" "FHIR.BindingStrength" #f) ("valueSet" "FHIR.canonical" #f)) () () #f)
+  (type "FHIR.OperationDefinition.Parameter.ReferencedFrom" "FHIR.BackboneElement" #f #f #f #f (("source" "FHIR.string" #f) ("sourceId" "FHIR.string" #f)) () () #f)
+  (type "FHIR.OperationKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.OperationOutcome"
    "FHIR.DomainResource"
@@ -6844,7 +7231,8 @@
    #t
    (("issue" (list "FHIR.OperationOutcome.Issue") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.OperationOutcome.Issue"
    "FHIR.BackboneElement"
@@ -6859,8 +7247,9 @@
     ("location" (list "FHIR.string") #f)
     ("expression" (list "FHIR.string") #f))
    ()
-   ())
-  (type "FHIR.OperationParameterUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.OperationParameterUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Organization"
    "FHIR.DomainResource"
@@ -6891,7 +7280,8 @@
     ("type" "type")
     ("address-city" "address.city")
     ("endpoint" "endpoint")
-    ("partof" "partOf")))
+    ("partof" "partOf"))
+   #f)
   (type
    "FHIR.Organization.Contact"
    "FHIR.BackboneElement"
@@ -6901,7 +7291,8 @@
    #f
    (("purpose" "FHIR.CodeableConcept" #f) ("name" "FHIR.HumanName" #f) ("telecom" (list "FHIR.ContactPoint") #f) ("address" "FHIR.Address" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.OrganizationAffiliation"
    "FHIR.DomainResource"
@@ -6935,8 +7326,9 @@
     ("date" "period")
     ("specialty" "specialty")
     ("active" "active")
-    ("phone" "telecom.where(system='phone')")))
-  (type "FHIR.OrientationType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("phone" "telecom.where(system='phone')"))
+   #f)
+  (type "FHIR.OrientationType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ParameterDefinition"
    "FHIR.Element"
@@ -6952,9 +7344,10 @@
     ("type" "FHIR.FHIRAllTypes" #f)
     ("profile" "FHIR.canonical" #f))
    ()
-   ())
-  (type "FHIR.ParameterUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Parameters" "FHIR.Resource" "http://hl7.org/fhir/StructureDefinition/Parameters" "Parameters" #f #t (("parameter" (list "FHIR.Parameters.Parameter") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ParameterUse" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Parameters" "FHIR.Resource" "http://hl7.org/fhir/StructureDefinition/Parameters" "Parameters" #f #t (("parameter" (list "FHIR.Parameters.Parameter") #f)) () () #f)
   (type
    "FHIR.Parameters.Parameter"
    "FHIR.BackboneElement"
@@ -7019,10 +7412,11 @@
     ("resource" "FHIR.Resource" #f)
     ("part" (list "FHIR.Parameters.Parameter") #f))
    ()
-   ())
-  (type "FHIR.ParticipantRequired" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ParticipantStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ParticipationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ParticipantRequired" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ParticipantStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ParticipationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Patient"
    "FHIR.DomainResource"
@@ -7068,8 +7462,9 @@
     ("email" "telecom.where(system='email')")
     ("gender" "gender")
     ("link" "link.other")
-    ("language" "communication.language")))
-  (type "FHIR.Patient.Communication" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.CodeableConcept" #f) ("preferred" "FHIR.boolean" #f)) () ())
+    ("language" "communication.language"))
+   #f)
+  (type "FHIR.Patient.Communication" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.CodeableConcept" #f) ("preferred" "FHIR.boolean" #f)) () () #f)
   (type
    "FHIR.Patient.Contact"
    "FHIR.BackboneElement"
@@ -7085,8 +7480,9 @@
     ("organization" "FHIR.Reference" #f)
     ("period" "FHIR.Period" #f))
    ()
-   ())
-  (type "FHIR.Patient.Link" "FHIR.BackboneElement" #f #f #f #f (("other" "FHIR.Reference" #f) ("type" "FHIR.LinkType" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Patient.Link" "FHIR.BackboneElement" #f #f #f #f (("other" "FHIR.Reference" #f) ("type" "FHIR.LinkType" #f)) () () #f)
   (type
    "FHIR.PaymentNotice"
    "FHIR.DomainResource"
@@ -7107,8 +7503,9 @@
     ("amount" "FHIR.Money" #f)
     ("paymentStatus" "FHIR.CodeableConcept" #f))
    (("Practitioner" "provider"))
-   (("created" "created") ("request" "request") ("identifier" "identifier") ("response" "response") ("provider" "provider") ("payment-status" "paymentStatus") ("status" "status")))
-  (type "FHIR.PaymentNoticeStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("created" "created") ("request" "request") ("identifier" "identifier") ("response" "response") ("provider" "provider") ("payment-status" "paymentStatus") ("status" "status"))
+   #f)
+  (type "FHIR.PaymentNoticeStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.PaymentReconciliation"
    "FHIR.DomainResource"
@@ -7139,7 +7536,8 @@
     ("status" "status")
     ("requestor" "requestor")
     ("identifier" "identifier")
-    ("outcome" "outcome")))
+    ("outcome" "outcome"))
+   #f)
   (type
    "FHIR.PaymentReconciliation.Detail"
    "FHIR.BackboneElement"
@@ -7158,10 +7556,11 @@
     ("payee" "FHIR.Reference" #f)
     ("amount" "FHIR.Money" #f))
    ()
-   ())
-  (type "FHIR.PaymentReconciliation.ProcessNote" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.NoteType" #f) ("text" "FHIR.string" #f)) () ())
-  (type "FHIR.PaymentReconciliationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Period" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Period" "Period" #f #f (("start" "FHIR.dateTime" #f) ("end" "FHIR.dateTime" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.PaymentReconciliation.ProcessNote" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.NoteType" #f) ("text" "FHIR.string" #f)) () () #f)
+  (type "FHIR.PaymentReconciliationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Period" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Period" "Period" #f #f (("start" "FHIR.dateTime" #f) ("end" "FHIR.dateTime" #f)) () () #f)
   (type
    "FHIR.Person"
    "FHIR.DomainResource"
@@ -7198,8 +7597,9 @@
     ("address-city" "address.city")
     ("phonetic" "name")
     ("email" "telecom.where(system='email')")
-    ("gender" "gender")))
-  (type "FHIR.Person.Link" "FHIR.BackboneElement" #f #f #f #f (("target" "FHIR.Reference" #f) ("assurance" "FHIR.IdentityAssuranceLevel" #f)) () ())
+    ("gender" "gender"))
+   #f)
+  (type "FHIR.Person.Link" "FHIR.BackboneElement" #f #f #f #f (("target" "FHIR.Reference" #f) ("assurance" "FHIR.IdentityAssuranceLevel" #f)) () () #f)
   (type
    "FHIR.PlanDefinition"
    "FHIR.DomainResource"
@@ -7258,7 +7658,8 @@
     ("name" "name")
     ("status" "status")
     ("derived-from" "relatedArtifact.where(type='derived-from').resource")
-    ("predecessor" "relatedArtifact.where(type='predecessor').resource")))
+    ("predecessor" "relatedArtifact.where(type='predecessor').resource"))
+   #f)
   (type
    "FHIR.PlanDefinition.Action"
    "FHIR.BackboneElement"
@@ -7294,10 +7695,11 @@
     ("dynamicValue" (list "FHIR.PlanDefinition.Action.DynamicValue") #f)
     ("action" (list "FHIR.PlanDefinition.Action") #f))
    ()
-   ())
-  (type "FHIR.PlanDefinition.Action.Condition" "FHIR.BackboneElement" #f #f #f #f (("kind" "FHIR.ActionConditionKind" #f) ("expression" "FHIR.Expression" #f)) () ())
-  (type "FHIR.PlanDefinition.Action.DynamicValue" "FHIR.BackboneElement" #f #f #f #f (("path" "FHIR.string" #f) ("expression" "FHIR.Expression" #f)) () ())
-  (type "FHIR.PlanDefinition.Action.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ActionParticipantType" #f) ("role" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.PlanDefinition.Action.Condition" "FHIR.BackboneElement" #f #f #f #f (("kind" "FHIR.ActionConditionKind" #f) ("expression" "FHIR.Expression" #f)) () () #f)
+  (type "FHIR.PlanDefinition.Action.DynamicValue" "FHIR.BackboneElement" #f #f #f #f (("path" "FHIR.string" #f) ("expression" "FHIR.Expression" #f)) () () #f)
+  (type "FHIR.PlanDefinition.Action.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ActionParticipantType" #f) ("role" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.PlanDefinition.Action.RelatedAction"
    "FHIR.BackboneElement"
@@ -7307,7 +7709,8 @@
    #f
    (("actionId" "FHIR.id" #f) ("relationship" "FHIR.ActionRelationshipType" #f) ("offset" (choice "FHIR.Duration" "FHIR.Range") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.PlanDefinition.Goal"
    "FHIR.BackboneElement"
@@ -7323,7 +7726,8 @@
     ("documentation" (list "FHIR.RelatedArtifact") #f)
     ("target" (list "FHIR.PlanDefinition.Goal.Target") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.PlanDefinition.Goal.Target"
    "FHIR.BackboneElement"
@@ -7333,7 +7737,8 @@
    #f
    (("measure" "FHIR.CodeableConcept" #f) ("detail" (choice "FHIR.Quantity" "FHIR.Range" "FHIR.CodeableConcept") #f) ("due" "FHIR.Duration" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Population"
    "FHIR.BackboneElement"
@@ -7343,7 +7748,8 @@
    #f
    (("age" (choice "FHIR.Range" "FHIR.CodeableConcept") #f) ("gender" "FHIR.CodeableConcept" #f) ("race" "FHIR.CodeableConcept" #f) ("physiologicalCondition" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Practitioner"
    "FHIR.DomainResource"
@@ -7378,7 +7784,8 @@
     ("address-city" "address.city")
     ("phonetic" "name")
     ("email" "telecom.where(system='email')")
-    ("gender" "gender")))
+    ("gender" "gender"))
+   #f)
   (type
    "FHIR.Practitioner.Qualification"
    "FHIR.BackboneElement"
@@ -7388,7 +7795,8 @@
    #f
    (("identifier" (list "FHIR.Identifier") #f) ("code" "FHIR.CodeableConcept" #f) ("period" "FHIR.Period" #f) ("issuer" "FHIR.Reference" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.PractitionerRole"
    "FHIR.DomainResource"
@@ -7423,7 +7831,8 @@
     ("practitioner" "practitioner")
     ("endpoint" "endpoint")
     ("email" "telecom.where(system='email')")
-    ("organization" "organization")))
+    ("organization" "organization"))
+   #f)
   (type
    "FHIR.PractitionerRole.AvailableTime"
    "FHIR.BackboneElement"
@@ -7433,8 +7842,9 @@
    #f
    (("daysOfWeek" (list "FHIR.DaysOfWeek") #f) ("allDay" "FHIR.boolean" #f) ("availableStartTime" "FHIR.time" #f) ("availableEndTime" "FHIR.time" #f))
    ()
-   ())
-  (type "FHIR.PractitionerRole.NotAvailable" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("during" "FHIR.Period" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.PractitionerRole.NotAvailable" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("during" "FHIR.Period" #f)) () () #f)
   (type
    "FHIR.Procedure"
    "FHIR.DomainResource"
@@ -7486,10 +7896,11 @@
     ("performer" "performer.actor")
     ("status" "status")
     ("based-on" "basedOn")
-    ("instantiates-canonical" "instantiatesCanonical")))
-  (type "FHIR.Procedure.FocalDevice" "FHIR.BackboneElement" #f #f #f #f (("action" "FHIR.CodeableConcept" #f) ("manipulated" "FHIR.Reference" #f)) () ())
-  (type "FHIR.Procedure.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f) ("onBehalfOf" "FHIR.Reference" #f)) () ())
-  (type "FHIR.ProcedureStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("instantiates-canonical" "instantiatesCanonical"))
+   #f)
+  (type "FHIR.Procedure.FocalDevice" "FHIR.BackboneElement" #f #f #f #f (("action" "FHIR.CodeableConcept" #f) ("manipulated" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.Procedure.Performer" "FHIR.BackboneElement" #f #f #f #f (("function" "FHIR.CodeableConcept" #f) ("actor" "FHIR.Reference" #f) ("onBehalfOf" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.ProcedureStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ProdCharacteristic"
    "FHIR.BackboneElement"
@@ -7509,7 +7920,8 @@
     ("image" (list "FHIR.Attachment") #f)
     ("scoring" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ProductShelfLife"
    "FHIR.BackboneElement"
@@ -7519,9 +7931,10 @@
    #f
    (("identifier" "FHIR.Identifier" #f) ("type" "FHIR.CodeableConcept" #f) ("period" "FHIR.Quantity" #f) ("specialPrecautionsForStorage" (list "FHIR.CodeableConcept") #f))
    ()
-   ())
-  (type "FHIR.PropertyRepresentation" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.PropertyType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.PropertyRepresentation" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.PropertyType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Provenance"
    "FHIR.DomainResource"
@@ -7548,7 +7961,8 @@
     ("location" "location")
     ("agent-type" "agent.type")
     ("target" "target")
-    ("agent" "agent.who")))
+    ("agent" "agent.who"))
+   #f)
   (type
    "FHIR.Provenance.Agent"
    "FHIR.BackboneElement"
@@ -7558,11 +7972,12 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("role" (list "FHIR.CodeableConcept") #f) ("who" "FHIR.Reference" #f) ("onBehalfOf" "FHIR.Reference" #f))
    ()
-   ())
-  (type "FHIR.Provenance.Entity" "FHIR.BackboneElement" #f #f #f #f (("role" "FHIR.ProvenanceEntityRole" #f) ("what" "FHIR.Reference" #f) ("agent" (list "FHIR.Provenance.Agent") #f)) () ())
-  (type "FHIR.ProvenanceEntityRole" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.PublicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.QualityType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Provenance.Entity" "FHIR.BackboneElement" #f #f #f #f (("role" "FHIR.ProvenanceEntityRole" #f) ("what" "FHIR.Reference" #f) ("agent" (list "FHIR.Provenance.Agent") #f)) () () #f)
+  (type "FHIR.ProvenanceEntityRole" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.PublicationStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.QualityType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Quantity"
    "FHIR.Element"
@@ -7572,8 +7987,9 @@
    #f
    (("value" "FHIR.decimal" #f) ("comparator" "FHIR.QuantityComparator" #f) ("unit" "FHIR.string" #f) ("system" "FHIR.uri" #f) ("code" "FHIR.code" #f))
    ()
-   ())
-  (type "FHIR.QuantityComparator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.QuantityComparator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Questionnaire"
    "FHIR.DomainResource"
@@ -7618,7 +8034,8 @@
     ("identifier" "identifier")
     ("name" "name")
     ("jurisdiction" "jurisdiction")
-    ("status" "status")))
+    ("status" "status"))
+   #f)
   (type
    "FHIR.Questionnaire.Item"
    "FHIR.BackboneElement"
@@ -7643,7 +8060,8 @@
     ("initial" (list "FHIR.Questionnaire.Item.Initial") #f)
     ("item" (list "FHIR.Questionnaire.Item") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Questionnaire.Item.AnswerOption"
    "FHIR.BackboneElement"
@@ -7653,7 +8071,8 @@
    #f
    (("value" (choice "FHIR.integer" "FHIR.date" "FHIR.time" "FHIR.string" "FHIR.Coding" "FHIR.Reference") #f) ("initialSelected" "FHIR.boolean" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Questionnaire.Item.EnableWhen"
    "FHIR.BackboneElement"
@@ -7665,7 +8084,8 @@
     ("operator" "FHIR.QuestionnaireItemOperator" #f)
     ("answer" (choice "FHIR.boolean" "FHIR.decimal" "FHIR.integer" "FHIR.date" "FHIR.dateTime" "FHIR.time" "FHIR.string" "FHIR.Coding" "FHIR.Quantity" "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Questionnaire.Item.Initial"
    "FHIR.BackboneElement"
@@ -7677,9 +8097,10 @@
      (choice "FHIR.boolean" "FHIR.decimal" "FHIR.integer" "FHIR.date" "FHIR.dateTime" "FHIR.time" "FHIR.string" "FHIR.uri" "FHIR.Attachment" "FHIR.Coding" "FHIR.Quantity" "FHIR.Reference")
      #f))
    ()
-   ())
-  (type "FHIR.QuestionnaireItemOperator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.QuestionnaireItemType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.QuestionnaireItemOperator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.QuestionnaireItemType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.QuestionnaireResponse"
    "FHIR.DomainResource"
@@ -7709,7 +8130,8 @@
     ("authored" "authored")
     ("questionnaire" "questionnaire")
     ("status" "status")
-    ("source" "source")))
+    ("source" "source"))
+   #f)
   (type
    "FHIR.QuestionnaireResponse.Item"
    "FHIR.BackboneElement"
@@ -7723,7 +8145,8 @@
     ("answer" (list "FHIR.QuestionnaireResponse.Item.Answer") #f)
     ("item" (list "FHIR.QuestionnaireResponse.Item") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.QuestionnaireResponse.Item.Answer"
    "FHIR.BackboneElement"
@@ -7734,10 +8157,11 @@
    (("value" (choice "FHIR.boolean" "FHIR.decimal" "FHIR.integer" "FHIR.date" "FHIR.dateTime" "FHIR.time" "FHIR.string" "FHIR.uri" "FHIR.Attachment" "FHIR.Coding" "FHIR.Quantity" "FHIR.Reference") #f)
     ("item" (list "FHIR.QuestionnaireResponse.Item") #f))
    ()
-   ())
-  (type "FHIR.QuestionnaireResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Range" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Range" "Range" #f #f (("low" "FHIR.SimpleQuantity" #f) ("high" "FHIR.SimpleQuantity" #f)) () ())
-  (type "FHIR.Ratio" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Ratio" "Ratio" #f #f (("numerator" "FHIR.Quantity" #f) ("denominator" "FHIR.Quantity" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.QuestionnaireResponseStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Range" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Range" "Range" #f #f (("low" "FHIR.SimpleQuantity" #f) ("high" "FHIR.SimpleQuantity" #f)) () () #f)
+  (type "FHIR.Ratio" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/Ratio" "Ratio" #f #f (("numerator" "FHIR.Quantity" #f) ("denominator" "FHIR.Quantity" #f)) () () #f)
   (type
    "FHIR.Reference"
    "FHIR.Element"
@@ -7747,10 +8171,11 @@
    #f
    (("reference" "FHIR.string" #f) ("type" "FHIR.uri" #f) ("identifier" "FHIR.Identifier" #f) ("display" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.ReferenceHandlingPolicy" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ReferenceVersionRules" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ReferredDocumentStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ReferenceHandlingPolicy" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ReferenceVersionRules" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ReferredDocumentStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.RelatedArtifact"
    "FHIR.Element"
@@ -7766,8 +8191,9 @@
     ("document" "FHIR.Attachment" #f)
     ("resource" "FHIR.canonical" #f))
    ()
-   ())
-  (type "FHIR.RelatedArtifactType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.RelatedArtifactType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.RelatedPerson"
    "FHIR.DomainResource"
@@ -7804,10 +8230,11 @@
     ("email" "telecom.where(system='email')")
     ("gender" "gender")
     ("name" "name")
-    ("patient" "patient")))
-  (type "FHIR.RelatedPerson.Communication" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.CodeableConcept" #f) ("preferred" "FHIR.boolean" #f)) () ())
-  (type "FHIR.RemittanceOutcome" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.RepositoryType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("patient" "patient"))
+   #f)
+  (type "FHIR.RelatedPerson.Communication" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.CodeableConcept" #f) ("preferred" "FHIR.boolean" #f)) () () #f)
+  (type "FHIR.RemittanceOutcome" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.RepositoryType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.RequestGroup"
    "FHIR.DomainResource"
@@ -7847,7 +8274,8 @@
     ("code" "code")
     ("subject" "subject")
     ("group-identifier" "groupIdentifier")
-    ("authored" "authoredOn")))
+    ("authored" "authoredOn"))
+   #f)
   (type
    "FHIR.RequestGroup.Action"
    "FHIR.BackboneElement"
@@ -7875,8 +8303,9 @@
     ("resource" "FHIR.Reference" #f)
     ("action" (list "FHIR.RequestGroup.Action") #f))
    ()
-   ())
-  (type "FHIR.RequestGroup.Action.Condition" "FHIR.BackboneElement" #f #f #f #f (("kind" "FHIR.ActionConditionKind" #f) ("expression" "FHIR.Expression" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.RequestGroup.Action.Condition" "FHIR.BackboneElement" #f #f #f #f (("kind" "FHIR.ActionConditionKind" #f) ("expression" "FHIR.Expression" #f)) () () #f)
   (type
    "FHIR.RequestGroup.Action.RelatedAction"
    "FHIR.BackboneElement"
@@ -7886,10 +8315,11 @@
    #f
    (("actionId" "FHIR.id" #f) ("relationship" "FHIR.ActionRelationshipType" #f) ("offset" (choice "FHIR.Duration" "FHIR.Range") #f))
    ()
-   ())
-  (type "FHIR.RequestIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.RequestPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.RequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.RequestIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.RequestPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.RequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ResearchDefinition"
    "FHIR.DomainResource"
@@ -7949,7 +8379,8 @@
     ("depends-on" "relatedArtifact.where(type='depends-on').resource|library")
     ("context-type" "useContext.code")
     ("title" "title")
-    ("description" "description")))
+    ("description" "description"))
+   #f)
   (type
    "FHIR.ResearchElementDefinition"
    "FHIR.DomainResource"
@@ -8008,7 +8439,8 @@
     ("date" "date")
     ("successor" "relatedArtifact.where(type='successor').resource")
     ("context-type" "useContext.code")
-    ("status" "status")))
+    ("status" "status"))
+   #f)
   (type
    "FHIR.ResearchElementDefinition.Characteristic"
    "FHIR.BackboneElement"
@@ -8029,8 +8461,9 @@
     ("participantEffectiveTimeFromStart" "FHIR.Duration" #f)
     ("participantEffectiveGroupMeasure" "FHIR.GroupMeasure" #f))
    ()
-   ())
-  (type "FHIR.ResearchElementType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ResearchElementType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ResearchStudy"
    "FHIR.DomainResource"
@@ -8075,10 +8508,11 @@
     ("location" "location")
     ("status" "status")
     ("date" "period")
-    ("site" "site")))
-  (type "FHIR.ResearchStudy.Arm" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f)) () ())
-  (type "FHIR.ResearchStudy.Objective" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.CodeableConcept" #f)) () ())
-  (type "FHIR.ResearchStudyStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("site" "site"))
+   #f)
+  (type "FHIR.ResearchStudy.Arm" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.CodeableConcept" #f) ("description" "FHIR.string" #f)) () () #f)
+  (type "FHIR.ResearchStudy.Objective" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("type" "FHIR.CodeableConcept" #f)) () () #f)
+  (type "FHIR.ResearchStudyStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ResearchSubject"
    "FHIR.DomainResource"
@@ -8095,8 +8529,9 @@
     ("actualArm" "FHIR.string" #f)
     ("consent" "FHIR.Reference" #f))
    (("Patient" "individual"))
-   (("study" "study") ("status" "status") ("individual" "individual") ("date" "period") ("patient" "individual") ("identifier" "identifier")))
-  (type "FHIR.ResearchSubjectStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("study" "study") ("status" "status") ("individual" "individual") ("date" "period") ("patient" "individual") ("identifier" "identifier"))
+   #f)
+  (type "FHIR.ResearchSubjectStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Resource"
    "System.Any"
@@ -8106,11 +8541,12 @@
    #t
    (("id" "FHIR.id" #f) ("meta" "FHIR.Meta" #f) ("implicitRules" "FHIR.uri" #f) ("language" "FHIR.code" #f))
    ()
-   (("_profile" "meta.profile") ("_lastUpdated" "meta.lastUpdated") ("_security" "meta.security") ("_id" "id") ("_source" "meta.source") ("_tag" "meta.tag")))
-  (type "FHIR.ResourceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ResourceVersionPolicy" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ResponseType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.RestfulCapabilityMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("_profile" "meta.profile") ("_lastUpdated" "meta.lastUpdated") ("_security" "meta.security") ("_id" "id") ("_source" "meta.source") ("_tag" "meta.tag"))
+   #f)
+  (type "FHIR.ResourceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ResourceVersionPolicy" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ResponseType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.RestfulCapabilityMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.RiskAssessment"
    "FHIR.DomainResource"
@@ -8144,7 +8580,8 @@
     ("risk" "prediction.qualitativeRisk")
     ("condition" "condition")
     ("method" "method")
-    ("subject" "subject")))
+    ("subject" "subject"))
+   #f)
   (type
    "FHIR.RiskAssessment.Prediction"
    "FHIR.BackboneElement"
@@ -8159,8 +8596,9 @@
     ("when" (choice "FHIR.Period" "FHIR.Range") #f)
     ("rationale" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.RiskAssessmentStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.RiskAssessmentStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.RiskEvidenceSynthesis"
    "FHIR.DomainResource"
@@ -8211,7 +8649,8 @@
     ("jurisdiction" "jurisdiction")
     ("version" "version")
     ("identifier" "identifier")
-    ("date" "date")))
+    ("date" "date"))
+   #f)
   (type
    "FHIR.RiskEvidenceSynthesis.Certainty"
    "FHIR.BackboneElement"
@@ -8221,7 +8660,8 @@
    #f
    (("rating" (list "FHIR.CodeableConcept") #f) ("note" (list "FHIR.Annotation") #f) ("certaintySubcomponent" (list "FHIR.RiskEvidenceSynthesis.Certainty.CertaintySubcomponent") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.RiskEvidenceSynthesis.Certainty.CertaintySubcomponent"
    "FHIR.BackboneElement"
@@ -8231,7 +8671,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("rating" (list "FHIR.CodeableConcept") #f) ("note" (list "FHIR.Annotation") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.RiskEvidenceSynthesis.RiskEstimate"
    "FHIR.BackboneElement"
@@ -8247,7 +8688,8 @@
     ("numeratorCount" "FHIR.integer" #f)
     ("precisionEstimate" (list "FHIR.RiskEvidenceSynthesis.RiskEstimate.PrecisionEstimate") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.RiskEvidenceSynthesis.RiskEstimate.PrecisionEstimate"
    "FHIR.BackboneElement"
@@ -8257,7 +8699,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("level" "FHIR.decimal" #f) ("from" "FHIR.decimal" #f) ("to" "FHIR.decimal" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.RiskEvidenceSynthesis.SampleSize"
    "FHIR.BackboneElement"
@@ -8267,8 +8710,9 @@
    #f
    (("description" "FHIR.string" #f) ("numberOfStudies" "FHIR.integer" #f) ("numberOfParticipants" "FHIR.integer" #f))
    ()
-   ())
-  (type "FHIR.SPDXLicense" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SPDXLicense" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.SampledData"
    "FHIR.Element"
@@ -8284,7 +8728,8 @@
     ("dimensions" "FHIR.positiveInt" #f)
     ("data" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Schedule"
    "FHIR.DomainResource"
@@ -8301,11 +8746,12 @@
     ("planningHorizon" "FHIR.Period" #f)
     ("comment" "FHIR.string" #f))
    (("Practitioner" "actor") ("Patient" "actor") ("Device" "actor") ("RelatedPerson" "actor"))
-   (("service-type" "serviceType") ("specialty" "specialty") ("actor" "actor") ("service-category" "serviceCategory") ("date" "planningHorizon") ("active" "active") ("identifier" "identifier")))
-  (type "FHIR.SearchComparator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SearchEntryMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SearchModifierCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SearchParamType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("service-type" "serviceType") ("specialty" "specialty") ("actor" "actor") ("service-category" "serviceCategory") ("date" "planningHorizon") ("active" "active") ("identifier" "identifier"))
+   #f)
+  (type "FHIR.SearchComparator" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SearchEntryMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SearchModifierCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SearchParamType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.SearchParameter"
    "FHIR.DomainResource"
@@ -8354,10 +8800,11 @@
     ("publisher" "publisher")
     ("name" "name")
     ("jurisdiction" "jurisdiction")
-    ("version" "version")))
-  (type "FHIR.SearchParameter.Component" "FHIR.BackboneElement" #f #f #f #f (("definition" "FHIR.canonical" #f) ("expression" "FHIR.string" #f)) () ())
-  (type "FHIR.SectionMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SequenceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("version" "version"))
+   #f)
+  (type "FHIR.SearchParameter.Component" "FHIR.BackboneElement" #f #f #f #f (("definition" "FHIR.canonical" #f) ("expression" "FHIR.string" #f)) () () #f)
+  (type "FHIR.SectionMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SequenceType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ServiceRequest"
    "FHIR.DomainResource"
@@ -8426,10 +8873,11 @@
     ("performer" "performer")
     ("instantiates-canonical" "instantiatesCanonical")
     ("priority" "priority")
-    ("specimen" "specimen")))
-  (type "FHIR.ServiceRequestIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ServiceRequestPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.ServiceRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("specimen" "specimen"))
+   #f)
+  (type "FHIR.ServiceRequestIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ServiceRequestPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.ServiceRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Signature"
    "FHIR.Element"
@@ -8445,9 +8893,10 @@
     ("sigFormat" "FHIR.MimeType" #f)
     ("data" "FHIR.base64Binary" #f))
    ()
-   ())
-  (type "FHIR.SimpleQuantity" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/SimpleQuantity" "SimpleQuantity" #f #f () () ())
-  (type "FHIR.SlicingRules" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SimpleQuantity" "FHIR.Quantity" "http://hl7.org/fhir/StructureDefinition/SimpleQuantity" "SimpleQuantity" #f #f () () () #f)
+  (type "FHIR.SlicingRules" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Slot"
    "FHIR.DomainResource"
@@ -8474,9 +8923,10 @@
     ("service-type" "serviceType")
     ("service-category" "serviceCategory")
     ("identifier" "identifier")
-    ("status" "status")))
-  (type "FHIR.SlotStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SortDirection" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("status" "status"))
+   #f)
+  (type "FHIR.SlotStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SortDirection" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Specimen"
    "FHIR.DomainResource"
@@ -8509,7 +8959,8 @@
     ("collector" "collection.collector")
     ("identifier" "identifier")
     ("patient" "subject.where(resolve() is Patient)")
-    ("container-id" "container.identifier")))
+    ("container-id" "container.identifier"))
+   #f)
   (type
    "FHIR.Specimen.Collection"
    "FHIR.BackboneElement"
@@ -8525,7 +8976,8 @@
     ("bodySite" "FHIR.CodeableConcept" #f)
     ("fastingStatus" (choice "FHIR.CodeableConcept" "FHIR.Duration") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Specimen.Container"
    "FHIR.BackboneElement"
@@ -8540,7 +8992,8 @@
     ("specimenQuantity" "FHIR.SimpleQuantity" #f)
     ("additive" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Specimen.Processing"
    "FHIR.BackboneElement"
@@ -8550,8 +9003,9 @@
    #f
    (("description" "FHIR.string" #f) ("procedure" "FHIR.CodeableConcept" #f) ("additive" (list "FHIR.Reference") #f) ("time" (choice "FHIR.dateTime" "FHIR.Period") #f))
    ()
-   ())
-  (type "FHIR.SpecimenContainedPreference" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SpecimenContainedPreference" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.SpecimenDefinition"
    "FHIR.DomainResource"
@@ -8566,7 +9020,8 @@
     ("collection" (list "FHIR.CodeableConcept") #f)
     ("typeTested" (list "FHIR.SpecimenDefinition.TypeTested") #f))
    ()
-   (("type" "typeCollected") ("identifier" "identifier") ("container" "typeTested.container.type")))
+   (("type" "typeCollected") ("identifier" "identifier") ("container" "typeTested.container.type"))
+   #f)
   (type
    "FHIR.SpecimenDefinition.TypeTested"
    "FHIR.BackboneElement"
@@ -8583,7 +9038,8 @@
     ("rejectionCriterion" (list "FHIR.CodeableConcept") #f)
     ("handling" (list "FHIR.SpecimenDefinition.TypeTested.Handling") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SpecimenDefinition.TypeTested.Container"
    "FHIR.BackboneElement"
@@ -8600,8 +9056,9 @@
     ("additive" (list "FHIR.SpecimenDefinition.TypeTested.Container.Additive") #f)
     ("preparation" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.SpecimenDefinition.TypeTested.Container.Additive" "FHIR.BackboneElement" #f #f #f #f (("additive" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SpecimenDefinition.TypeTested.Container.Additive" "FHIR.BackboneElement" #f #f #f #f (("additive" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () () #f)
   (type
    "FHIR.SpecimenDefinition.TypeTested.Handling"
    "FHIR.BackboneElement"
@@ -8611,10 +9068,11 @@
    #f
    (("temperatureQualifier" "FHIR.CodeableConcept" #f) ("temperatureRange" "FHIR.Range" #f) ("maxDuration" "FHIR.Duration" #f) ("instruction" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.SpecimenStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.Status" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StrandType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SpecimenStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.Status" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StrandType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.StructureDefinition"
    "FHIR.DomainResource"
@@ -8671,12 +9129,13 @@
     ("jurisdiction" "jurisdiction")
     ("path" "snapshot.element.path|differential.element.path")
     ("identifier" "identifier")
-    ("version" "version")))
-  (type "FHIR.StructureDefinition.Context" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ExtensionContextType" #f) ("expression" "FHIR.string" #f)) () ())
-  (type "FHIR.StructureDefinition.Differential" "FHIR.BackboneElement" #f #f #f #f (("element" (list "FHIR.ElementDefinition") #f)) () ())
-  (type "FHIR.StructureDefinition.Mapping" "FHIR.BackboneElement" #f #f #f #f (("identity" "FHIR.id" #f) ("uri" "FHIR.uri" #f) ("name" "FHIR.string" #f) ("comment" "FHIR.string" #f)) () ())
-  (type "FHIR.StructureDefinition.Snapshot" "FHIR.BackboneElement" #f #f #f #f (("element" (list "FHIR.ElementDefinition") #f)) () ())
-  (type "FHIR.StructureDefinitionKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+    ("version" "version"))
+   #f)
+  (type "FHIR.StructureDefinition.Context" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.ExtensionContextType" #f) ("expression" "FHIR.string" #f)) () () #f)
+  (type "FHIR.StructureDefinition.Differential" "FHIR.BackboneElement" #f #f #f #f (("element" (list "FHIR.ElementDefinition") #f)) () () #f)
+  (type "FHIR.StructureDefinition.Mapping" "FHIR.BackboneElement" #f #f #f #f (("identity" "FHIR.id" #f) ("uri" "FHIR.uri" #f) ("name" "FHIR.string" #f) ("comment" "FHIR.string" #f)) () () #f)
+  (type "FHIR.StructureDefinition.Snapshot" "FHIR.BackboneElement" #f #f #f #f (("element" (list "FHIR.ElementDefinition") #f)) () () #f)
+  (type "FHIR.StructureDefinitionKind" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.StructureMap"
    "FHIR.DomainResource"
@@ -8713,7 +9172,8 @@
     ("name" "name")
     ("jurisdiction" "jurisdiction")
     ("identifier" "identifier")
-    ("version" "version")))
+    ("version" "version"))
+   #f)
   (type
    "FHIR.StructureMap.Group"
    "FHIR.BackboneElement"
@@ -8728,7 +9188,8 @@
     ("input" (list "FHIR.StructureMap.Group.Input") #f)
     ("rule" (list "FHIR.StructureMap.Group.Rule") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.StructureMap.Group.Input"
    "FHIR.BackboneElement"
@@ -8738,7 +9199,8 @@
    #f
    (("name" "FHIR.id" #f) ("type" "FHIR.string" #f) ("mode" "FHIR.StructureMapInputMode" #f) ("documentation" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.StructureMap.Group.Rule"
    "FHIR.BackboneElement"
@@ -8753,8 +9215,9 @@
     ("dependent" (list "FHIR.StructureMap.Group.Rule.Dependent") #f)
     ("documentation" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.StructureMap.Group.Rule.Dependent" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.id" #f) ("variable" (list "FHIR.string") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.StructureMap.Group.Rule.Dependent" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.id" #f) ("variable" (list "FHIR.string") #f)) () () #f)
   (type
    "FHIR.StructureMap.Group.Rule.Source"
    "FHIR.BackboneElement"
@@ -8826,7 +9289,8 @@
     ("check" "FHIR.string" #f)
     ("logMessage" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.StructureMap.Group.Rule.Target"
    "FHIR.BackboneElement"
@@ -8843,8 +9307,9 @@
     ("transform" "FHIR.StructureMapTransform" #f)
     ("parameter" (list "FHIR.StructureMap.Group.Rule.Target.Parameter") #f))
    ()
-   ())
-  (type "FHIR.StructureMap.Group.Rule.Target.Parameter" "FHIR.BackboneElement" #f #f #f #f (("value" (choice "FHIR.id" "FHIR.string" "FHIR.boolean" "FHIR.integer" "FHIR.decimal") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.StructureMap.Group.Rule.Target.Parameter" "FHIR.BackboneElement" #f #f #f #f (("value" (choice "FHIR.id" "FHIR.string" "FHIR.boolean" "FHIR.integer" "FHIR.decimal") #f)) () () #f)
   (type
    "FHIR.StructureMap.Structure"
    "FHIR.BackboneElement"
@@ -8854,14 +9319,15 @@
    #f
    (("url" "FHIR.canonical" #f) ("mode" "FHIR.StructureMapModelMode" #f) ("alias" "FHIR.string" #f) ("documentation" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.StructureMapContextType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StructureMapGroupTypeMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StructureMapInputMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StructureMapModelMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StructureMapSourceListMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StructureMapTargetListMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.StructureMapTransform" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.StructureMapContextType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StructureMapGroupTypeMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StructureMapInputMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StructureMapModelMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StructureMapSourceListMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StructureMapTargetListMode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.StructureMapTransform" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Subscription"
    "FHIR.DomainResource"
@@ -8877,7 +9343,8 @@
     ("error" "FHIR.string" #f)
     ("channel" "FHIR.Subscription.Channel" #f))
    ()
-   (("payload" "channel.payload") ("status" "status") ("criteria" "criteria") ("contact" "contact") ("url" "channel.endpoint") ("type" "channel.type")))
+   (("payload" "channel.payload") ("status" "status") ("criteria" "criteria") ("contact" "contact") ("url" "channel.endpoint") ("type" "channel.type"))
+   #f)
   (type
    "FHIR.Subscription.Channel"
    "FHIR.BackboneElement"
@@ -8887,9 +9354,10 @@
    #f
    (("type" "FHIR.SubscriptionChannelType" #f) ("endpoint" "FHIR.url" #f) ("payload" "FHIR.MimeType" #f) ("header" (list "FHIR.string") #f))
    ()
-   ())
-  (type "FHIR.SubscriptionChannelType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SubscriptionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubscriptionChannelType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SubscriptionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Substance"
    "FHIR.DomainResource"
@@ -8911,9 +9379,10 @@
     ("status" "status")
     ("identifier" "identifier")
     ("container-identifier" "instance.identifier")
-    ("expiry" "instance.expiry")))
-  (type "FHIR.Substance.Ingredient" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.Ratio" #f) ("substance" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () ())
-  (type "FHIR.Substance.Instance" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.Identifier" #f) ("expiry" "FHIR.dateTime" #f) ("quantity" "FHIR.SimpleQuantity" #f)) () ())
+    ("expiry" "instance.expiry"))
+   #f)
+  (type "FHIR.Substance.Ingredient" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.Ratio" #f) ("substance" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.Substance.Instance" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.Identifier" #f) ("expiry" "FHIR.dateTime" #f) ("quantity" "FHIR.SimpleQuantity" #f)) () () #f)
   (type
    "FHIR.SubstanceAmount"
    "FHIR.BackboneElement"
@@ -8926,8 +9395,9 @@
     ("amountText" "FHIR.string" #f)
     ("referenceRange" "FHIR.SubstanceAmount.ReferenceRange" #f))
    ()
-   ())
-  (type "FHIR.SubstanceAmount.ReferenceRange" "FHIR.Element" #f #f #f #f (("lowLimit" "FHIR.Quantity" #f) ("highLimit" "FHIR.Quantity" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubstanceAmount.ReferenceRange" "FHIR.Element" #f #f #f #f (("lowLimit" "FHIR.Quantity" #f) ("highLimit" "FHIR.Quantity" #f)) () () #f)
   (type
    "FHIR.SubstanceNucleicAcid"
    "FHIR.DomainResource"
@@ -8941,7 +9411,8 @@
     ("oligoNucleotideType" "FHIR.CodeableConcept" #f)
     ("subunit" (list "FHIR.SubstanceNucleicAcid.Subunit") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceNucleicAcid.Subunit"
    "FHIR.BackboneElement"
@@ -8958,7 +9429,8 @@
     ("linkage" (list "FHIR.SubstanceNucleicAcid.Subunit.Linkage") #f)
     ("sugar" (list "FHIR.SubstanceNucleicAcid.Subunit.Sugar") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceNucleicAcid.Subunit.Linkage"
    "FHIR.BackboneElement"
@@ -8968,8 +9440,9 @@
    #f
    (("connectivity" "FHIR.string" #f) ("identifier" "FHIR.Identifier" #f) ("name" "FHIR.string" #f) ("residueSite" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.SubstanceNucleicAcid.Subunit.Sugar" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.Identifier" #f) ("name" "FHIR.string" #f) ("residueSite" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubstanceNucleicAcid.Subunit.Sugar" "FHIR.BackboneElement" #f #f #f #f (("identifier" "FHIR.Identifier" #f) ("name" "FHIR.string" #f) ("residueSite" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.SubstancePolymer"
    "FHIR.DomainResource"
@@ -8984,7 +9457,8 @@
     ("monomerSet" (list "FHIR.SubstancePolymer.MonomerSet") #f)
     ("repeat" (list "FHIR.SubstancePolymer.Repeat") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstancePolymer.MonomerSet"
    "FHIR.BackboneElement"
@@ -8994,7 +9468,8 @@
    #f
    (("ratioType" "FHIR.CodeableConcept" #f) ("startingMaterial" (list "FHIR.SubstancePolymer.MonomerSet.StartingMaterial") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstancePolymer.MonomerSet.StartingMaterial"
    "FHIR.BackboneElement"
@@ -9004,7 +9479,8 @@
    #f
    (("material" "FHIR.CodeableConcept" #f) ("type" "FHIR.CodeableConcept" #f) ("isDefining" "FHIR.boolean" #f) ("amount" "FHIR.SubstanceAmount" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstancePolymer.Repeat"
    "FHIR.BackboneElement"
@@ -9017,7 +9493,8 @@
     ("repeatUnitAmountType" "FHIR.CodeableConcept" #f)
     ("repeatUnit" (list "FHIR.SubstancePolymer.Repeat.RepeatUnit") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstancePolymer.Repeat.RepeatUnit"
    "FHIR.BackboneElement"
@@ -9031,8 +9508,9 @@
     ("degreeOfPolymerisation" (list "FHIR.SubstancePolymer.Repeat.RepeatUnit.DegreeOfPolymerisation") #f)
     ("structuralRepresentation" (list "FHIR.SubstancePolymer.Repeat.RepeatUnit.StructuralRepresentation") #f))
    ()
-   ())
-  (type "FHIR.SubstancePolymer.Repeat.RepeatUnit.DegreeOfPolymerisation" "FHIR.BackboneElement" #f #f #f #f (("degree" "FHIR.CodeableConcept" #f) ("amount" "FHIR.SubstanceAmount" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubstancePolymer.Repeat.RepeatUnit.DegreeOfPolymerisation" "FHIR.BackboneElement" #f #f #f #f (("degree" "FHIR.CodeableConcept" #f) ("amount" "FHIR.SubstanceAmount" #f)) () () #f)
   (type
    "FHIR.SubstancePolymer.Repeat.RepeatUnit.StructuralRepresentation"
    "FHIR.BackboneElement"
@@ -9042,7 +9520,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("representation" "FHIR.string" #f) ("attachment" "FHIR.Attachment" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceProtein"
    "FHIR.DomainResource"
@@ -9052,7 +9531,8 @@
    #t
    (("sequenceType" "FHIR.CodeableConcept" #f) ("numberOfSubunits" "FHIR.integer" #f) ("disulfideLinkage" (list "FHIR.string") #f) ("subunit" (list "FHIR.SubstanceProtein.Subunit") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceProtein.Subunit"
    "FHIR.BackboneElement"
@@ -9069,7 +9549,8 @@
     ("cTerminalModificationId" "FHIR.Identifier" #f)
     ("cTerminalModification" "FHIR.string" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceReferenceInformation"
    "FHIR.DomainResource"
@@ -9083,7 +9564,8 @@
     ("classification" (list "FHIR.SubstanceReferenceInformation.Classification") #f)
     ("target" (list "FHIR.SubstanceReferenceInformation.Target") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceReferenceInformation.Classification"
    "FHIR.BackboneElement"
@@ -9093,7 +9575,8 @@
    #f
    (("domain" "FHIR.CodeableConcept" #f) ("classification" "FHIR.CodeableConcept" #f) ("subtype" (list "FHIR.CodeableConcept") #f) ("source" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceReferenceInformation.Gene"
    "FHIR.BackboneElement"
@@ -9103,7 +9586,8 @@
    #f
    (("geneSequenceOrigin" "FHIR.CodeableConcept" #f) ("gene" "FHIR.CodeableConcept" #f) ("source" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceReferenceInformation.GeneElement"
    "FHIR.BackboneElement"
@@ -9113,7 +9597,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("element" "FHIR.Identifier" #f) ("source" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceReferenceInformation.Target"
    "FHIR.BackboneElement"
@@ -9130,7 +9615,8 @@
     ("amountType" "FHIR.CodeableConcept" #f)
     ("source" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSourceMaterial"
    "FHIR.DomainResource"
@@ -9152,8 +9638,9 @@
     ("organism" "FHIR.SubstanceSourceMaterial.Organism" #f)
     ("partDescription" (list "FHIR.SubstanceSourceMaterial.PartDescription") #f))
    ()
-   ())
-  (type "FHIR.SubstanceSourceMaterial.FractionDescription" "FHIR.BackboneElement" #f #f #f #f (("fraction" "FHIR.string" #f) ("materialType" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubstanceSourceMaterial.FractionDescription" "FHIR.BackboneElement" #f #f #f #f (("fraction" "FHIR.string" #f) ("materialType" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.SubstanceSourceMaterial.Organism"
    "FHIR.BackboneElement"
@@ -9170,8 +9657,9 @@
     ("hybrid" "FHIR.SubstanceSourceMaterial.Organism.Hybrid" #f)
     ("organismGeneral" "FHIR.SubstanceSourceMaterial.Organism.OrganismGeneral" #f))
    ()
-   ())
-  (type "FHIR.SubstanceSourceMaterial.Organism.Author" "FHIR.BackboneElement" #f #f #f #f (("authorType" "FHIR.CodeableConcept" #f) ("authorDescription" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubstanceSourceMaterial.Organism.Author" "FHIR.BackboneElement" #f #f #f #f (("authorType" "FHIR.CodeableConcept" #f) ("authorDescription" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.SubstanceSourceMaterial.Organism.Hybrid"
    "FHIR.BackboneElement"
@@ -9185,7 +9673,8 @@
     ("paternalOrganismName" "FHIR.string" #f)
     ("hybridType" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSourceMaterial.Organism.OrganismGeneral"
    "FHIR.BackboneElement"
@@ -9195,8 +9684,9 @@
    #f
    (("kingdom" "FHIR.CodeableConcept" #f) ("phylum" "FHIR.CodeableConcept" #f) ("class" "FHIR.CodeableConcept" #f) ("order" "FHIR.CodeableConcept" #f))
    ()
-   ())
-  (type "FHIR.SubstanceSourceMaterial.PartDescription" "FHIR.BackboneElement" #f #f #f #f (("part" "FHIR.CodeableConcept" #f) ("partLocation" "FHIR.CodeableConcept" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SubstanceSourceMaterial.PartDescription" "FHIR.BackboneElement" #f #f #f #f (("part" "FHIR.CodeableConcept" #f) ("partLocation" "FHIR.CodeableConcept" #f)) () () #f)
   (type
    "FHIR.SubstanceSpecification"
    "FHIR.DomainResource"
@@ -9224,7 +9714,8 @@
     ("protein" "FHIR.Reference" #f)
     ("sourceMaterial" "FHIR.Reference" #f))
    ()
-   (("code" "code.code")))
+   (("code" "code.code"))
+   #f)
   (type
    "FHIR.SubstanceSpecification.Code"
    "FHIR.BackboneElement"
@@ -9234,7 +9725,8 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("status" "FHIR.CodeableConcept" #f) ("statusDate" "FHIR.dateTime" #f) ("comment" "FHIR.string" #f) ("source" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Moiety"
    "FHIR.BackboneElement"
@@ -9250,7 +9742,8 @@
     ("molecularFormula" "FHIR.string" #f)
     ("amount" (choice "FHIR.Quantity" "FHIR.string") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Name"
    "FHIR.BackboneElement"
@@ -9270,8 +9763,19 @@
     ("official" (list "FHIR.SubstanceSpecification.Name.Official") #f)
     ("source" (list "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.SubstanceSpecification.Name.Official" "FHIR.BackboneElement" #f #f #f #f (("authority" "FHIR.CodeableConcept" #f) ("status" "FHIR.CodeableConcept" #f) ("date" "FHIR.dateTime" #f)) () ())
+   ()
+   #f)
+  (type
+   "FHIR.SubstanceSpecification.Name.Official"
+   "FHIR.BackboneElement"
+   #f
+   #f
+   #f
+   #f
+   (("authority" "FHIR.CodeableConcept" #f) ("status" "FHIR.CodeableConcept" #f) ("date" "FHIR.dateTime" #f))
+   ()
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Property"
    "FHIR.BackboneElement"
@@ -9285,7 +9789,8 @@
     ("definingSubstance" (choice "FHIR.Reference" "FHIR.CodeableConcept") #f)
     ("amount" (choice "FHIR.Quantity" "FHIR.string") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Relationship"
    "FHIR.BackboneElement"
@@ -9301,7 +9806,8 @@
     ("amountType" "FHIR.CodeableConcept" #f)
     ("source" (list "FHIR.Reference") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Structure"
    "FHIR.BackboneElement"
@@ -9318,7 +9824,8 @@
     ("source" (list "FHIR.Reference") #f)
     ("representation" (list "FHIR.SubstanceSpecification.Structure.Representation") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Structure.Isotope"
    "FHIR.BackboneElement"
@@ -9332,7 +9839,8 @@
     ("halfLife" "FHIR.Quantity" #f)
     ("molecularWeight" "FHIR.SubstanceSpecification.Structure.Isotope.MolecularWeight" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Structure.Isotope.MolecularWeight"
    "FHIR.BackboneElement"
@@ -9342,7 +9850,8 @@
    #f
    (("method" "FHIR.CodeableConcept" #f) ("type" "FHIR.CodeableConcept" #f) ("amount" "FHIR.Quantity" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SubstanceSpecification.Structure.Representation"
    "FHIR.BackboneElement"
@@ -9352,7 +9861,8 @@
    #f
    (("type" "FHIR.CodeableConcept" #f) ("representation" "FHIR.string" #f) ("attachment" "FHIR.Attachment" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.SupplyDelivery"
    "FHIR.DomainResource"
@@ -9372,9 +9882,10 @@
     ("destination" "FHIR.Reference" #f)
     ("receiver" (list "FHIR.Reference") #f))
    (("Practitioner" "supplier") ("Practitioner" "receiver") ("Patient" "patient"))
-   (("status" "status") ("identifier" "identifier") ("patient" "patient") ("receiver" "receiver") ("supplier" "supplier")))
-  (type "FHIR.SupplyDelivery.SuppliedItem" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.SimpleQuantity" #f) ("item" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () ())
-  (type "FHIR.SupplyDeliveryStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("status" "status") ("identifier" "identifier") ("patient" "patient") ("receiver" "receiver") ("supplier" "supplier"))
+   #f)
+  (type "FHIR.SupplyDelivery.SuppliedItem" "FHIR.BackboneElement" #f #f #f #f (("quantity" "FHIR.SimpleQuantity" #f) ("item" (choice "FHIR.CodeableConcept" "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.SupplyDeliveryStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.SupplyRequest"
    "FHIR.DomainResource"
@@ -9398,7 +9909,8 @@
     ("deliverFrom" "FHIR.Reference" #f)
     ("deliverTo" "FHIR.Reference" #f))
    (("Practitioner" "requester") ("Patient" "deliverTo") ("Device" "requester") ("RelatedPerson" "requester"))
-   (("requester" "requester") ("date" "authoredOn") ("identifier" "identifier") ("status" "status") ("category" "category") ("subject" "deliverTo") ("supplier" "supplier")))
+   (("requester" "requester") ("date" "authoredOn") ("identifier" "identifier") ("status" "status") ("category" "category") ("subject" "deliverTo") ("supplier" "supplier"))
+   #f)
   (type
    "FHIR.SupplyRequest.Parameter"
    "FHIR.BackboneElement"
@@ -9408,9 +9920,10 @@
    #f
    (("code" "FHIR.CodeableConcept" #f) ("value" (choice "FHIR.CodeableConcept" "FHIR.Quantity" "FHIR.Range" "FHIR.boolean") #f))
    ()
-   ())
-  (type "FHIR.SupplyRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.SystemRestfulInteraction" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.SupplyRequestStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.SystemRestfulInteraction" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Task"
    "FHIR.DomainResource"
@@ -9468,7 +9981,8 @@
     ("requester" "requester")
     ("authored-on" "authoredOn")
     ("owner" "owner")
-    ("group-identifier" "groupIdentifier")))
+    ("group-identifier" "groupIdentifier"))
+   #f)
   (type
    "FHIR.Task.Input"
    "FHIR.BackboneElement"
@@ -9531,7 +10045,8 @@
       "FHIR.Meta")
      #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Task.Output"
    "FHIR.BackboneElement"
@@ -9594,11 +10109,12 @@
       "FHIR.Meta")
      #f))
    ()
-   ())
-  (type "FHIR.Task.Restriction" "FHIR.BackboneElement" #f #f #f #f (("repetitions" "FHIR.positiveInt" #f) ("period" "FHIR.Period" #f) ("recipient" (list "FHIR.Reference") #f)) () ())
-  (type "FHIR.TaskIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TaskPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TaskStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Task.Restriction" "FHIR.BackboneElement" #f #f #f #f (("repetitions" "FHIR.positiveInt" #f) ("period" "FHIR.Period" #f) ("recipient" (list "FHIR.Reference") #f)) () () #f)
+  (type "FHIR.TaskIntent" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TaskPriority" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TaskStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.TerminologyCapabilities"
    "FHIR.DomainResource"
@@ -9640,8 +10156,9 @@
     ("publisher" "publisher")
     ("name" "name")
     ("jurisdiction" "jurisdiction")
-    ("version" "version")))
-  (type "FHIR.TerminologyCapabilities.Closure" "FHIR.BackboneElement" #f #f #f #f (("translation" "FHIR.boolean" #f)) () ())
+    ("version" "version"))
+   #f)
+  (type "FHIR.TerminologyCapabilities.Closure" "FHIR.BackboneElement" #f #f #f #f (("translation" "FHIR.boolean" #f)) () () #f)
   (type
    "FHIR.TerminologyCapabilities.CodeSystem"
    "FHIR.BackboneElement"
@@ -9651,7 +10168,8 @@
    #f
    (("uri" "FHIR.canonical" #f) ("version" (list "FHIR.TerminologyCapabilities.CodeSystem.Version") #f) ("subsumption" "FHIR.boolean" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.TerminologyCapabilities.CodeSystem.Version"
    "FHIR.BackboneElement"
@@ -9666,8 +10184,9 @@
     ("filter" (list "FHIR.TerminologyCapabilities.CodeSystem.Version.Filter") #f)
     ("property" (list "FHIR.code") #f))
    ()
-   ())
-  (type "FHIR.TerminologyCapabilities.CodeSystem.Version.Filter" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("op" (list "FHIR.code") #f)) () ())
+   ()
+   #f)
+  (type "FHIR.TerminologyCapabilities.CodeSystem.Version.Filter" "FHIR.BackboneElement" #f #f #f #f (("code" "FHIR.code" #f) ("op" (list "FHIR.code") #f)) () () #f)
   (type
    "FHIR.TerminologyCapabilities.Expansion"
    "FHIR.BackboneElement"
@@ -9681,12 +10200,13 @@
     ("parameter" (list "FHIR.TerminologyCapabilities.Expansion.Parameter") #f)
     ("textFilter" "FHIR.markdown" #f))
    ()
-   ())
-  (type "FHIR.TerminologyCapabilities.Expansion.Parameter" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.code" #f) ("documentation" "FHIR.string" #f)) () ())
-  (type "FHIR.TerminologyCapabilities.Implementation" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("url" "FHIR.url" #f)) () ())
-  (type "FHIR.TerminologyCapabilities.Software" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("version" "FHIR.string" #f)) () ())
-  (type "FHIR.TerminologyCapabilities.Translation" "FHIR.BackboneElement" #f #f #f #f (("needsMap" "FHIR.boolean" #f)) () ())
-  (type "FHIR.TerminologyCapabilities.ValidateCode" "FHIR.BackboneElement" #f #f #f #f (("translations" "FHIR.boolean" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.TerminologyCapabilities.Expansion.Parameter" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.code" #f) ("documentation" "FHIR.string" #f)) () () #f)
+  (type "FHIR.TerminologyCapabilities.Implementation" "FHIR.BackboneElement" #f #f #f #f (("description" "FHIR.string" #f) ("url" "FHIR.url" #f)) () () #f)
+  (type "FHIR.TerminologyCapabilities.Software" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("version" "FHIR.string" #f)) () () #f)
+  (type "FHIR.TerminologyCapabilities.Translation" "FHIR.BackboneElement" #f #f #f #f (("needsMap" "FHIR.boolean" #f)) () () #f)
+  (type "FHIR.TerminologyCapabilities.ValidateCode" "FHIR.BackboneElement" #f #f #f #f (("translations" "FHIR.boolean" #f)) () () #f)
   (type
    "FHIR.TestReport"
    "FHIR.DomainResource"
@@ -9707,20 +10227,21 @@
     ("test" (list "FHIR.TestReport.Test") #f)
     ("teardown" "FHIR.TestReport.Teardown" #f))
    ()
-   (("identifier" "identifier") ("result" "result") ("tester" "tester") ("issued" "issued") ("testscript" "testScript") ("participant" "participant.uri")))
-  (type "FHIR.TestReport.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.TestReportParticipantType" #f) ("uri" "FHIR.uri" #f) ("display" "FHIR.string" #f)) () ())
-  (type "FHIR.TestReport.Setup" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestReport.Setup.Action") #f)) () ())
-  (type "FHIR.TestReport.Setup.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestReport.Setup.Action.Operation" #f) ("assert" "FHIR.TestReport.Setup.Action.Assert" #f)) () ())
-  (type "FHIR.TestReport.Setup.Action.Assert" "FHIR.BackboneElement" #f #f #f #f (("result" "FHIR.TestReportActionResult" #f) ("message" "FHIR.markdown" #f) ("detail" "FHIR.string" #f)) () ())
-  (type "FHIR.TestReport.Setup.Action.Operation" "FHIR.BackboneElement" #f #f #f #f (("result" "FHIR.TestReportActionResult" #f) ("message" "FHIR.markdown" #f) ("detail" "FHIR.uri" #f)) () ())
-  (type "FHIR.TestReport.Teardown" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestReport.Teardown.Action") #f)) () ())
-  (type "FHIR.TestReport.Teardown.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestReport.Setup.Action.Operation" #f)) () ())
-  (type "FHIR.TestReport.Test" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("description" "FHIR.string" #f) ("action" (list "FHIR.TestReport.Test.Action") #f)) () ())
-  (type "FHIR.TestReport.Test.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestReport.Setup.Action.Operation" #f) ("assert" "FHIR.TestReport.Setup.Action.Assert" #f)) () ())
-  (type "FHIR.TestReportActionResult" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TestReportParticipantType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TestReportResult" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TestReportStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   (("identifier" "identifier") ("result" "result") ("tester" "tester") ("issued" "issued") ("testscript" "testScript") ("participant" "participant.uri"))
+   #f)
+  (type "FHIR.TestReport.Participant" "FHIR.BackboneElement" #f #f #f #f (("type" "FHIR.TestReportParticipantType" #f) ("uri" "FHIR.uri" #f) ("display" "FHIR.string" #f)) () () #f)
+  (type "FHIR.TestReport.Setup" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestReport.Setup.Action") #f)) () () #f)
+  (type "FHIR.TestReport.Setup.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestReport.Setup.Action.Operation" #f) ("assert" "FHIR.TestReport.Setup.Action.Assert" #f)) () () #f)
+  (type "FHIR.TestReport.Setup.Action.Assert" "FHIR.BackboneElement" #f #f #f #f (("result" "FHIR.TestReportActionResult" #f) ("message" "FHIR.markdown" #f) ("detail" "FHIR.string" #f)) () () #f)
+  (type "FHIR.TestReport.Setup.Action.Operation" "FHIR.BackboneElement" #f #f #f #f (("result" "FHIR.TestReportActionResult" #f) ("message" "FHIR.markdown" #f) ("detail" "FHIR.uri" #f)) () () #f)
+  (type "FHIR.TestReport.Teardown" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestReport.Teardown.Action") #f)) () () #f)
+  (type "FHIR.TestReport.Teardown.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestReport.Setup.Action.Operation" #f)) () () #f)
+  (type "FHIR.TestReport.Test" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("description" "FHIR.string" #f) ("action" (list "FHIR.TestReport.Test.Action") #f)) () () #f)
+  (type "FHIR.TestReport.Test.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestReport.Setup.Action.Operation" #f) ("assert" "FHIR.TestReport.Setup.Action.Assert" #f)) () () #f)
+  (type "FHIR.TestReportActionResult" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TestReportParticipantType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TestReportResult" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TestReportStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.TestScript"
    "FHIR.DomainResource"
@@ -9764,10 +10285,11 @@
     ("status" "status")
     ("version" "version")
     ("description" "description")
-    ("title" "title")))
-  (type "FHIR.TestScript.Destination" "FHIR.BackboneElement" #f #f #f #f (("index" "FHIR.integer" #f) ("profile" "FHIR.Coding" #f)) () ())
-  (type "FHIR.TestScript.Fixture" "FHIR.BackboneElement" #f #f #f #f (("autocreate" "FHIR.boolean" #f) ("autodelete" "FHIR.boolean" #f) ("resource" "FHIR.Reference" #f)) () ())
-  (type "FHIR.TestScript.Metadata" "FHIR.BackboneElement" #f #f #f #f (("link" (list "FHIR.TestScript.Metadata.Link") #f) ("capability" (list "FHIR.TestScript.Metadata.Capability") #f)) () ())
+    ("title" "title"))
+   #f)
+  (type "FHIR.TestScript.Destination" "FHIR.BackboneElement" #f #f #f #f (("index" "FHIR.integer" #f) ("profile" "FHIR.Coding" #f)) () () #f)
+  (type "FHIR.TestScript.Fixture" "FHIR.BackboneElement" #f #f #f #f (("autocreate" "FHIR.boolean" #f) ("autodelete" "FHIR.boolean" #f) ("resource" "FHIR.Reference" #f)) () () #f)
+  (type "FHIR.TestScript.Metadata" "FHIR.BackboneElement" #f #f #f #f (("link" (list "FHIR.TestScript.Metadata.Link") #f) ("capability" (list "FHIR.TestScript.Metadata.Capability") #f)) () () #f)
   (type
    "FHIR.TestScript.Metadata.Capability"
    "FHIR.BackboneElement"
@@ -9783,11 +10305,12 @@
     ("link" (list "FHIR.uri") #f)
     ("capabilities" "FHIR.canonical" #f))
    ()
-   ())
-  (type "FHIR.TestScript.Metadata.Link" "FHIR.BackboneElement" #f #f #f #f (("url" "FHIR.uri" #f) ("description" "FHIR.string" #f)) () ())
-  (type "FHIR.TestScript.Origin" "FHIR.BackboneElement" #f #f #f #f (("index" "FHIR.integer" #f) ("profile" "FHIR.Coding" #f)) () ())
-  (type "FHIR.TestScript.Setup" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestScript.Setup.Action") #f)) () ())
-  (type "FHIR.TestScript.Setup.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestScript.Setup.Action.Operation" #f) ("assert" "FHIR.TestScript.Setup.Action.Assert" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.TestScript.Metadata.Link" "FHIR.BackboneElement" #f #f #f #f (("url" "FHIR.uri" #f) ("description" "FHIR.string" #f)) () () #f)
+  (type "FHIR.TestScript.Origin" "FHIR.BackboneElement" #f #f #f #f (("index" "FHIR.integer" #f) ("profile" "FHIR.Coding" #f)) () () #f)
+  (type "FHIR.TestScript.Setup" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestScript.Setup.Action") #f)) () () #f)
+  (type "FHIR.TestScript.Setup.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestScript.Setup.Action.Operation" #f) ("assert" "FHIR.TestScript.Setup.Action.Assert" #f)) () () #f)
   (type
    "FHIR.TestScript.Setup.Action.Assert"
    "FHIR.BackboneElement"
@@ -9818,7 +10341,8 @@
     ("value" "FHIR.string" #f)
     ("warningOnly" "FHIR.boolean" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.TestScript.Setup.Action.Operation"
    "FHIR.BackboneElement"
@@ -9844,12 +10368,13 @@
     ("targetId" "FHIR.id" #f)
     ("url" "FHIR.string" #f))
    ()
-   ())
-  (type "FHIR.TestScript.Setup.Action.Operation.RequestHeader" "FHIR.BackboneElement" #f #f #f #f (("field" "FHIR.string" #f) ("value" "FHIR.string" #f)) () ())
-  (type "FHIR.TestScript.Teardown" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestScript.Teardown.Action") #f)) () ())
-  (type "FHIR.TestScript.Teardown.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestScript.Setup.Action.Operation" #f)) () ())
-  (type "FHIR.TestScript.Test" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("description" "FHIR.string" #f) ("action" (list "FHIR.TestScript.Test.Action") #f)) () ())
-  (type "FHIR.TestScript.Test.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestScript.Setup.Action.Operation" #f) ("assert" "FHIR.TestScript.Setup.Action.Assert" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.TestScript.Setup.Action.Operation.RequestHeader" "FHIR.BackboneElement" #f #f #f #f (("field" "FHIR.string" #f) ("value" "FHIR.string" #f)) () () #f)
+  (type "FHIR.TestScript.Teardown" "FHIR.BackboneElement" #f #f #f #f (("action" (list "FHIR.TestScript.Teardown.Action") #f)) () () #f)
+  (type "FHIR.TestScript.Teardown.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestScript.Setup.Action.Operation" #f)) () () #f)
+  (type "FHIR.TestScript.Test" "FHIR.BackboneElement" #f #f #f #f (("name" "FHIR.string" #f) ("description" "FHIR.string" #f) ("action" (list "FHIR.TestScript.Test.Action") #f)) () () #f)
+  (type "FHIR.TestScript.Test.Action" "FHIR.BackboneElement" #f #f #f #f (("operation" "FHIR.TestScript.Setup.Action.Operation" #f) ("assert" "FHIR.TestScript.Setup.Action.Assert" #f)) () () #f)
   (type
    "FHIR.TestScript.Variable"
    "FHIR.BackboneElement"
@@ -9866,8 +10391,9 @@
     ("path" "FHIR.string" #f)
     ("sourceId" "FHIR.id" #f))
    ()
-   ())
-  (type "FHIR.TestScriptRequestMethodCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.TestScriptRequestMethodCode" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.Timing"
    "FHIR.BackboneElement"
@@ -9877,7 +10403,8 @@
    #f
    (("event" (list "FHIR.dateTime") #f) ("repeat" "FHIR.Timing.Repeat" #f) ("code" "FHIR.CodeableConcept" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.Timing.Repeat"
    "FHIR.Element"
@@ -9901,7 +10428,8 @@
     ("when" (list "FHIR.EventTiming") #f)
     ("offset" "FHIR.unsignedInt" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.TriggerDefinition"
    "FHIR.Element"
@@ -9915,12 +10443,13 @@
     ("data" (list "FHIR.DataRequirement") #f)
     ("condition" "FHIR.Expression" #f))
    ()
-   ())
-  (type "FHIR.TriggerType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TypeDerivationRule" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.TypeRestfulInteraction" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.UDIEntryType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.UnitsOfTime" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.TriggerType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TypeDerivationRule" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.TypeRestfulInteraction" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.UDIEntryType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.UnitsOfTime" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.UsageContext"
    "FHIR.Element"
@@ -9930,8 +10459,9 @@
    #f
    (("code" "FHIR.Coding" #f) ("value" (choice "FHIR.CodeableConcept" "FHIR.Quantity" "FHIR.Range" "FHIR.Reference") #f))
    ()
-   ())
-  (type "FHIR.Use" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.Use" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.ValueSet"
    "FHIR.DomainResource"
@@ -9971,7 +10501,8 @@
     ("name" "name")
     ("jurisdiction" "jurisdiction")
     ("identifier" "identifier")
-    ("version" "version")))
+    ("version" "version"))
+   #f)
   (type
    "FHIR.ValueSet.Compose"
    "FHIR.BackboneElement"
@@ -9981,7 +10512,8 @@
    #f
    (("lockedDate" "FHIR.date" #f) ("inactive" "FHIR.boolean" #f) ("include" (list "FHIR.ValueSet.Compose.Include") #f) ("exclude" (list "FHIR.ValueSet.Compose.Include") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ValueSet.Compose.Include"
    "FHIR.BackboneElement"
@@ -9995,7 +10527,8 @@
     ("filter" (list "FHIR.ValueSet.Compose.Include.Filter") #f)
     ("valueSet" (list "FHIR.canonical") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ValueSet.Compose.Include.Concept"
    "FHIR.BackboneElement"
@@ -10005,9 +10538,10 @@
    #f
    (("code" "FHIR.code" #f) ("display" "FHIR.string" #f) ("designation" (list "FHIR.ValueSet.Compose.Include.Concept.Designation") #f))
    ()
-   ())
-  (type "FHIR.ValueSet.Compose.Include.Concept.Designation" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.code" #f) ("use" "FHIR.Coding" #f) ("value" "FHIR.string" #f)) () ())
-  (type "FHIR.ValueSet.Compose.Include.Filter" "FHIR.BackboneElement" #f #f #f #f (("property" "FHIR.code" #f) ("op" "FHIR.FilterOperator" #f) ("value" "FHIR.string" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.ValueSet.Compose.Include.Concept.Designation" "FHIR.BackboneElement" #f #f #f #f (("language" "FHIR.code" #f) ("use" "FHIR.Coding" #f) ("value" "FHIR.string" #f)) () () #f)
+  (type "FHIR.ValueSet.Compose.Include.Filter" "FHIR.BackboneElement" #f #f #f #f (("property" "FHIR.code" #f) ("op" "FHIR.FilterOperator" #f) ("value" "FHIR.string" #f)) () () #f)
   (type
    "FHIR.ValueSet.Expansion"
    "FHIR.BackboneElement"
@@ -10022,7 +10556,8 @@
     ("parameter" (list "FHIR.ValueSet.Expansion.Parameter") #f)
     ("contains" (list "FHIR.ValueSet.Expansion.Contains") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ValueSet.Expansion.Contains"
    "FHIR.BackboneElement"
@@ -10039,7 +10574,8 @@
     ("designation" (list "FHIR.ValueSet.Compose.Include.Concept.Designation") #f)
     ("contains" (list "FHIR.ValueSet.Expansion.Contains") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.ValueSet.Expansion.Parameter"
    "FHIR.BackboneElement"
@@ -10049,8 +10585,9 @@
    #f
    (("name" "FHIR.string" #f) ("value" (choice "FHIR.string" "FHIR.boolean" "FHIR.integer" "FHIR.decimal" "FHIR.uri" "FHIR.code" "FHIR.dateTime") #f))
    ()
-   ())
-  (type "FHIR.VariableType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.VariableType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.VerificationResult"
    "FHIR.DomainResource"
@@ -10073,7 +10610,8 @@
     ("attestation" "FHIR.VerificationResult.Attestation" #f)
     ("validator" (list "FHIR.VerificationResult.Validator") #f))
    ()
-   (("target" "target")))
+   (("target" "target"))
+   #f)
   (type
    "FHIR.VerificationResult.Attestation"
    "FHIR.BackboneElement"
@@ -10090,7 +10628,8 @@
     ("proxySignature" "FHIR.Signature" #f)
     ("sourceSignature" "FHIR.Signature" #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.VerificationResult.PrimarySource"
    "FHIR.BackboneElement"
@@ -10106,7 +10645,8 @@
     ("canPushUpdates" "FHIR.CodeableConcept" #f)
     ("pushTypeAvailable" (list "FHIR.CodeableConcept") #f))
    ()
-   ())
+   ()
+   #f)
   (type
    "FHIR.VerificationResult.Validator"
    "FHIR.BackboneElement"
@@ -10116,9 +10656,10 @@
    #f
    (("organization" "FHIR.Reference" #f) ("identityCertificate" "FHIR.string" #f) ("attestationSignature" "FHIR.Signature" #f))
    ()
-   ())
-  (type "FHIR.VisionBase" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.VisionEyes" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
+   ()
+   #f)
+  (type "FHIR.VisionBase" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.VisionEyes" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
   (type
    "FHIR.VisionPrescription"
    "FHIR.DomainResource"
@@ -10135,7 +10676,8 @@
     ("prescriber" "FHIR.Reference" #f)
     ("lensSpecification" (list "FHIR.VisionPrescription.LensSpecification") #f))
    (("Practitioner" "prescriber") ("Patient" "patient") ("Encounter" "encounter"))
-   (("prescriber" "prescriber") ("identifier" "identifier") ("encounter" "encounter") ("patient" "patient") ("status" "status") ("datewritten" "dateWritten")))
+   (("prescriber" "prescriber") ("identifier" "identifier") ("encounter" "encounter") ("patient" "patient") ("status" "status") ("datewritten" "dateWritten"))
+   #f)
   (type
    "FHIR.VisionPrescription.LensSpecification"
    "FHIR.BackboneElement"
@@ -10158,30 +10700,31 @@
     ("brand" "FHIR.string" #f)
     ("note" (list "FHIR.Annotation") #f))
    ()
-   ())
-  (type "FHIR.VisionPrescription.LensSpecification.Prism" "FHIR.BackboneElement" #f #f #f #f (("amount" "FHIR.decimal" #f) ("base" "FHIR.VisionBase" #f)) () ())
-  (type "FHIR.VisionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.XPathUsageType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.base64Binary" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/base64Binary" "base64Binary" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.boolean" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/boolean" "boolean" #f #f (("value" "System.Boolean" #f)) () ())
-  (type "FHIR.canonical" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/canonical" "canonical" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.code" "FHIR.string" "http://hl7.org/fhir/StructureDefinition/code" "code" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.date" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/date" "date" #f #f (("value" "System.Date" #f)) () ())
-  (type "FHIR.dateTime" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/dateTime" "dateTime" #f #f (("value" "System.DateTime" #f)) () ())
-  (type "FHIR.decimal" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/decimal" "decimal" #f #f (("value" "System.Decimal" #f)) () ())
-  (type "FHIR.id" "FHIR.string" "http://hl7.org/fhir/StructureDefinition/id" "id" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.instant" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/instant" "instant" #f #f (("value" "System.DateTime" #f)) () ())
-  (type "FHIR.integer" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/integer" "integer" #f #f (("value" "System.Integer" #f)) () ())
-  (type "FHIR.markdown" "FHIR.string" "http://hl7.org/fhir/StructureDefinition/markdown" "markdown" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.oid" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/oid" "oid" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.positiveInt" "FHIR.integer" "http://hl7.org/fhir/StructureDefinition/positiveInt" "positiveInt" #f #f (("value" "System.Integer" #f)) () ())
-  (type "FHIR.string" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/string" "string" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.time" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/time" "time" #f #f (("value" "System.Time" #f)) () ())
-  (type "FHIR.unsignedInt" "FHIR.integer" "http://hl7.org/fhir/StructureDefinition/unsignedInt" "unsignedInt" #f #f (("value" "System.Integer" #f)) () ())
-  (type "FHIR.uri" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/uri" "uri" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.url" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/url" "url" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.uuid" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/uuid" "uuid" #f #f (("value" "System.String" #f)) () ())
-  (type "FHIR.xhtml" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/xhtml" "xhtml" #f #f (("value" "System.String" #f)) () ()))
+   ()
+   #f)
+  (type "FHIR.VisionPrescription.LensSpecification.Prism" "FHIR.BackboneElement" #f #f #f #f (("amount" "FHIR.decimal" #f) ("base" "FHIR.VisionBase" #f)) () () #f)
+  (type "FHIR.VisionStatus" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.XPathUsageType" "FHIR.Element" #f #f #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.base64Binary" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/base64Binary" "base64Binary" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.boolean" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/boolean" "boolean" #f #f (("value" "System.Boolean" #f)) () () #f)
+  (type "FHIR.canonical" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/canonical" "canonical" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.code" "FHIR.string" "http://hl7.org/fhir/StructureDefinition/code" "code" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.date" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/date" "date" #f #f (("value" "System.Date" #f)) () () #f)
+  (type "FHIR.dateTime" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/dateTime" "dateTime" #f #f (("value" "System.DateTime" #f)) () () #f)
+  (type "FHIR.decimal" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/decimal" "decimal" #f #f (("value" "System.Decimal" #f)) () () #f)
+  (type "FHIR.id" "FHIR.string" "http://hl7.org/fhir/StructureDefinition/id" "id" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.instant" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/instant" "instant" #f #f (("value" "System.DateTime" #f)) () () #f)
+  (type "FHIR.integer" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/integer" "integer" #f #f (("value" "System.Integer" #f)) () () #f)
+  (type "FHIR.markdown" "FHIR.string" "http://hl7.org/fhir/StructureDefinition/markdown" "markdown" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.oid" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/oid" "oid" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.positiveInt" "FHIR.integer" "http://hl7.org/fhir/StructureDefinition/positiveInt" "positiveInt" #f #f (("value" "System.Integer" #f)) () () #f)
+  (type "FHIR.string" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/string" "string" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.time" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/time" "time" #f #f (("value" "System.Time" #f)) () () #f)
+  (type "FHIR.unsignedInt" "FHIR.integer" "http://hl7.org/fhir/StructureDefinition/unsignedInt" "unsignedInt" #f #f (("value" "System.Integer" #f)) () () #f)
+  (type "FHIR.uri" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/uri" "uri" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.url" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/url" "url" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.uuid" "FHIR.uri" "http://hl7.org/fhir/StructureDefinition/uuid" "uuid" #f #f (("value" "System.String" #f)) () () #f)
+  (type "FHIR.xhtml" "FHIR.Element" "http://hl7.org/fhir/StructureDefinition/xhtml" "xhtml" #f #f (("value" "System.String" #f)) () () #f))
  (conversions
   ("FHIR.Coding" "System.Code" "FHIRHelpers.ToCode")
   ("FHIR.CodeableConcept" "System.Concept" "FHIRHelpers.ToConcept")

@@ -19,7 +19,7 @@
 ;;; The vectors are the representation (equal? compares them, the harnesses print them); the
 ;;; constructors, predicates and accessors below are how code reads and writes them.
 
-(require racket/contract racket/match racket/runtime-path racket/list racket/string (for-syntax racket/base))
+(require racket/contract racket/match racket/runtime-path racket/list racket/string racket/promise)
 
 ;; ---- CType ----------------------------------------------------------------------------------
 (provide list-ctype interval-ctype choice-ctype tuple-ctype
@@ -47,22 +47,27 @@
 
 ;; ---- models -------------------------------------------------------------------------------
 ;;; A Model is (model name url version required patient-class birth-date-path classes conversions contexts
-;;;                   representation-settings)
+;;;                   representation-settings target-url)
 ;;;   required  : (listof (cons name version))   the models it builds on (QI-Core on FHIR); a class
 ;;;               it does not have is looked up in them, so its classes may extend theirs
 ;;;   classes   : hash qualified-name -> ClassInfo
 ;;;   conversions : hash from-type -> (cons to-CType function-name)   the implicit conversions to System
 ;;;   contexts  : hash name -> ContextInfo
+;;;   target-url : string | #f   a MAPPING model (QI-Core, US Core) is a view over another model: its
+;;;               ELM reads that model's data (QI-Core's: FHIR's, http://hl7.org/fhir) through each
+;;;               element's `target` mapping, applied when a library is compiled (compile.rkt)
 ;;;   representation-settings : (listof (cons key value)) | #f   how its data looks (representation.rkt), from
 ;;;               a `<model file>.representation.rktd` beside the model file; #f: inherited or default
 ;;; A ClassInfo is (class-info name base identifier label primary-code-path retrievable? elements
-;;;                            relationships targets)
+;;;                            relationships targets searches target)
 ;;;   elements      : hash element-name -> CType
 ;;;   relationships : (listof (cons context-name related-key-element))   how an instance relates to a
 ;;;                   context (the Patient compartment of FHIR: Observation by subject and performer);
 ;;;                   the key element is an element, or names one of the class's searches
 ;;;   searches      : hash search-name -> path   (FHIR's: `patient` -> `subject.where(resolve() is Patient)`)
 ;;;   targets       : hash element-name -> mapping expression   where the element's value really is
+;;;   target        : the target model's class a mapping model's class reads (QI-Core's BodyHeight:
+;;;                   Observation), or #f: the class of the same name
 ;;; A ContextInfo is (context-info name key-element birth-date-element type)
 ;;; Models come from a registry: the model files shipped here (`shipped-model-files`: FHIR 4.0.1's),
 ;;; read when a model is first asked for; any registered by a program
@@ -93,20 +98,20 @@
   [model-relationships (-> model? string? string? (listof string?))]
   [model-resolve-type  (-> model? string? (or/c string? #f))]))
 
-(struct class-info (name base identifier label primary-code-path retrievable? elements relationships targets searches) #:transparent)
+(struct class-info (name base identifier label primary-code-path retrievable? elements relationships targets searches target) #:transparent)
 (struct context-info (name key-element birth-date-element type) #:transparent)
 ;; A model is equal only to itself: models are shared (the registry hands out one per name and
 ;; version), so identity is equality, and hashing or printing one never walks its classes.
-(struct model (name url version required patient-class birth-date-path classes conversions contexts representation-settings)
+(struct model (name url version required patient-class birth-date-path classes conversions contexts representation-settings target-url)
   #:property prop:equal+hash
   (list (lambda (a b rec) (eq? a b)) (lambda (a rec) (eq-hash-code a)) (lambda (a rec) (eq-hash-code a)))
   #:property prop:custom-write
   (lambda (m port mode) (fprintf port "#<model ~a ~a>" (model-name m) (model-version m))))
 
-;; the models shipped with the engine: ModelForm files in this directory, each with its representation
-;; — a list of files, so the engine's code names no model. Both files of a pair are runtime paths, so
-;; a standalone build (raco distribute) carries the representation with the model.
-(define-runtime-path-list shipped-model-files (list "fhir-4.0.1.rktd" "fhir-4.0.1.representation.rktd"))
+;; the models shipped with the engine: models.rktd lists each one's name, version, ModelForm file and
+;; representation file (or #f) — data, so the engine's code names no model — and each is read the
+;; first time it is asked for. The directory is a runtime path, so a standalone build carries it.
+(define-runtime-path shipped-dir ".")
 
 ;; spec->ctype : TypeSpec -> CType
 (define (spec->ctype s)
@@ -123,24 +128,31 @@
         [(regexp-match #rx"^System[.](.*)$" s) => cadr]
         [else s]))
 
-;; form->model : ModelForm (modelinfo-xml.rkt) [representation settings] -> Model
+;; form->model : ModelForm (modelinfo-xml.rkt) [representation settings] -> Model   (a form without
+;; its `target` clause, or a type without its target, is read as having none)
 (define (form->model f [representation #f])
   (match f
-    [(list 'model name url version (list 'required reqs ...) (list 'patient patient birth)
-           (list 'types types ...) (list 'conversions convs ...) (list 'contexts ctxs ...))
+    [(list 'model name url version req pat (list 'target target-url) rest ...) (build-model name url version req pat target-url rest representation)]
+    [(list 'model name url version req pat rest ...) (build-model name url version req pat #f rest representation)]
+    [_ (error 'form->model "not a ModelForm: ~a" (if (pair? f) (car f) f))]))
+(define (build-model name url version req pat target-url rest representation)
+  (match* (req pat rest)
+    [((list 'required reqs ...) (list 'patient patient birth)
+      (list (list 'types types ...) (list 'conversions convs ...) (list 'contexts ctxs ...)))
      (model name url version (for/list ([r (in-list reqs)]) (cons (car r) (cadr r))) patient birth
             (for/hash ([t (in-list types)])
               (match t
-                [(list 'type n base id label pcp retr elts rels searches)
+                [(list 'type n base id label pcp retr elts rels searches target ...)
                  (values n (class-info n base id label pcp retr
                                        (for/hash ([e (in-list elts)]) (values (car e) (spec->ctype (cadr e))))
                                        (for/list ([r (in-list rels)]) (cons (car r) (cadr r)))
                                        (for/hash ([e (in-list elts)] #:when (caddr e)) (values (car e) (caddr e)))
-                                       (for/hash ([x (in-list searches)]) (values (car x) (cadr x)))))]))
+                                       (for/hash ([x (in-list searches)]) (values (car x) (cadr x)))
+                                       (and (pair? target) (car target))))]))
             (for/hash ([c (in-list convs)]) (values (car c) (cons (system-simple (cadr c)) (caddr c))))
             (for/hash ([c (in-list ctxs)]) (values (car c) (apply context-info c)))
-            representation)]
-    [_ (error 'form->model "not a ModelForm: ~a" (if (pair? f) (car f) f))]))
+            representation target-url)]
+    [(_ _ _) (error 'form->model "not a ModelForm: model ~a" name)]))
 ;; load-model : path [#:representation path] -> Model   a ModelForm (.rktd) or ModelInfo (.xml,
 ;; .xml.gz) file, with its representation: the file given, else `<same name>.representation.rktd`
 (define (load-model path #:representation [rep-file #f])
@@ -156,24 +168,22 @@
 (define registry (make-hash))
 (define (register-model! m #:versions [aliases '()])
   (for ([v (in-list (cons (model-version m) aliases))]) (hash-set! registry (cons (model-name m) v) m)))
-;; the shipped models, registered the first time the registry is asked
+;; the shipped models, entered (unread) the first time the registry is asked
 (define shipped-loaded? #f)
 (define (load-shipped!)
   (unless shipped-loaded?
     (set! shipped-loaded? #t)
-    ;; a model file, then (when the next file is one) its representation
-    (let loop ([fs shipped-model-files])
-      (match fs
-        [(list* f r more) #:when (regexp-match? #rx"[.]representation[.]rktd$" (path->string r))
-         (register-model! (load-model f #:representation r)) (loop more)]
-        [(cons f more) (register-model! (load-model f)) (loop more)]
-        ['() (void)]))))
+    (for ([e (in-list (call-with-input-file (build-path shipped-dir "models.rktd") read))])
+      (match e
+        [(list name version file rep)
+         (define p (delay (load-model (build-path shipped-dir file) #:representation (and rep (build-path shipped-dir rep)))))
+         (hash-set! registry (cons name version) p)]))))
 
 (define current-model-providers (make-parameter '()))
 (define current-model-directories
   (make-parameter (let ([e (getenv "CQL_MODEL_PATH")]) (if e (filter (lambda (s) (not (string=? s ""))) (regexp-split #rx":" e)) '()))))
 
-(define (entry-model e) e)
+(define (entry-model e) (if (promise? e) (force e) e))
 ;; version-key : version-string -> (listof integer|string)   "4.0.10" sorts after "4.0.9"
 (define (version-key v) (map (lambda (p) (or (string->number p) p)) (regexp-split #rx"[.]" (or v ""))))
 (define (version<? a b)
@@ -270,9 +280,13 @@
   (or (hash-ref (model-conversions m) t #f)
       (for/or ([r (in-list (model-required-models m))]) (model-own-conversion r t))))
 
+;; model-context : model name -> ContextInfo|#f   declared, else inherited; a ModelInfo older than
+;; contextInfo (QDM 5.3) has a Patient context all the same: its patient class, keyed by `id`
 (define (model-context m name)
   (or (hash-ref (model-contexts m) name #f)
-      (for/or ([r (in-list (model-required-models m))]) (model-context r name))))
+      (for/or ([r (in-list (model-required-models m))]) (model-context r name))
+      (and (equal? name "Patient") (model-patient-class m) (zero? (hash-count (model-contexts m)))
+           (context-info "Patient" "id" (model-birth-date-path m) (model-patient-class m)))))
 (define (model-context-type m name) (let ([c (model-context m name)]) (and c (context-info-type c))))
 
 ;; model-relationships : model type-name context -> (listof dotted-path)   the paths by which an
@@ -321,10 +335,23 @@
           [(> depth 0) (loop (cdr cs) depth out)]
           [else (loop (cdr cs) depth (cons (car cs) out))])))
 
-;; model-resolve-type : model name -> qualified-name|#f   "Encounter" or "FHIR.Encounter" -> "FHIR.Encounter"
+;; model-resolve-type : model name -> qualified-name|#f   "Encounter" or "FHIR.Encounter" ->
+;; "FHIR.Encounter"; else a class by its label (QDM's "Encounter, Performed" ->
+;; "QDM.PositiveEncounterPerformed"); a retrievable class first when labels repeat
 (define (model-resolve-type m name)
-  (define q (if (regexp-match? #rx"[.]" name) name (string-append (model-name m) "." name)))
-  (and (model-class m q) q))
+  (define q (if (regexp-match? #rx"^[A-Za-z][A-Za-z0-9_]*[.][A-Za-z]" name) name (string-append (model-name m) "." name)))
+  (or (and (model-class m q) q)
+      (model-class-by-label m name)))
+(define labels (make-weak-hasheq))   ; model -> (hash label -> qualified name)
+(define (model-class-by-label m label)
+  (define table
+    (hash-ref! labels m
+               (lambda ()
+                 (for/fold ([h (hash)]) ([ci (in-list (sort (hash-values (model-classes m)) string<? #:key class-info-name))]
+                                         #:when (class-info-label ci))
+                   (define l (class-info-label ci))
+                   (if (and (hash-has-key? h l) (not (class-info-retrievable? ci))) h (hash-set h l (class-info-name ci)))))))
+  (hash-ref table label #f))
 
 (module+ test
   (require rackunit)

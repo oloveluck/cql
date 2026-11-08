@@ -11,3 +11,17 @@ search paths, conversions, contexts — descriptions and bindings dropped). Rege
   racket model/gen-modelinfo.rkt
 fhir-4.0.1.representation.rktd is written here, not derived: how FHIR JSON looks to the engine
 (representation.rkt).
+
+QI-Core, US Core and QDM ModelInfos — the documents the reference CQL-to-ELM translator ships:
+  qicore-modelinfo-{4.1.1,5.0.0,6.0.0}.xml.gz, uscore-modelinfo-{3.1.1,6.1.0}.xml.gz
+      from quick/src/main/resources/org/hl7/fhir/
+  qdm-modelinfo-{5.0.2,5.3,5.4,5.5,5.6}.xml.gz
+      from qdm/src/main/resources/gov/healthit/qdm/
+Upstream: https://github.com/cqframework/clinical_quality_language
+  commit 70f2ecb369fd2b8a2ecc950b31b38b0f8a4f2583 (retrieved 2026-11-08), stored gzip -9, unmodified
+License: Apache-2.0.
+Each <name>-<version>.rktd is derived by gen-modelinfo.rkt (`racket model/gen-modelinfo.rkt in out`);
+models.rktd lists the shipped models and their representations. QI-Core and US Core are mapping
+models (targetUrl http://hl7.org/fhir): their ELM reads FHIR through each element's target mapping,
+so they have no representation of their own. qdm.representation.rktd is written here: how QDM data
+looks in the cqm-models JSON (Bonnie, Cypress).
