@@ -13,7 +13,7 @@
          (only-in fhirpath/value fp-long? fp-long fp-long-v fp-quantity? fp-quantity fp-quantity-value fp-quantity-unit)
          (only-in fhirpath/temporal-ops moment? moment->string))
 
-(provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio) (struct-out fhir-node)
+(provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio) (struct-out model-node)
          current-evaluation-offset
          (struct-out cql-code) (struct-out cql-concept) (struct-out cql-obj)
          (contract-out
@@ -44,9 +44,18 @@
 ;; a typed instance value from a class selector (e.g. System.ValueSet{…}): carries its class name so
 ;; `is` can test the class hierarchy; fields: hash of symbol -> value
 (struct cql-obj      (class fields) #:transparent)
-;; FHIR data at a point in a resource: its model type name ("FHIR.Observation") and its JSON there
-;; (navigated by fhir-value.rkt)
-(struct fhir-node    (type json) #:transparent)
+;; A model's data at a point in a record: the model (model/modelinfo.rkt), its class there
+;; ("FHIR.Observation", a qualified name) and the data there — navigated by representation.rkt. Two
+;; nodes are equal when they are of the same model (eq?), class and data; the model is not hashed or
+;; printed (it is large, and shared by every node of it).
+(struct model-node (model type data)
+  #:property prop:equal+hash
+  (list (lambda (a b rec) (and (eq? (model-node-model a) (model-node-model b))
+                               (rec (model-node-type a) (model-node-type b)) (rec (model-node-data a) (model-node-data b))))
+        (lambda (a rec) (rec (cons (model-node-type a) (model-node-data a))))
+        (lambda (a rec) (rec (cons (model-node-type a) (model-node-data a)))))
+  #:property prop:custom-write
+  (lambda (n port mode) (fprintf port "#<model-node ~a ~s>" (model-node-type n) (model-node-data n))))
 ;; current-evaluation-offset : (parameter (or minutes #f))   the evaluation request's timezone offset:
 ;; a DateTime with a time but no offset (a literal, or FHIR data) takes it (cql.hl7.org: "the timezone
 ;; offset of the evaluation request"). #f = leave such values offset-less (the expression TCK).
@@ -67,12 +76,12 @@
 ;;  - cql-tuple                         System.Tuple / structured value
 ;;  - cql-ratio / cql-code / cql-concept
 ;;  - cql-obj                           a typed class instance (System.ValueSet{…} etc)
-;;  - fhir-node                         a FHIR (model) value: resource, element or primitive
+;;  - model-node                        a model's value: a record, an element of one, a primitive
 ;; cql-value? recognises the domain; `render` and the interpreter template against it.
 (define (cql-value? x)
   (or (cql-null? x) (cql-null-list? x) (boolean? x) (exact-integer? x) (fp-long? x) (fp-decimal? x)
       (string? x) (moment? x) (fp-quantity? x) (list? x)
-      (cql-interval? x) (cql-tuple? x) (cql-ratio? x) (cql-code? x) (cql-concept? x) (cql-obj? x) (fhir-node? x)))
+      (cql-interval? x) (cql-tuple? x) (cql-ratio? x) (cql-code? x) (cql-concept? x) (cql-obj? x) (model-node? x)))
 
 ;; a stable textual rendering, used for debugging and (indirectly) test diagnostics
 (define (render v)

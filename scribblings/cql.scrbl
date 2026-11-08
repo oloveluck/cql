@@ -230,7 +230,7 @@ The null singleton, and a null cast to a list type (@tt{null as List<T>}): still
 @defstruct*[cql-code ([code any/c] [system any/c] [version any/c] [display any/c])]
 @defstruct*[cql-concept ([codes list?] [display any/c])]
 @defstruct*[cql-obj ([class string?] [fields hash?])]{An instance of another class, carrying its class for @tt{is}.}
-@defstruct*[fhir-node ([type string?] [json any/c])]{FHIR data at a point in a resource: its model type (@racket["FHIR.Observation"]) and the JSON there.}
+@defstruct*[model-node ([model any/c] [type string?] [data any/c])]{A data model's value at a point in a record: its model, its class (@racket["FHIR.Observation"]) and the data there. Equal when of the same model, class and data.}
 @defproc[(cql-value? [v any/c]) boolean?]
 @defproc[(render [v any/c]) string?]{@racket[(render (list 1 2))] is @racket["{1, 2}"].}
 @defparam[current-evaluation-offset minutes (or/c exact-integer? #f)]{
@@ -319,15 +319,26 @@ with the proportion score.}
 @subsection[#:style 'unnumbered]{@tt{cql/model/modelinfo}}
 @defmodule[cql/model/modelinfo]
 
-The FHIR 4.0.1 ModelInfo the reference translator ships. A CType is a System type by name
+The data models a library's @tt{using} names. FHIR 4.0.1 (the ModelInfo the reference translator
+ships) is installed; any other model is a ModelInfo document (in @racket[current-model-directories] or
+@tt{CQL_MODEL_PATH}), registered with @racket[register-model!], or made on request by a provider in
+@racket[current-model-providers] (from logical models: @tt{cql/model/structure-definitions}). How a
+model's data looks is its representation (@tt{cql/representation}), declared as data beside it. The
+engine names no model. A CType is a System type by name
 (@racket["Integer"]), a model type (@racket["FHIR.Encounter"]), @racket["Any"], or a vector:
 @racket[(vector 'list T)], @racket[(vector 'interval T)], @racket[(vector 'choice Ts)],
 @racket[(vector 'tuple fields)].
 
-@defstruct*[model ([name string?] [url string?] [version string?] [patient-class string?] [birth-date-path string?]
-                   [classes hash?] [conversions hash?] [contexts hash?])]
-@defstruct*[class-info ([name string?] [base any/c] [identifier any/c] [primary-code-path any/c] [retrievable? boolean?] [elements hash?])]
-@defproc[(find-model [name string?] [version (or/c string? #f)]) (or/c model? #f)]
+@defstruct*[model ([name string?] [url string?] [version string?] [required list?] [patient-class any/c] [birth-date-path any/c]
+                   [classes hash?] [conversions hash?] [contexts hash?] [representation-settings any/c])]
+@defstruct*[class-info ([name string?] [base any/c] [identifier any/c] [label any/c] [primary-code-path any/c] [retrievable? boolean?]
+                        [elements hash?] [relationships list?] [targets hash?] [searches hash?])]
+@defproc[(find-model [name string?] [version (or/c string? #f)]) (or/c model? #f)]{Registered (version @racket[#f]: the newest), then a provider, then the model directories.}
+@defproc[(find-model-by-url [url string?]) (or/c model? #f)]
+@defproc[(register-model! [m model?] [#:versions versions (listof string?) '()]) void?]
+@defparam[current-model-providers providers (listof procedure?)]{Each @racket[(name version -> model|#f)].}
+@defparam[current-model-directories dirs (listof path-string?)]{ModelInfo @tt{.xml}, @tt{.xml.gz} or ModelForm @tt{.rktd} files, each with an optional @tt{<same name>.representation.rktd}.}
+@defproc[(model-relationships [m model?] [type string?] [context string?]) (listof string?)]{The element paths by which an instance of @racket[type] relates to the context (its compartment).}
 @deftogether[(
 @defproc[(model-class [m model?] [name string?]) (or/c class-info? #f)]
 @defproc[(model-element-type [m model?] [type string?] [element string?]) (or/c any/c #f)]

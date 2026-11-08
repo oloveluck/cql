@@ -5,6 +5,9 @@ Upstream: https://github.com/cqframework/clinical_quality_language
   commit 92e5668410c9115f0359c22daf2642215b1b1631 (retrieved 2026-11-01), stored gzip -9, unmodified
 License: Apache-2.0 (the cqframework repository's licence).
 
-fhir-4.0.1.rktd is DERIVED from it by gen-modelinfo.rkt (types, base types, element types, primary
-code paths, retrievability, FHIRHelpers conversions, contexts — descriptions dropped). Regenerate with
+fhir-4.0.1.rktd is DERIVED from it by gen-modelinfo.rkt, through modelinfo-xml.rkt (types, base types,
+element types and target mappings, labels, primary code paths, retrievability, context relationships,
+search paths, conversions, contexts — descriptions and bindings dropped). Regenerate with
   racket model/gen-modelinfo.rkt
+fhir-4.0.1.representation.rktd is written here, not derived: how FHIR JSON looks to the engine
+(representation.rkt).

@@ -1,6 +1,7 @@
 # cql — Clinical Quality Language
 
-[CQL](https://cql.hl7.org/) compiled to ELM and run over FHIR R4 data, including quality measures.
+[CQL](https://cql.hl7.org/) compiled to ELM and run over FHIR R4 data, including quality measures, or
+over any data model you describe.
 It passes 1820 of the 1823 tests in HL7's CQL suite; [TESTING.md](TESTING.md) has the details.
 
 Part of the [fhir](https://github.com/oloveluck/fhir) family of FHIR languages and tools.
@@ -26,6 +27,18 @@ Adult Female: true
 `--data` is one patient's record (a resource, a Bundle or a directory). `--libraries` holds the
 libraries it includes, such as FHIRHelpers, and `--valuesets` the expanded value sets. Errors point at
 the line, with exit status 1.
+
+## Any data model
+
+FHIR 4.0.1 is installed. Any other model is data, not code:
+- a **ModelInfo** document, the format the reference CQL translator uses;
+- and a few lines saying **how its data looks**: which key names a record's type, how choice elements
+  and references are written.
+
+Put both in a directory named by `CQL_MODEL_PATH`, and `using YourModel version '1.0'` finds them.
+You can also design the model in FSH as logical models: the fhir-mcp workspace turns them into a
+model, and their datatypes become CQL's own types, so no FHIRHelpers is needed. The engine names no
+model; a test fails if it ever does.
 
 ## In Racket
 

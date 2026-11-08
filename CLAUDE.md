@@ -68,12 +68,12 @@ operators, `if`/`case`. Layers:
   the code property fix the path's shape through the ModelInfo, so `resolve-code-path` builds a CodePath
   — a Reader per step (`field` key many?, `choice` of member keys, `coding`, `bare`) — and
   `code-path-codes` reads a resource's codes from its JSON with no model lookups or per-value type tests.
-  The generic navigation (`navigate-path` + `codes-of` over `fhir-property`, exported as `generic-codes`)
+  The generic navigation (`navigate-path` + `node-codes` over `node-property`, exported as `generic-codes`)
   is the reference: no CodePath where the model does not fix the shape (an element it lacks, a System
   type, a `value` step — e.g. DeviceUseStatement.device.code through a Reference), and 'unshaped for a
   resource whose JSON the generic navigation would type differently (a value with its own
   `resourceType`, an object where a Coding's string element is declared, another resource type); both
-  read generically. `choice-key` (fhir-value.rkt) is the one definition of a choice member's JSON key.
+  read generically. `choice-keys` (representation.rkt) is the one definition of a choice member's JSON keys.
   `tests/code-path-test.rkt`: 65 (type, property) pairs (every retrievable class's primaryCodePath and
   every code-filtered retrieve in the eCQM and ELM-corpus libraries), 64 resolved, over the eCQM data and
   the R4 IG examples in fhir-spec plus mutants of each resource's code element (null, scalars, lists,
@@ -191,10 +191,10 @@ operators, `if`/`case`. Layers:
   translator leaves it out; ours writes it) — the two packages disagree, so neither form is held.
   Includes resolve within the package, else from another corpus package (CQF Measures includes
   FHIRHelpers 4.0.1 but ships only its ELM; the source is in fhir.cqf.common).
-- **Execution over FHIR data** (`run.rkt`, `fhir-value.rkt`, interp's runtime libraries): FHIR data
-  are `fhir-node`s (model type + JSON, `value.rkt`) navigated through the ModelInfo (`fhir-property`:
-  element types, choice elements by their `valueX` key, list elements, `.value` of a primitive is the
-  System value). `load-runtime-library` compiles a library and its includes into `rlib`s (memoised
+- **Execution over a model's data** (`run.rkt`, `representation.rkt`, interp's runtime libraries): data
+  are `model-node`s (model + class + JSON, `value.rkt`) navigated through the ModelInfo and the model's
+  representation (`node-property`: element types, choice elements by their keys, list elements, a
+  primitive's scalar element is the System value) — see "Any data model" below. `load-runtime-library` compiles a library and its includes into `rlib`s (memoised
   definitions, overloads by name, parameters, terminology defs, include aliases); `call-library-function`
   picks the overload by the FunctionRef's `signature` (now emitted), else by the argument values' types.
   A `runtime` carries the data (`resources->data`: type -> resources; patient-context filtering on by
@@ -256,3 +256,45 @@ operators, `if`/`case`. Layers:
   a server that cannot search ValueSet holds none), then the packages (`measure.rkt`'s
   `packages-valuesets`, now exported). `interp.rkt` exports `rlib-eval` (one ELM node in a library's
   context).
+
+- **Any data model** (2026-11-08). The engine names no model: `tests/model-neutral-test.rkt` fails if
+  compile/interp/run/representation/code-path/value or the model modules name FHIR, its elements or
+  FHIRHelpers in code. A data model is two pieces of DATA:
+  - its **ModelInfo** (`model/modelinfo.rkt`): classes, elements, bases, primaryCodePath, retrievability,
+    conversions, contexts, and now the parts the old loader dropped — `requiredModelInfo` (a model built
+    on another: classes, conversions and contexts are looked up through it), `contextRelationship` (the
+    Patient compartment: FHIR's Observation relates by `subject` and `performer`; a relationship may
+    name a search, whose path is used without its `where(...)` filters), element `target` mappings (an
+    element with one raises a clear error: mapping expressions are not implemented, and reading
+    nothing would be wrong). `model/modelinfo-xml.rkt` reads any ModelInfo document;
+    `gen-modelinfo.rkt` writes it as a ModelForm `.rktd`. A registry finds models: the shipped files
+    (`shipped-model-files`: FHIR 4.0.1, model and representation as a runtime-path pair),
+    `register-model!`, `current-model-providers` (made on request — the workspace's), and
+    `current-model-directories`/`CQL_MODEL_PATH` (ModelInfo `.xml`/`.xml.gz` or `.rktd`). Models are
+    equal only to themselves (identity hashing: keying caches by a transparent model made the eCQMs
+    46x slower until it was fixed). The FHIR 4.0.0 alias was dropped: nothing used it.
+  - its **representation** (`representation.rkt`, a settings list, e.g. `model/fhir-4.0.1.representation.rktd`):
+    the type key (FHIR: resourceType), the choice encoding (suffixed, with per-type `choice-suffixes`
+    for a logical model's `whenPeriod`/`whenString`/`whenCode`, or plain), the scalar element (FHIR's
+    primitive `value`), the reference style (typed "Type/id", or key), and the `shapes` of System values
+    written as objects (interval low/high or start/end, a Concept's codes/display or coding/text, a
+    Quantity's unit keys). A model without one inherits a required model's, else the default.
+  Codes come from the model's conversions: a class converting to System.Code holds a code
+  (`code-class?`), one converting to System.Concept lists them in its element that is a list of such a
+  class (`concept-codings-element`) — FHIR's Coding and CodeableConcept, derived, not named. A retrieve
+  resolves its model from the library's `using` (url and version, `rlib-models`); the retrieve source
+  is asked `(class-name model)` (one-argument sources still work); `resources->data` scopes a patient's
+  records by the model's Patient compartment (any relationship naming the patient; a record naming no
+  patient is everyone's), `patient-data` does so for one known key. `eval-is` now decides
+  `Interval<T>`, `List<T>` and choice types (it answered false for every non-named type).
+  `model/structure-definitions.rkt` makes a model from logical StructureDefinitions (FSH `Logical:`):
+  a class per model, nested classes for BackboneElements, FHIR datatypes as System types (no FHIRHelpers
+  needed), `Reference` as `<Model>.Reference`, the Patient context and its relationships from the
+  References to the named patient class (matched by canonical or name — FSH writes FHIR's canonical for
+  a name it also knows). The workspace makes such models from workspace.yaml's `models`
+  (`Clinic: <canonical> patient=Member birthDate=born version=1.0`) and runs over that model's patients.
+  Held to: every outcome of the old engine — 3608 suite expressions and outputs, 565 corpus
+  definitions, 2051 eCQM definitions, 76 eCQM populations — identical (a canonicalised snapshot,
+  diffed); `code-path-test` unchanged (19472 compared, 0 differ); `tests/any-model-test.rkt` (a clinic
+  model from logical models and one from a ModelInfo XML in a model directory, each with its own data
+  shape); fhir-mcp's workspace test (a model designed in FSH, queried by `using`, explained).

@@ -37,7 +37,8 @@
          (only-in fhirpath/temporal-ops moment moment? moment-compare moment->string parse-fp-date parse-fp-datetime parse-fp-time
                   moment-kind moment-year moment-month moment-day moment-hour moment-minute moment-second
                   moment-frac moment-tzmin moment-prec moment-plus moment-add-ms)
-         "fhir-value.rkt"
+         "representation.rkt"
+         (only-in "model/modelinfo.rkt" find-model find-model-by-url model-name model-url)
          (only-in "code-path.rkt" resolve-code-path code-path-codes)
          ;; the interpreter's algebra, each a module of its own: the numeric base and errors, the
          ;; temporal semantics, arithmetic, comparison and equality, intervals
@@ -51,7 +52,7 @@
           [current-elm-evaluator (parameter/c (or/c 'compiled 'tree))]
           ;; generic-codes : a resource and a code property -> its codes by the generic navigation (the
           ;; reference a retrieve's CodePath is held to, tests/code-path-test.rkt)
-          [generic-codes (-> fhir-node? string? (listof cql-code?))]
+          [generic-codes (-> model-node? string? (listof cql-code?))]
           [run-library (-> elm-library? hash?)]     ; def-name(string) -> interpreted CqlValue
           [make-ienv   (->* () (#:defs hash? #:operands hash?) ienv?)]
           [make-rlib   (-> elm-library? hash? (or/c runtime? #f) hash? rlib?)]
@@ -92,9 +93,17 @@
 ;; runtime : (type -> resources) (url -> members|#f) offset -> Runtime   with empty caches
 (define (runtime data valueset offset) (make-runtime-struct data valueset offset (make-hash) (make-hash) (make-hash)))
 
-;; runtime-resources : Runtime type-name -> (listof FhirNode)
-(define (runtime-resources rt type)
-  (hash-ref! (runtime-typed rt) type (lambda () (map resource->node ((runtime-data rt) type)))))
+;; runtime-resources : Runtime model type-name -> (listof ModelNode)   the data's records of a class,
+;; read as the model's nodes. The data is asked for the class's name and the model (a source that
+;; scopes a patient's records by the model's relationships needs it); a one-argument source is
+;; asked for the name alone.
+(define (runtime-resources rt m type)
+  (hash-ref! (runtime-typed rt) (cons m type)
+             (lambda ()
+               (define data (runtime-data rt))
+               (define qualified (string-append (model-name m) "." type))
+               (for/list ([r (in-list (if (procedure-arity-includes? data 2) (data type m) (data type)))])
+                 (record->node m r qualified)))))
 ;; runtime-vocabulary : Runtime url -> Vocabulary | #f
 (define (runtime-vocabulary rt url)
   (hash-ref! (runtime-vocabularies rt) url
@@ -112,7 +121,7 @@
 ;; first-funcs: name -> the first overload (the function table an expression in the library sees),
 ;; built once instead of per call; overloads: (cons name signature) -> the overload that signature
 ;; picks (value-independent, so memoised).
-(struct rlib (name defs funcs params terms includes rt first-funcs overloads))
+(struct rlib (name defs funcs params terms includes rt first-funcs overloads models))
 
 ;; make-rlib : elm-library (hash alias -> rlib) runtime (hash name -> value) -> rlib
 ;; parameter values given by name override the library's defaults (the evaluation's parameters)
@@ -121,7 +130,7 @@
 ;; expression definitions, and the static terms (its code systems and value sets, immutable objects
 ;; in a table make-rlib copies). Built once per library (make-rlib runs per patient; FHIRHelpers alone
 ;; has dozens of overloads, and rebuilding the table per patient was half of a measure's run time).
-(struct libtables (funcs first-funcs defs static-terms))
+(struct libtables (funcs first-funcs defs static-terms models))
 (define library-tables-cache (make-ephemeron-hasheq))
 ;; library-tables : elm-library -> LibTables
 (define (library-tables lib)
@@ -139,13 +148,22 @@
                (for ([v (in-list (elm-library-valuesets lib))])
                  (hash-set! static-terms (elm-valueset-def-name v)
                             (cql-obj "ValueSet" (hash 'id (elm-valueset-def-id v) 'version (or (elm-valueset-def-version v) cql-null)))))
-               (libtables funcs (for/hash ([(k v) (in-hash funcs)]) (values k (car v))) (filter elm-def? statements) static-terms))))
+               (libtables funcs (for/hash ([(k v) (in-hash funcs)]) (values k (car v))) (filter elm-def? statements) static-terms
+                          (library-models lib)))))
+;; library-models : elm-library -> (hash url -> Model)   the data models the library's `using`s name,
+;; by the url a Retrieve's dataType carries (`{url}Type`); a model not installed is left out (its
+;; retrieve says so when it runs)
+(define (library-models lib)
+  (for*/hash ([u (in-list (elm-library-usings lib))]
+              [m (in-value (find-model (format "~a" (elm-using-local-id u)) (elm-using-version u)))]
+              #:when m)
+    (values (model-url m) m)))
 
 (define (make-rlib lib includes rt overrides)
   (define now (current-moment))
-  (match-define (libtables funcs first-funcs def-statements static-terms) (library-tables lib))
+  (match-define (libtables funcs first-funcs def-statements static-terms models) (library-tables lib))
   (define defs (make-hash)) (define params (make-hash)) (define terms (hash-copy static-terms))
-  (define rl (rlib (elm-library-id lib) defs funcs params terms includes rt first-funcs (make-hash)))
+  (define rl (rlib (elm-library-id lib) defs funcs params terms includes rt first-funcs (make-hash) models))
   (define run (elm-runner))   ; the evaluator, chosen once for the library
   (define (env) (ienv defs (hash) first-funcs now rl rt))
   (for ([s (in-list def-statements)])
@@ -312,11 +330,11 @@
 ;; it as empty (0) and scalar membership is false, while list-list inclusion stays null
 (define (as-value v type strict)
   (cond [(and (cql-null? v) (elm-list-type? type)) cql-null-list]
-        ;; a FHIR value is cast by its model type: the member it is, else null (strict: an error)
-        [(and (fhir-node? v) (type-name-of type))
-         => (lambda (tn) (cond [(fhir-is? v tn) v]
-                               [(not (regexp-match? #rx"^{http://hl7.org/fhir}" tn)) v]
-                               [strict (fail (format "cannot cast ~a as ~a" (fhir-node-type v) tn))]
+        ;; a model's value is cast by its class: the member it is, else null (strict: an error)
+        [(and (model-node? v) (type-name-of type))
+         => (lambda (tn) (cond [(node-is? v tn) v]
+                               [(not (model-type-ref? tn)) v]
+                               [strict (fail (format "cannot cast ~a as ~a" (model-node-type v) tn))]
                                [else cql-null]))]
         [else v]))
 
@@ -577,7 +595,7 @@
     [(cql-null? v) #t]
     [(elm-named-type? t)
      (define n (elm-named-type-name t))
-     (cond [(regexp-match? #rx"^{http://hl7.org/fhir}" n) (and (fhir-node? v) (fhir-is? v n))]
+     (cond [(model-type-ref? n) (and (model-node? v) (node-is? v n))]
            [(member (simple-name n) '("Any")) #t]
            [else (value-is-type? v n)])]
     [(elm-list-type? t) (and (list? v) (andmap (lambda (x) (value-fits? x (elm-list-type-element t))) v))]
@@ -596,58 +614,56 @@
 ;; runtime: the same retrieve in many definitions reads and filters once.
 (define (retrieve r want env)
   (define rt (or (ienv-rt env) (fail "a retrieve needs a data source")))
-  (define type (simple-name (elm-retrieve-data-type r)))
-  (define all (runtime-resources rt type))
+  (define-values (m type) (retrieve-class (elm-retrieve-data-type r) env))
+  (define all (runtime-resources rt m type))
   (cond
     [(not want) all]
     [else
      (define w (want))
      (define property (elm-retrieve-code-property r))
-     (runtime-retrieve rt type property w (lambda () (filter (code-filter type property w env) all)))]))
+     (runtime-retrieve rt (cons m type) property w (lambda () (filter (code-filter m type property w env) all)))]))
 
-;; code-filter : type code-property codes-value Env -> (FhirNode -> Boolean)   whether a resource's
+;; retrieve-class : data-type Env -> (values Model class-name)   `{url}Type`: the model the library's
+;; `using` names with that url (version and all), else any installed model with it
+(define (retrieve-class data-type env)
+  (define url (let ([x (regexp-match #rx"^{([^}]*)}" data-type)]) (and x (cadr x))))
+  (define lib (ienv-lib env))
+  (define m (or (and url lib (hash-ref (rlib-models lib) url #f))
+                (and url (find-model-by-url url))
+                (fail (format "no data model is installed for ~a" data-type))))
+  (values m (simple-name data-type)))
+
+;; model-type-ref? : type-name -> boolean   `{url}X` where url is a data model's (not System's)
+(define model-urls (make-weak-hash))
+(define (model-type-ref? n)
+  (define url (let ([x (regexp-match #rx"^{([^}]*)}" n)]) (and x (cadr x))))
+  (and url (hash-ref! model-urls url (lambda () (and (find-model-by-url url) #t)))))
+
+;; code-filter : model type code-property codes-value Env -> (ModelNode -> Boolean)   whether a record's
 ;; codes at the property match the codes value: a value set by membership, a list of codes by `~`.
 ;; The codes are read along the property's CodePath (code-path.rkt: resolved once against the model)
-;; and, where there is none or a resource's JSON is not of its declared shape, by the generic
-;; navigation, which is the reference the CodePath reads the same codes as.
-(define (code-filter type property w env)
+;; when the model fixes its shape, else by the generic navigation.
+(define (code-filter m type property w env)
   (define steps (string-split property "."))
-  (define path (resolve-code-path (string-append "FHIR." type) property))
+  (define path (resolve-code-path m (string-append (model-name m) "." type) property))
   (define (codes n)
-    (define c (and path (code-path-codes path (fhir-node-json n))))
-    (if (list? c) c (codes-of (navigate-path n steps))))
+    (define c (and path (code-path-codes path (model-node-data n))))
+    (if (list? c) c (node-codes (navigate-path n steps))))
   (define matches?
     (cond [(cql-obj? w) (lambda (have) (ormap (lambda (c) (in-vocabulary? c w env)) have))]
           [(list? w) (lambda (have) (for*/or ([c (in-list have)] [x (in-list w)]) (code-match? c x)))]
           [else (lambda (_have) #f)]))
   (lambda (n) (matches? (codes n))))
-(define (generic-codes n property) (codes-of (navigate-path n (string-split property "."))))
+(define (code-match? c w)
+  (for/or ([x (in-list (node-codes w))])
+    (and (equal? (cql-code-code c) (cql-code-code x))
+         (or (not (cql-code-system x)) (not (cql-code-system c)) (equal? (cql-code-system c) (cql-code-system x))))))
+(define (generic-codes n property) (node-codes (navigate-path n (string-split property "."))))
 (define (navigate-path v steps)
   (for/fold ([v v]) ([s (in-list steps)])
     (cond [(list? v) (append-map (lambda (x) (let ([r (navigate-path x (list s))]) (if (list? r) r (list r)))) v)]
-          [(fhir-node? v) (fhir-property v s)]
+          [(model-node? v) (node-property v s)]
           [else cql-null])))
-
-;; codes-of : value -> (listof cql-code)   CodeableConcept -> its codings ; Coding ; a bare code
-(define (codes-of v)
-  (cond
-    [(list? v) (append-map codes-of v)]
-    [(cql-code? v) (list v)]
-    [(cql-concept? v) (cql-concept-codes v)]
-    [(fhir-node? v)
-     (define t (fhir-node-type v))
-     (cond [(fhir-is? v "FHIR.CodeableConcept") (codes-of (fhir-property v "coding"))]
-           [(fhir-is? v "FHIR.Coding")
-            (define (s k) (let ([x (fhir-property v k)]) (if (fhir-node? x) (let ([y (fhir-property x "value")]) (if (string? y) y #f)) #f)))
-            (list (cql-code (s "code") (s "system") (s "version") (s "display")))]
-           [(string? (fhir-node-json v)) (list (cql-code (fhir-node-json v) #f #f #f))]
-           [else '()])]
-    [(string? v) (list (cql-code v #f #f #f))]
-    [else '()]))
-(define (code-match? c w)
-  (for/or ([x (in-list (codes-of w))])
-    (and (equal? (cql-code-code c) (cql-code-code x))
-         (or (not (cql-code-system x)) (not (cql-code-system c)) (equal? (cql-code-system c) (cql-code-system x))))))
 
 ;; in-vocabulary? : code-ish ValueSet|CodeSystem-obj env -> boolean   membership by (system, code);
 ;; a String matches the code in any system. An unavailable value set is an error, never false.
@@ -655,7 +671,7 @@
   (define rt (or (ienv-rt env) (fail "terminology membership needs a terminology source")))
   (define url (obj-field vs 'id))
   (define v (or (runtime-vocabulary rt url) (fail (format "value set ~a is not available" url))))
-  (for/or ([x (in-list (codes-of c))])
+  (for/or ([x (in-list (node-codes c))])
     (if (cql-code-system x)
         (hash-ref (vocabulary-members v) (cons (cql-code-system x) (cql-code-code x)) #f)
         ;; a code without a system matches a member with that code in any system
@@ -1205,7 +1221,7 @@
 ;; property-step : CqlValue step -> CqlValue   one step of a property path
 (define (property-step v path)
   (cond [(cql-null? v) cql-null]
-        [(fhir-node? v) (fhir-property v path)]
+        [(model-node? v) (node-property v path)]
         [(cql-tuple? v) (hash-ref (cql-tuple-fields v) (string->symbol path) cql-null)]
         [(cql-code? v) (or (case path [("code") (cql-code-code v)] [("system") (cql-code-system v)]
                                       [("version") (cql-code-version v)] [("display") (cql-code-display v)] [else #f])
@@ -1223,11 +1239,20 @@
   (define body (elm-function-def-expression f))
   (when (eq? body (quote external)) (fail (format "external function ~a has no implementation" name)))
   (run body env*))
+;; eval-is : value type -> boolean   `is`: a named type by the value's class; Interval<T> when the
+;; value is an interval whose bounds (those not null) are T; List<T> when every element is T; a
+;; choice when any member is
 (define (eval-is v type*)
   (define type (if (string? type*) (elm-named-type type*) type*))
   (cond [(cql-null? v) #f]
-        [(and (fhir-node? v) (elm-named-type? type)) (fhir-is? v (elm-named-type-name type))]
+        [(and (model-node? v) (elm-named-type? type)) (node-is? v (elm-named-type-name type))]
         [(elm-named-type? type) (value-is-type? v (elm-named-type-name type))]
+        [(elm-interval-type? type)
+         (and (cql-interval? v)
+              (for/and ([b (list (cql-interval-low v) (cql-interval-high v))] #:unless (or (not b) (cql-null? b)))
+                (eval-is b (elm-interval-type-point type))))]
+        [(elm-list-type? type) (and (list? v) (andmap (lambda (x) (or (cql-null? x) (eval-is x (elm-list-type-element type)))) v))]
+        [(elm-choice-type? type) (ormap (lambda (c) (eval-is v c)) (elm-choice-type-types type))]
         [else #f]))
 (define simple-names (make-weak-hash))   ; qualified name -> simple name (a pure function, memoised)
 (define (simple-name qn)

@@ -3,8 +3,8 @@
 ;;; code-path-test.rkt — a retrieve's CodePath (code-path.rkt) against the generic navigation.
 ;;;
 ;;; A code-filtered retrieve reads each resource's codes along a CodePath, resolved once against the
-;;; ModelInfo; the generic navigation (interp.rkt's `generic-codes`: navigate-path, then codes-of,
-;;; over fhir-property) is the reference. For every (type, code property) a retrieve can use, and
+;;; ModelInfo; the generic navigation (interp.rkt's `generic-codes`: navigate-path, then node-codes,
+;;; over node-property) is the reference. For every (type, code property) a retrieve can use, and
 ;;; every resource of that type in the corpora, the CodePath must give the same codes in the same
 ;;; order, or say 'unshaped (then the retrieve reads that resource generically). The pairs:
 ;;;   - every retrievable class of the FHIR 4.0.1 ModelInfo, at its primaryCodePath;
@@ -22,7 +22,7 @@
          (only-in cql/compile compile-library current-library-resolver)
          (only-in cql/elm/ast elm-retrieve? elm-retrieve-data-type elm-retrieve-code-property elm-retrieve-codes)
          (only-in cql/interp generic-codes)
-         (only-in cql/fhir-value resource->node)
+         (only-in cql/representation record->node)
          (only-in cql/code-path resolve-code-path code-path-codes)
          cql/model/modelinfo
          (only-in cql/run read-json-files)
@@ -108,7 +108,7 @@
 (define differences '())
 (for ([pr (in-list pairs)])
   (define-values (type property) (values (car pr) (cdr pr)))
-  (define path (resolve-code-path (string-append "FHIR." type) property))
+  (define path (resolve-code-path m (string-append "FHIR." type) property))
   (when path
     (set! resolved (add1 resolved))
     (for* ([r (in-list (hash-ref by-type type '()))]
@@ -116,13 +116,13 @@
       (define c (code-path-codes path x))
       (set! compared (add1 compared))
       (cond [(eq? c 'unshaped) (set! unshaped (add1 unshaped))]
-            [(not (equal? c (generic-codes (resource->node x) property)))
-             (set! differences (cons (list type property x c (generic-codes (resource->node x) property)) differences))]))))
+            [(not (equal? c (generic-codes (record->node m x) property)))
+             (set! differences (cons (list type property x c (generic-codes (record->node m x) property)) differences))]))))
 
 (printf "  code paths: ~a (type, property) pairs, ~a resolved statically; ~a resources and mutants compared, ~a read generically ('unshaped), ~a differ\n"
         (length pairs) resolved compared unshaped (length differences))
 (printf "    no CodePath (read generically): ~a\n"
-        (for/list ([pr (in-list pairs)] #:unless (resolve-code-path (string-append "FHIR." (car pr)) (cdr pr)))
+        (for/list ([pr (in-list pairs)] #:unless (resolve-code-path m (string-append "FHIR." (car pr)) (cdr pr)))
           (format "~a.~a" (car pr) (cdr pr))))
 (for ([d (in-list (take differences (min 5 (length differences))))])
   (printf "    ~a.~a\n      json: ~s\n      path: ~s\n      generic: ~s\n" (car d) (cadr d) (caddr d) (cadddr d) (list-ref d 4)))

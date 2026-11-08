@@ -1,7 +1,7 @@
 #lang racket/base
 
-;;; run.rkt — run CQL over FHIR data: libraries with their includes, a data source, terminology,
-;;; and measure populations.
+;;; run.rkt — run CQL over a data model's data: libraries with their includes, a data source,
+;;; terminology, and measure populations.
 ;;;
 ;;;   (define rl (load-runtime-library ast #:resolver r #:data (resources->data rs)
 ;;;                                    #:valuesets (valuesets->terminology vss)))
@@ -9,8 +9,11 @@
 ;;;   (measure-populations measure-json rl)           ; proportion scoring for one patient (first group)
 ;;;   (measure-group-populations measure-json rl)     ; … for every Measure.group
 ;;;
-;;; Data: a Resources is (listof jsexpr), all for one context patient (the retrieve source returns a
-;;; type's resources from it). Terminology: value set url -> its expansion (system, code) pairs.
+;;; Data: a Resources is (listof jsexpr) — records that name their class under the model's type key
+;;; (FHIR resources, Bundles of them) — or (hash class-name -> (listof jsexpr)) for a model whose
+;;; records do not; all for one context patient. The retrieve source answers a class's records for a
+;;; model, scoped to the patient by the model's own relationships (its ModelInfo's Patient
+;;; compartment). Terminology: value set url -> its expansion (system, code) pairs.
 ;;; Parameters (e.g. "Measurement Period") apply to every library in the evaluation, the way a
 ;;; measure evaluator passes them; a library's own default is used otherwise.
 
@@ -22,6 +25,10 @@
          (only-in "elm/ast.rkt" elm-library-parameters elm-parameter-def-name elm-parameter-def-default)
          (only-in "value.rkt" current-evaluation-offset)
          (only-in "error.rkt" cql-error? cql-error-string)
+         (only-in "model/modelinfo.rkt" model? model-name model-context context-info-type context-info-key-element model-relationships)
+         (only-in "representation.rkt" model-representation record-type-name record->node node-property reference-key)
+         (only-in "value.rkt" model-node? model-node-data)
+         (only-in fhir/data-source bundle-resources)
          (only-in fhir/result/result ok? ok-value err-error))
 
 (provide
@@ -35,7 +42,15 @@
                              (#:resolver procedure? #:data procedure? #:valuesets procedure? #:parameters hash?
                               #:offset (or/c exact-integer? #f))
                              rlib?)]
-  [resources->data      (->* ((listof hash?)) (#:patient-context? boolean?) procedure?)]
+  ;; resources->data : Resources -> (class-name model -> (listof jsexpr))   the retrieve source: a
+  ;; class's records, scoped to the context patient by that model
+  [resources->data      (->* ((or/c (listof hash?) hash?)) (#:patient-context? boolean?) (-> string? model? (listof hash?)))]
+  ;; patient-data : (class-name -> records) patient-key -> (class-name model -> records)   every record
+  ;; of a class, scoped to one patient by the model's relationships (the records read once per class)
+  [patient-data         (-> procedure? string? (-> string? model? (listof hash?)))]
+  ;; patient-class : model -> (values class-name key-element) | (values #f #f)   the Patient context's
+  ;; class (its unqualified name, as data names it) and the element that keys it
+  [patient-class        (-> model? (values (or/c string? #f) (or/c string? #f)))]
   [valuesets->terminology (-> (listof hash?) procedure?)]
   [measure-populations  (-> hash? rlib? (hash/c string? exact-nonnegative-integer?))]
   [measure-group-populations (-> hash? rlib? (listof (hash/c string? exact-nonnegative-integer?)))]
@@ -94,25 +109,72 @@
 ;; object): evaluating a measure for many patients compiles each library once
 (define compiled-libraries (make-weak-hasheq))
 
-;; resources->data : (listof jsexpr) -> (type-name -> (listof jsexpr))   Bundles are unwrapped
+;; resources->data : Resources [#:patient-context?] -> (class-name model -> (listof jsexpr))
+;; Patient context: when the data holds exactly one record of the model's Patient context class, a
+;; record that references a patient through any of its relationships to that context (the model's
+;; Patient compartment: an Observation's subject or performer, a Coverage's beneficiary, subscriber,
+;; policyHolder or payor) is that patient's only when one of them is this patient; a record that
+;; references no patient is everyone's.
 (define (resources->data rs #:patient-context? [ctx? #t])
-  (define flat (append-map (lambda (r) (if (equal? (hash-ref r 'resourceType #f) "Bundle")
-                                           (for/list ([e (in-list (hash-ref r 'entry '()))] #:when (hash? (hash-ref e 'resource #f)))
-                                             (hash-ref e 'resource))
-                                           (list r)))
-                           rs))
-  ;; Patient context: with one Patient in the data, a resource that names a different patient (its
-  ;; subject / patient / beneficiary reference) is not that patient's, so a retrieve never sees it
-  (define patients (filter (lambda (r) (equal? (hash-ref r 'resourceType #f) "Patient")) flat))
-  (define pid (and (= 1 (length patients)) (hash-ref (car patients) 'id #f)))
-  (define (mine? r)
-    (define ref (for/or ([k (in-list '(subject patient beneficiary))])
-                  (let ([v (hash-ref r k #f)]) (and (hash? v) (hash-ref v 'reference #f)))))
-    (or (not ctx?) (not pid) (not (string? ref)) (equal? ref (string-append "Patient/" pid)) (equal? ref pid)
-        (regexp-match? (pregexp (string-append "/Patient/" (regexp-quote pid) "$")) ref)))
-  (define by-type (for/fold ([h (hash)]) ([r (in-list (filter mine? flat))])
-                    (hash-update h (hash-ref r 'resourceType "") (lambda (l) (append l (list r))) '())))
-  (lambda (type) (hash-ref by-type type '())))
+  (define flat (if (hash? rs) #f (append-map bundle-resources rs)))
+  (define memo (make-hash))
+  (define (records-of m type)
+    (cond [(hash? rs) (hash-ref rs type (hash-ref rs (string->symbol type) '()))]
+          [else (define want (string-append (model-name m) "." type))
+                (filter (lambda (r) (equal? (record-type-name m r) want)) flat)]))
+  (lambda (type m)
+    (hash-ref! memo (cons type m)
+               (lambda ()
+                 (define rs* (records-of m type))
+                 (if ctx? (filter (in-patient-context m (single-patient m (lambda (t) (records-of m t)))) rs*) rs*)))))
+
+;; single-patient : model (class-name -> records) -> key|#f   the patient's key when the data holds one
+(define (single-patient m records-of)
+  (define-values (pclass key) (patient-class m))
+  (define patients (if pclass (records-of pclass) '()))
+  (and (= 1 (length patients)) (key-string (hash-ref (car patients) (string->symbol key) #f))))
+
+(define (patient-class m)
+  (define ctx (model-context m "Patient"))
+  (if ctx (values (local-name (context-info-type ctx)) (context-info-key-element ctx)) (values #f #f)))
+
+(define (patient-data all-of pid)
+  (define memo (make-hash))
+  (lambda (type m)
+    (hash-ref! memo (cons type m)
+               (lambda ()
+                 (define-values (pclass key) (patient-class m))
+                 (define rs (all-of type))
+                 (if (equal? type pclass)
+                     (filter (lambda (r) (equal? (key-string (hash-ref r (string->symbol key) #f)) pid)) rs)
+                     (filter (in-patient-context m pid) rs))))))
+
+;; in-patient-context : model key|#f -> (record -> boolean)
+(define (in-patient-context m pid)
+  (define ctx (model-context m "Patient"))
+  (define ctype (and ctx (context-info-type ctx)))
+  (define rep (model-representation m))
+  (cond
+    [(not pid) (lambda (r) #t)]
+    [else
+     (lambda (r)
+       (define type (record-type-name m r))
+       (define paths (if type (model-relationships m type "Patient") '()))
+       (define keys (for*/list ([p (in-list paths)]
+                                [v (in-list (values-at (record->node m r) (string-split p ".")))]
+                                [k (in-value (reference-key rep (if (model-node? v) (model-node-data v) v)))] #:when k)
+                      k))
+       (or (equal? type ctype)
+           (null? keys)
+           (for/or ([k (in-list keys)]) (and (equal? (cdr k) pid) (or (not (car k)) (equal? (car k) (local-name ctype)))))))]))
+(define (local-name t) (let ([x (regexp-match #rx"[.]([^.]+)$" t)]) (if x (cadr x) t)))
+(define (key-string v) (cond [(string? v) v] [(exact-integer? v) (number->string v)] [else #f]))
+;; values-at : node steps -> (listof value)   the element values along a path, lists fanned out
+(define (values-at v steps)
+  (cond [(null? steps) (if (list? v) v (list v))]
+        [(list? v) (append-map (lambda (x) (values-at x steps)) v)]
+        [(model-node? v) (with-handlers ([exn:fail? (lambda (_) '())]) (values-at (node-property v (car steps)) (cdr steps)))]
+        [else '()]))
 
 ;; valuesets->terminology : (listof ValueSet jsexpr) -> (url -> (hash (cons system code) -> #t) | #f)
 ;; from each value set's expansion (else its enumerated compose concepts)
@@ -193,14 +255,21 @@
   (define theirs (hasheq 'resourceType "Observation" 'id "o2" 'subject (hasheq 'reference "Patient/p2")))
   (define nobodys (hasheq 'resourceType "Observation" 'id "o3"))
   (define bundle (hasheq 'resourceType "Bundle" 'entry (list (hasheq 'resource theirs) (hasheq 'resource nobodys))))
+  (define fhir ((dynamic-require 'cql/model/modelinfo 'find-model) "FHIR" "4.0.1"))
   (define data (resources->data (list p1 mine bundle)))
-  (check-equal? (map (lambda (r) (hash-ref r 'id)) (data "Observation")) '("o1" "o3"))
-  (check-equal? (map (lambda (r) (hash-ref r 'id)) (data "Patient")) '("p1"))
-  (check-equal? (data "Condition") '())
-  (check-equal? (map (lambda (r) (hash-ref r 'id)) ((resources->data (list p1 mine theirs) #:patient-context? #f) "Observation"))
+  (check-equal? (map (lambda (r) (hash-ref r 'id)) (data "Observation" fhir)) '("o1" "o3"))
+  (check-equal? (map (lambda (r) (hash-ref r 'id)) (data "Patient" fhir)) '("p1"))
+  (check-equal? (data "Condition" fhir) '())
+  (check-equal? (map (lambda (r) (hash-ref r 'id)) ((resources->data (list p1 mine theirs) #:patient-context? #f) "Observation" fhir))
                 '("o1" "o2"))
   ;; an absolute reference to the patient counts as the patient's
-  (check-equal? (length ((resources->data (list p1 (hash-set mine 'subject (hasheq 'reference "http://s/fhir/Patient/p1")))) "Observation")) 1)
+  (check-equal? (length ((resources->data (list p1 (hash-set mine 'subject (hasheq 'reference "http://s/fhir/Patient/p1")))) "Observation" fhir)) 1)
+  ;; the compartment comes from the model: a Coverage is the patient's through any of its relationships
+  (define cov (hasheq 'resourceType "Coverage" 'id "c1" 'beneficiary (hasheq 'reference "Patient/p2") 'subscriber (hasheq 'reference "Patient/p1")))
+  (check-equal? (length ((resources->data (list p1 cov)) "Coverage" fhir)) 1)
+  (check-equal? (length ((resources->data (list p1 (hash-remove cov 'subscriber))) "Coverage" fhir)) 0)
+  ;; a model whose records do not name their class: the data keyed by class name
+  (check-equal? ((resources->data (hash "Visit" (list (hasheq 'id "v1"))) #:patient-context? #f) "Visit" fhir) (list (hasheq 'id "v1")))
   ;; terminology: an expansion, else the enumerated compose; |version ignored; unknown -> #f
   (define vs-exp (hasheq 'url "http://x/vs1" 'expansion (hasheq 'contains (list (hasheq 'system "http://x/cs" 'code "a")))))
   (define vs-cmp (hasheq 'url "http://x/vs2" 'compose (hasheq 'include (list (hasheq 'system "http://x/cs" 'concept (list (hasheq 'code "b")))))))

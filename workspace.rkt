@@ -11,8 +11,14 @@
 ;;; data source, then the packages in context. Parameters are CQL expressions (workspace.yaml's
 ;;; `parameters`, then the run's own).
 ;;;
+;;; Any data model: `using <Name>` finds the installed models (FHIR is shipped) and the ones
+;;; workspace.yaml's `models` makes from the workspace's own logical models (an FSH `Logical:`), so a
+;;; model designed in the workspace is queried as soon as it is written. The patients a run covers,
+;;; and the records that are a patient's, follow the library's model: its Patient context's class
+;;; and key, and its classes' relationships to that context.
+;;;
 ;;; A Row of a run is {patient, <define>: value …}; a value is JSON: null, a boolean, a number, a
-;;; string, a list, a resource as "Type/id", a tuple as an object, anything else as CQL renders it.
+;;; string, a list, a record as "Type/id", a tuple as an object, anything else as CQL renders it.
 ;;; An explanation is a Step: {define, line, value, retrieves: [Retrieve], uses: [Step]}, where a
 ;;; Retrieve is {type, filter, line, of-type, found: ["Type/id" …]}: how many resources of the type
 ;;; the patient has, and which the retrieve kept.
@@ -21,7 +27,7 @@
          net/base64 json
          fhir/lang/workspace
          (only-in fhir/diagnostic diagnostic loc exn:fail:diagnostic)
-         (only-in fhir/data-source current-data-source data-source-all data-source-of-patient data-source-read data-source-search)
+         (only-in fhir/data-source current-data-source data-source-all data-source-search)
          (only-in fhir/registry registered-resources)
          (only-in fhir/result/result ok? ok-value err? err-error)
          (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
@@ -32,9 +38,13 @@
                   elm-retrieve? elm-retrieve-data-type elm-retrieve-codes elm-retrieve-code-property
                   elm-expression-ref? elm-expression-ref-name elm-expression-ref-library elm-term-ref? elm-term-ref-name)
          (only-in "interp.rkt" eval-elm make-ienv rlib-value rlib-eval)
-         (only-in "run.rkt" load-runtime-library valuesets->terminology caching-resolver)
+         (only-in "run.rkt" load-runtime-library valuesets->terminology caching-resolver patient-data patient-class)
+         (only-in "model/modelinfo.rkt" find-model current-model-providers)
+         (only-in "model/structure-definitions.rkt" structure-definitions->model logical-model?)
+         (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version)
+         (only-in "representation.rkt" record-type-name)
          (only-in "measure.rkt" packages-valuesets)
-         (only-in "value.rkt" cql-null? cql-null-list? fhir-node? fhir-node-json cql-tuple? cql-tuple-fields render
+         (only-in "value.rkt" cql-null? cql-null-list? model-node? model-node-data model-node-model cql-tuple? cql-tuple-fields render
                   current-evaluation-offset)
          (only-in "error.rkt" cql-error? cql-error-diagnostic cql-error-message cql-error-phase cql-error-string))
 
@@ -44,6 +54,35 @@
 (define-runtime-path bundled-dir "libraries")
 
 (define (path-string p) (if (path? p) (path->string p) p))
+
+;; ---- data models ----------------------------------------------------------------------------------
+;; model-provider : workspace -> (name version -> model|#f)   the models workspace.yaml names, each made
+;; from the registered logical models under its canonical (the same model while they do not change)
+(define built-models (make-hash))
+(define (model-provider ws)
+  (define specs (ws-config-models (workspace-config ws)))
+  (lambda (name version)
+    (define spec (hash-ref specs name #f))
+    (and spec (workspace-model name version spec))))
+(define (workspace-model name version spec)
+  (define parts (string-split spec))
+  (define url (car parts))
+  (define opts (for/hash ([p (in-list (cdr parts))] #:when (regexp-match? #rx"=" p))
+                 (let ([kv (string-split p "=")]) (values (car kv) (cadr kv)))))
+  (define v (or version (hash-ref opts "version" "1.0.0")))
+  (and (or (not (hash-ref opts "version" #f)) (equal? v (hash-ref opts "version")))
+       (let ([sds (filter (lambda (sd) (and (logical-model? sd) (string-prefix? (hash-ref sd 'url "") url)))
+                          (registered-resources "StructureDefinition"))])
+         (and (pair? sds)
+              (hash-ref! built-models (list name v spec sds)
+                         (lambda ()
+                           (structure-definitions->model sds #:name name #:version v #:url url
+                                                         #:patient (hash-ref opts "patient" #f)
+                                                         #:birth-date (hash-ref opts "birthDate" #f)
+                                                         #:patient-key (hash-ref opts "key" "id"))))))))
+;; with-models : workspace thunk -> any   the workspace's models findable by `using`
+(define (with-models ws thunk)
+  (parameterize ([current-model-providers (cons (model-provider ws) (current-model-providers))]) (thunk)))
 
 ;; ---- libraries ----------------------------------------------------------------------------------
 ;; query-text : text -> text   an expression, not a library, wrapped as one: its value is "Query"
@@ -132,7 +171,8 @@
   (if version (hash-set base 'version version) base))
 
 ;; artifacts : workspace files -> (values Library resources diagnostics)
-(define (artifacts ws files)
+(define (artifacts ws files) (with-models ws (lambda () (artifacts* ws files))))
+(define (artifacts* ws files)
   (define resolver (make-resolver ws))
   (define seen (make-hash))                              ; library name -> the file that declared it first
   (for/fold ([rs '()] [ds '()] #:result (values (reverse rs) ds)) ([f (in-list files)])
@@ -217,12 +257,40 @@
   (define vs (terminology))
   (define params (parameters ws opts))
   (define ds (current-data-source))
-  (define (data-of pid)
-    (define cache (make-hash))
-    (lambda (type) (hash-ref! cache type (lambda () ((data-source-of-patient ds) type pid)))))
+  (define m (library-model elm))
+  ;; a type's records read once for the run, then scoped to each patient by the model
+  (define all (make-hash))
+  (define (all-of type) (hash-ref! all type (lambda () ((data-source-all ds) type))))
+  (define (data-of pid) (patient-data all-of pid))
   (define (rlib-for pid)
     (load-runtime-library lib #:resolver resolver #:data (data-of pid) #:valuesets vs #:parameters params #:offset 0))
-  (values src elm defines rlib-for data-of))
+  (values src elm defines rlib-for data-of m))
+
+;; library-model : elm-library -> model|#f   the data model its `using` names (System aside)
+(define (library-model elm)
+  (for/or ([u (in-list (elm-library-usings elm))] #:unless (member (format "~a" (elm-using-local-id u)) '("System")))
+    (find-model (format "~a" (elm-using-local-id u)) (elm-using-version u))))
+
+;; patient-exists? : model key -> boolean   a record of the Patient context class has that key
+(define (patient-exists? m pid)
+  (define-values (pclass key) (patient-class m))
+  (for/or ([p (in-list ((data-source-all (current-data-source)) pclass))])
+    (equal? (format "~a" (hash-ref p (string->symbol key) "")) pid)))
+
+;; patients : model options -> (values class-name (listof key))   the patients a run covers: `over`
+;; (<Class>/<key>, or Patient/<key>), else every record of the model's Patient context class
+(define (patients m opts)
+  (define-values (pclass key) (if m (patient-class m) (values #f #f)))
+  (unless pclass (error 'cql "the library's data model has no Patient context to run over"))
+  (define over (hash-ref opts 'over #f))
+  (define prefix (pregexp (string-append "^(?:Patient|" (regexp-quote pclass) ")/(.+)$")))
+  (values pclass
+          (cond [(and over (regexp-match prefix over)) => (lambda (x) (list (cadr x)))]
+                [(and over (not (member over (list "Patient" pclass))))
+                 (error 'cql (format "a CQL library runs over patients: give `over` as ~a/<id>, or leave it out for every patient (got ~a)" pclass over))]
+                [else (for*/list ([p (in-list ((data-source-all (current-data-source)) pclass))]
+                                  [k (in-value (hash-ref p (string->symbol key) #f))] #:when k)
+                        (format "~a" k))])))
 
 ;; value->json : CqlValue -> jsexpr
 (define (value->json v)
@@ -231,30 +299,27 @@
         [(exact-integer? v) v]
         [(string? v) v]
         [(list? v) (map value->json v)]
-        [(fhir-node? v)
-         (define j (fhir-node-json v))
-         (cond [(and (hash? j) (string? (hash-ref j 'resourceType #f)) (string? (hash-ref j 'id #f)))
-                (format "~a/~a" (hash-ref j 'resourceType) (hash-ref j 'id))]
+        [(model-node? v)
+         (define j (model-node-data v))
+         (define rt (and (hash? j) (record-type-name (model-node-model v) j)))
+         (cond [(and rt (string? (hash-ref j 'id #f)))
+                (format "~a/~a" (regexp-replace #rx"^.*[.]" rt "") (hash-ref j 'id))]
                [(jsexpr? j) j]
                [else (render v)])]
         [(cql-tuple? v) (for/hasheq ([(k x) (in-hash (cql-tuple-fields v))]) (values (string->symbol (format "~a" k)) (value->json x)))]
         [else (render v)]))
 
 ;; ---- run ----------------------------------------------------------------------------------------
-(define (patient-ids opts)
-  (define over (hash-ref opts 'over #f))
-  (cond [(and over (regexp-match #px"^Patient/(.+)$" over)) => (lambda (m) (list (cadr m)))]
-        [(and over (not (equal? over "Patient"))) (error 'cql (format "a CQL library runs over patients: give `over` as Patient/<id>, or leave it out for every patient (got ~a)" over))]
-        [else (for/list ([p (in-list ((data-source-all (current-data-source)) "Patient"))]) (hash-ref p 'id))]))
-
-(define (run ws path text opts)
-  (define-values (src elm defines rlib-for _data) (prepare ws path text opts))
+(define (run ws path text opts) (with-models ws (lambda () (run* ws path text opts))))
+(define (run* ws path text opts)
+  (define-values (src elm defines rlib-for _data m) (prepare ws path text opts))
+  (define-values (_pclass pids) (patients m opts))
   (define entry (hash-ref opts 'entry #f))
   (when (and entry (not (member entry defines)))
     (error 'cql (format "no define ~s in the library (defines: ~a)" entry (string-join defines ", "))))
   (define shown (if entry (list entry) defines))
   (define rows
-    (for/list ([pid (in-list (patient-ids opts))])
+    (for/list ([pid (in-list pids)])
       (define rl (rlib-for pid))
       (for/fold ([row (hasheq 'patient pid)]) ([d (in-list shown)])
         (hash-set row (string->symbol d)
@@ -288,13 +353,14 @@
 
 (define (short-type t) (let ([m (regexp-match #px"[}]([^}]+)$" (format "~a" t))]) (if m (cadr m) (format "~a" t))))
 
-(define (explain ws path text subject opts)
-  (define pid (regexp-replace #rx"^Patient/" subject ""))
-  (unless ((data-source-read (current-data-source)) "Patient" pid)
-    (error 'cql (format "no Patient/~a in the data source" pid)))
-  (define-values (src elm defines rlib-for data-of) (prepare ws path text opts))
+(define (explain ws path text subject opts) (with-models ws (lambda () (explain* ws path text subject opts))))
+(define (explain* ws path text subject opts)
+  (define-values (src elm defines rlib-for data-of m) (prepare ws path text opts))
+  (define-values (pclass pids) (patients m (hash-set opts 'over (if (regexp-match? #rx"/" subject) subject (string-append "Patient/" subject)))))
+  (define pid (car pids))
+  (unless (patient-exists? m pid) (error 'cql (format "no ~a/~a in the data source" pclass pid)))
   (define rl (rlib-for pid))
-  (define data (data-of pid))
+  (define data (let ([d (data-of pid)]) (lambda (type) (d type m))))
   (define table (for/hash ([s (in-list (elm-library-statements elm))] #:when (elm-def? s)) (values (elm-def-name s) s)))
   (define (value name) (with-handlers ([exn:fail? (lambda (e) (hasheq 'error (exn-message e)))]) (value->json (rlib-value rl name))))
   (define (retrieve-info r)

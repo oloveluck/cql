@@ -12,6 +12,12 @@ that only rises. `raco test .` runs them all; the commands below run one with it
 | eCQMs (cqframework/ecqm-content-r4-2021) | four measures over their 76 test patients: populations against the expected results | 71/76 |
 | Evaluator differential | the compiled evaluator against the tree walker, result by result, over the three corpora above | 0 of 6,206 results differ |
 | Code paths | a retrieve's statically resolved code path against the generic navigation, over 65 (type, property) pairs, the eCQM data, the R4 IG examples in fhir-spec and mutants of each resource's code element | 0 of 19,472 differ |
+| Any data model (`tests/any-model-test.rkt`) | a model made from logical models, and one from a ModelInfo document in a model directory, each with data in its own JSON shape: retrieves by value set and code, the Patient context through the model's relationships, ages, choices, lists, nested classes | passes |
+| Model neutrality (`tests/model-neutral-test.rkt`) | the engine's modules name no data model (no FHIR, its elements or FHIRHelpers) in their code | passes |
+
+When FHIR became one model among others (2026-11-08), every outcome of the previous engine was
+recorded and compared with the new one, value by value: 3,608 suite expressions and outputs, 565 corpus
+definitions, 2,051 eCQM definitions and 76 eCQM population results. None differ.
 
 ## The misses, named
 
