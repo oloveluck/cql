@@ -14,7 +14,9 @@ cql/base
 (require (only-in cql/parser/parse parse-cql)
          (only-in fhir/result/result ok? ok-value err-error)
          (only-in cql/error cql-error-string cql-error-diagnostic)
-         (only-in fhir/diagnostic raise-diagnostic)
+         (only-in fhir/diagnostic raise-diagnostic diagnostic->string)
+         (only-in cql/compile compile-library/diagnostics current-library-resolver)
+         (only-in cql/run directory-resolver)
          (only-in racket/port port->string))
 
 (define (source-name src) (cond [(path? src) (path->string src)] [(string? src) src] [else #f]))
@@ -22,10 +24,26 @@ cql/base
 (define (cql-read-syntax src in)
   (define text (port->string in))
   (define r (parse-cql text #:source (source-name src)))
-  (if (ok? r)
-      (list (datum->syntax #f (list 'cql-library-form (ok-value r) text)))
-      (let ([d (cql-error-diagnostic (err-error r))])
-        (if d (raise-diagnostic d) (error 'cql (cql-error-string (err-error r)))))))
+  (cond
+    [(ok? r)
+     (translate! (ok-value r) src)
+     (list (datum->syntax #f (list 'cql-library-form (ok-value r) text)))]
+    [else (let ([d (cql-error-diagnostic (err-error r))])
+            (if d (raise-diagnostic d) (error 'cql (cql-error-string (err-error r)))))]))
+
+;; translate! : library source -> void   every definition translated when the module compiles
+;; (`raco make`, `racket`): the first translation error fails the compile at its `define` (as
+;; `raco cql` reports it); warnings (the choice-timing trap) are printed and do not. Includes resolve
+;; beside the file, then the bundled libraries — as the module itself will.
+(define (translate! lib src)
+  (define dir (and (path? src) (let-values ([(d _n _x) (split-path (path->complete-path src))]) (and (path? d) d))))
+  (define-values (_elm errors warnings)
+    (parameterize ([current-library-resolver (directory-resolver (or dir (current-directory)))])
+      (compile-library/diagnostics lib)))
+  (for ([w (in-list warnings)]) (eprintf "~a\n" (diagnostic->string w)))
+  (when (pair? errors)
+    (define d (cql-error-diagnostic (car errors)))
+    (if d (raise-diagnostic d) (error 'cql (cql-error-string (car errors))))))
 
 (define (cql-read in)
   (map syntax->datum (cql-read-syntax #f in)))
