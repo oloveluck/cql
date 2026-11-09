@@ -77,7 +77,8 @@ define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.nam
 With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),
 `Latest Number` is 8.9 and `Latest Unit` `'%'` (plain columns for a table, where a Quantity would be a
 JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null`
-for "never tested". `Name` is the patient's given names and family name, for a table a person reads.
+for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table should say false for them).
+`Name` is the patient's given names and family name, for a table a person reads.
 
 ## Running it
 **Command line.** `cql` (or `raco cql`):
