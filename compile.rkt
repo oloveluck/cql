@@ -227,18 +227,25 @@
   (define codesystems
     (of cql-codesystem? (lambda (d) (elm-codesystem-def (symbol->string (cql-codesystem-name d)) (cql-codesystem-id d)
                                                         (cql-codesystem-version d) (cql-codesystem-access d)))))
+  ;; checked-ref : def label kind ref -> elm-term-ref   positioned at the terminology definition; an
+  ;; accumulating compile records the error and goes on
+  (define (checked-ref d label kind r)
+    (collecting (lambda () (in-definition d label (lambda () ((term-ref-of kind) (known-term kind r)))))
+                ((term-ref-of kind) r)))
   (define valuesets
     (of cql-valueset? (lambda (d) (elm-valueset-def (symbol->string (cql-valueset-name d)) (cql-valueset-id d)
                                                     (cql-valueset-version d) (cql-valueset-access d)
-                                                    (map (term-ref-of "CodeSystemRef") (cql-valueset-codesystems d))))))
+                                                    (map (lambda (r) (checked-ref d (format "valueset \"~a\"" (cql-valueset-name d)) "CodeSystemRef" r))
+                                                         (cql-valueset-codesystems d))))))
   (define codes
     (of cql-code-def? (lambda (d) (elm-code-def (symbol->string (cql-code-def-name d)) (cql-code-def-id d)
                                                 (cql-code-def-display d) (cql-code-def-access d)
-                                                ((term-ref-of "CodeSystemRef") (cql-code-def-system d))))))
+                                                (checked-ref d (format "code \"~a\"" (cql-code-def-name d)) "CodeSystemRef" (cql-code-def-system d))))))
   (define concepts
     (of cql-concept-def? (lambda (d) (elm-concept-def (symbol->string (cql-concept-def-name d)) (cql-concept-def-display d)
                                                       (cql-concept-def-access d)
-                                                      (map (term-ref-of "CodeRef") (cql-concept-def-codes d))))))
+                                                      (map (lambda (r) (checked-ref d (format "concept \"~a\"" (cql-concept-def-name d)) "CodeRef" r))
+                                                           (cql-concept-def-codes d))))))
   (define contexts (of cql-context? (lambda (d) (elm-context-def (symbol->string (cql-context-name d))))))
   (define statements
     (append*
@@ -259,6 +266,19 @@
                usings includes params codesystems valuesets codes concepts contexts statements))
 
 ;; term-ref-of : kind -> (term-ref -> elm-term-ref)   a local name or Library.name
+;; known-term : kind ref -> ref   a terminology reference must name a definition of its kind in this
+;; library (`code "A1c": '4548-4' from "LONIC"` used to translate, then fail per patient when run);
+;; a reference through an include alias is resolved by the include
+(define (known-term kind r)
+  (match r
+    [(cql-ref n)
+     (define terms (lctx-terms (L)))
+     (unless (equal? (hash-ref terms n #f) kind)
+       (fail (format "no ~a named \"~a\"~a" (case kind [("CodeSystemRef") "codesystem"] [("CodeRef") "code"] [("ValueSetRef") "valueset"] [else "concept"])
+                     n (did-you-mean (symbol->string n) (for/list ([(k v) (in-hash terms)] #:when (equal? v kind)) (symbol->string k))))))
+     r]
+    [_ r]))
+
 (define ((term-ref-of kind) r)
   (match r
     [(cql-ref n) (elm-term-ref kind (symbol->string n) #f)]
@@ -377,7 +397,7 @@
     [(? cql-query?) (compile-query ast env)]
     [(? cql-retrieve?) (compile-retrieve ast env)]
     [(cql-code-selector code system display)
-     (values (elm-code code ((term-ref-of "CodeSystemRef") system) display) "Code")]
+     (values (elm-code code ((term-ref-of "CodeSystemRef") (known-term "CodeSystemRef" system)) display) "Code")]
     [(cql-concept-selector codes display)
      (values (elm-concept (map (lambda (c) (compile1 c env)) codes) display) "Concept")]
     [(cql-minmax which type)

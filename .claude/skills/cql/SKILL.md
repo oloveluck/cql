@@ -48,8 +48,11 @@ bundled FHIRHelpers:
 ```racket
 #lang racket/base
 (require (only-in cql/run read-json-files) "gap.cql")
-(hash-ref (evaluate (read-json-files "patient") #:valuesets (read-json-files "valuesets")) "Gap")
+(evaluate (read-json-files "patient") #:valuesets (read-json-files "valuesets")
+          #:define "Gap" #:now "2025-06-30T12:00:00Z")    ; one define, the clock fixed
 ```
+Without `#:define` it answers every define as a hash; with a name the library lacks, an error naming
+the nearest. `#:now` (or `raco cql … --now <DateTime>`) fixes `Now()`/`Today()`/`AgeInYears()`.
 It also provides `elm` and `elm-json`. Compiling the module (`raco make`) translates every define: an
 unknown identifier or function fails the build at its line. A value prints as CQL writes it with
 `render` from `cql/value` (a FHIR value, as its JSON). For control over everything (parameters, timezone, one

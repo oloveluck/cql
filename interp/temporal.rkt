@@ -22,6 +22,8 @@
 (provide pad3 ms->frac frac->ms check-range check-date-parts check-time-parts build-date build-time build-datetime component-from jdn abs-ms month-index in-year-key in-month-key abs-ms-time list<? between-op required-level has-precision? between-range unit-ms day-index difference-in duration-in precision-of moment-precision-digits boundary boundary-decimal digit->level digit->ms? boundary-moment days-in-month prec-level truncate-moment point-timing moment-duration coarsen-duration duration-level moment-prec-symbol moment-step to-temporal strip-time-decorations moment->plain-string current-moment moment-total-compare moment-components calendar-unit-name? level->prec-symbol)
 
 (define (current-moment)
+  (or (current-evaluation-time) (clock-moment)))
+(define (clock-moment)
   (define d (seconds->date (current-seconds) #f))
   (moment 'dateTime (date-year d) (date-month d) (date-day d) (date-hour d) (date-minute d) (date-second d) "000" 0 6))
 (define (pad3 n) (let ([s (number->string n)]) (string-append (make-string (max 0 (- 3 (string-length s))) #\0) s)))

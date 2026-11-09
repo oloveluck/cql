@@ -7,9 +7,10 @@
 ;;; (compile.rkt) and provides:
 ;;;   library  the CQL AST          elm  the ELM AST          elm-json  the canonical ELM JSON
 ;;; Includes resolve to <Name>.cql beside the file, else to a bundled library (FHIRHelpers).
-;;;   (evaluate resources #:parameters h #:valuesets vss)   the library over FHIR resources (a
-;;;            patient's data, the Patient among them): define-name -> value — how other modules
-;;;            (and the other FHIR languages' modules) use a CQL library
+;;;   (evaluate resources #:parameters h #:valuesets vss #:now t #:define name)   the library over
+;;;            FHIR resources (a patient's data, the Patient among them): define-name -> value, or the
+;;;            one define's value — how other modules (and the other FHIR languages') use a CQL
+;;;            library. `#:now` fixes Now()/Today() (a DateTime string) so a run is repeatable.
 ;;;   (results)  every define evaluated with no data (for libraries without retrieves)
 ;;;   resource  the library as a FHIR Library (cql/library), registered with fhir/registry when the
 ;;;            module is instantiated — the module system as the FHIR registry — so a Measure or an
@@ -26,7 +27,9 @@
          (only-in fhir/registry register-resources!)
          (only-in cql/library library-resource)
          (only-in cql/error cql-error-string cql-error? cql-error-diagnostic)
-         (only-in fhir/diagnostic raise-diagnostic))
+         (only-in fhir/diagnostic raise-diagnostic)
+         (only-in fhir/suggest did-you-mean)
+         (only-in cql/value current-evaluation-time))
 
 (provide (except-out (all-from-out racket/base) #%module-begin)
          (rename-out [cql-module-begin #%module-begin])
@@ -41,6 +44,13 @@
     #:description "a (cql-library-form <library> <source-text>) form, as the #lang cql reader writes it"
     (pattern ((~datum cql-library-form) ast text:str)
              #:fail-unless (cql-library? (syntax->datum #'ast)) "not a CQL library AST")))
+
+;; define-value : (hash name value) name -> value   one define's value; a name the library does not
+;; define is an error naming the nearest (a bare hash-ref error said nothing about the library)
+(define (define-value all name)
+  (hash-ref all name
+            (lambda () (raise (exn:fail (format "cql: the library defines no `~a`~a" name (did-you-mean name (hash-keys all)))
+                                        (current-continuation-marks))))))
 
 ;; as-exn : thunk -> value   a CQL error raised while evaluating is an exn:fail — positioned at its
 ;; define (exn:fail:diagnostic) when it knows where — so a caller's `exn:fail?` handler catches it
@@ -65,8 +75,11 @@
         (define elm (and elm-result (ok? elm-result) (ok-value elm-result))) ; the ELM library AST
         (define elm-json (and elm (elm->json-string elm)))       ; canonical ELM JSON string
         (define (results) (as-exn (lambda () (if elm (run-library elm) (hash)))))     ; define-name -> value, no data
-        (define (evaluate resources #:parameters [ps (hash)] #:valuesets [vss '()])
-          (as-exn (lambda () (evaluate-library library resources #:parameters ps #:valuesets vss #:resolver resolver))))
+        (define (evaluate resources #:parameters [ps (hash)] #:valuesets [vss '()] #:now [now #f] #:define [name #f])
+          (as-exn (lambda ()
+                    (parameterize ([current-evaluation-time (or now (current-evaluation-time))])
+                      (define all (evaluate-library library resources #:parameters ps #:valuesets vss #:resolver resolver))
+                      (if name (define-value all name) all)))))
         (provide library elm elm-json results evaluate resource)
         (module+ main
           (cond

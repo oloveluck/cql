@@ -11,11 +11,12 @@
          (only-in racket/string string-join)
          (only-in fhirpath/decimal fp-decimal? decimal->string)
          (only-in fhirpath/value fp-long? fp-long fp-long-v fp-quantity? fp-quantity fp-quantity-value fp-quantity-unit)
-         (only-in fhirpath/temporal-ops moment? moment->string)
+         (only-in fhirpath/temporal-ops moment? moment->string parse-fp-datetime)
          (only-in json jsexpr->string))
 
 (provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio) (struct-out model-node)
          current-evaluation-offset
+         current-evaluation-time
          (struct-out cql-code) (struct-out cql-concept) (struct-out cql-obj)
          (contract-out
           [cql-null   any/c]
@@ -61,6 +62,14 @@
 ;; a DateTime with a time but no offset (a literal, or FHIR data) takes it (cql.hl7.org: "the timezone
 ;; offset of the evaluation request"). #f = leave such values offset-less (the expression TCK).
 (define current-evaluation-offset (make-parameter #f))
+;; current-evaluation-time : (parameter (or moment #f))   the moment Now(), Today() and TimeOfDay()
+;; read, so a run is repeatable: a DateTime string (`"2025-06-30T12:00:00Z"`, a leading `@` allowed)
+;; or a moment; #f = the clock. Measures evaluated "as of" a date, tests, explanations to compare.
+(define current-evaluation-time
+  (make-parameter #f (lambda (v)
+                       (cond [(or (not v) (moment? v)) v]
+                             [(and (string? v) (parse-fp-datetime (regexp-replace #rx"^@" v ""))) => values]
+                             [else (raise-argument-error 'current-evaluation-time "a DateTime like \"2025-06-30T12:00:00Z\"" v)]))))
 
 ;; A CqlValue is one of:
 ;;  - cql-null                          the null singleton (distinct from #f and '())

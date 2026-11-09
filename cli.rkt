@@ -7,6 +7,7 @@
 ;;;                            --libraries (default: beside the file), so included functions type-check
 ;;;                            (a leading `#lang cql` line is ignored, so both raw .cql and #lang files work)
 ;;;   raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…
+;;;            [--parameter "name=<CQL expression>"]… [--now <DateTime>]   (Now()/Today() fixed)
 ;;;                            RUN the library over FHIR data (resources or Bundles; patient context),
 ;;;                            includes found in --libraries (default: beside the file), terminology from
 ;;;                            the value sets in --valuesets; prints each definition (or the named ones)
@@ -27,7 +28,7 @@
          (only-in fhir/diagnostic diagnostic loc emit-diagnostics format-flag)
          (only-in cql/run load-runtime-library resources->data valuesets->terminology read-json-files rlib-value bundled-library cql-value)
          (only-in cql/parser/ast cql-library-defs cql-def? cql-def-name)
-         (only-in cql/value render)
+         (only-in cql/value render current-evaluation-time)
          (only-in json read-json))
 
 (provide compile-file run-file)
@@ -97,7 +98,7 @@
   (displayln (elm->json-string elm)))
 
 (define (usage [code 2])                             ; --help: stdout, exit 0
-  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n                [--parameter \"<name>=<CQL expression>\"]…\n       raco cql --tck [-v]\n")
+  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n                [--parameter \"<name>=<CQL expression>\"]… [--now <DateTime>]\n       raco cql --tck [-v]\n")
   (exit code))
 
 (module+ main
@@ -128,6 +129,11 @@
          [(and (equal? (car as) "--libraries") (pair? (cdr as))) (loop (cddr as) data vs (cadr as) names params)]
          [(and (equal? (car as) "--define") (pair? (cdr as))) (loop (cddr as) data vs libs (cons (cadr as) names) params)]
          [(and (equal? (car as) "--parameter") (pair? (cdr as))) (loop (cddr as) data vs libs names (cons (cadr as) params))]
+         ;; Now()/Today() at a fixed moment: a run that can be repeated
+         [(and (equal? (car as) "--now") (pair? (cdr as)))
+          (with-handlers ([exn:fail:contract? (lambda (_) (eprintf "cql: --now takes a DateTime, e.g. 2025-06-30T12:00:00Z\n") (exit 2))])
+            (current-evaluation-time (cadr as)))
+          (loop (cddr as) data vs libs names params)]
          [else (usage)]))]
     [(null? (cdr args)) (compile-file (car args))]
     [(and (equal? (cadr args) "--libraries") (= (length args) 3)) (compile-file (car args) (caddr args))]

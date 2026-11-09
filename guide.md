@@ -32,7 +32,7 @@ define "Has Test": exists "Tests This Year"
 define "Adult": AgeInYears() >= 18
 define "Gap": "Adult" and not "Has Test"
 define "Last Value":
-  (Last("Tests This Year" O sort by effective)).value as Quantity
+  (Last("Tests This Year" O sort by (effective as dateTime))).value as Quantity
 ```
 Strings use single quotes, and names with spaces use double quotes. `and`, `or` and `not` are
 three-valued, so null is not false. `exists` tests a list. `First`, `Last`, `Count` and `Sum`
@@ -84,12 +84,16 @@ cql gap.cql --data patient.json --define Gap --libraries cql/ --valuesets values
 ```
 `--data` is one patient's record: a resource, a Bundle, a QDM patient document, or a directory of
 them. `--libraries` holds the libraries it includes (FHIRHelpers is bundled), `--valuesets` the
-expanded value sets (FHIR ValueSets, or cqm-models value set arrays). A translation error names its
-definition and line, and exits 1.
+expanded value sets (FHIR ValueSets, or cqm-models value set arrays). `--now 2025-06-30T12:00:00Z`
+fixes what `Now()`, `Today()` and `AgeInYears()` read, so a run gives the same answer tomorrow. A
+translation error names its definition and line, and exits 1.
 
 **As a module.** A file that starts with `#lang cql` is a Racket module providing `elm`, `elm-json`
-and `(evaluate resources #:parameters h #:valuesets vss)`, the define-name to value table for one
-patient's resources. Nothing runs when it is required.
+and `(evaluate resources #:parameters h #:valuesets vss #:now t #:define name)`: the define-name to
+value table for one patient's resources, or with `#:define` that one define's value (a name the
+library does not define is an error naming the nearest). `#:now` (a DateTime string) fixes the
+clock, as `--now` does; `cql/value`'s `current-evaluation-time` parameter does it for any call.
+Nothing runs when it is required.
 
 **In a workspace** (fhir-mcp). A `.cql` file is a Library. `run` evaluates every define (or one,
 `entry`) for every patient of the workspace's data, one row per patient. `explain` follows one
@@ -167,6 +171,9 @@ models:
   member you mean: `(O.effective as dateTime) during "Measurement Period"`. QI-Core libraries use
   QICoreCommon's `O.effective.toInterval()`, which reads every member.
 - `unknown identifier` for a query alias inside `sort by`: `sort by` sees the result row, not the
-  aliases. Sort by the row's own elements (`sort by effective`).
+  aliases. Sort by the row's own elements (`sort by (effective as dateTime)`: a choice, so say which member).
+- `no codesystem named "LONIC" (did you mean `LOINC`?)` at a `code` line: a code, concept or value
+  set names a terminology definition the library does not have (a typo, or one in an include:
+  qualify it, `FHIRHelpers."…"`).
 - A whole library fails to load because one definition does not translate: it does not. The other
   definitions run, and that one raises its translation error when evaluated.

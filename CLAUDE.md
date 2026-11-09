@@ -393,3 +393,9 @@ operators, `if`/`case`. Layers:
   A module's `evaluate`/`results` raise an `exn:fail` (positioned when the error knows where) instead
   of the raw `cql-error` struct. `render` prints a model's data (a FHIR Quantity, a resource) as JSON.
   guide.md has the latest-value-per-patient recipe, tested.
+
+- **New users, round 3** (2026-11-09): `current-evaluation-time` (cql/value; a DateTime string or a
+  moment) is what `Now()`/`Today()` read when set — `evaluate #:now`, `raco cql --now`; `evaluate
+  #:define name` answers one define, a missing name with the nearest; a terminology reference to a
+  codesystem/code the library does not define is a translation error at its definition (`known-term`;
+  the TCK, ELM, eCQM and QDM corpora are unchanged by it). `tests/module-test.rkt`.
