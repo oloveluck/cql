@@ -1009,7 +1009,9 @@
   (cond [(not (list? lst)) cql-null]
         [(null? (drop-nulls lst)) cql-null]
         [else (join (map ->str (drop-nulls lst)) sep)]))
-(define (->str x) (if (string? x) x (render x)))
+;; a model's primitive (FHIR's `given`, a list of FHIR.string where no conversion was written) joins
+;; as its System value, not its printed form (`Combine(name.given, ' ')` gave `"Ann" "Marie"`)
+(define (->str x) (let ([v (scalar-of x)]) (if (string? v) v (render v))))
 (define (join xs sep) (cond [(null? xs) ""] [(null? (cdr xs)) (car xs)] [else (string-append (car xs) sep (join (cdr xs) sep))]))
 (define (str2 vals f) (bin vals (lambda (a b) (and (string? a) (string? b) (f a b)))))
 (define (substring-op vals)

@@ -68,11 +68,16 @@ context Patient
 define "Results": [Observation: "HbA1c code"] O where O.status in { 'final', 'amended', 'corrected' }
 define "Latest": Last("Results" O sort by (effective as dateTime))
 define "Latest Value": "Latest".value as Quantity
+define "Latest Number": "Latest Value".value
+define "Latest Unit": "Latest Value".unit
 define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
+define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.name).family
 ```
-With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %) and
-`Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null` for "never tested".
+With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),
+`Latest Number` is 8.9 and `Latest Unit` `'%'` (plain columns for a table, where a Quantity would be a
+JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null`
+for "never tested". `Name` is the patient's given names and family name, for a table a person reads.
 
 ## Running it
 **Command line.** `cql` (or `raco cql`):
@@ -92,14 +97,15 @@ translation error names its definition and line, and exits 1.
 and `(evaluate resources #:parameters h #:valuesets vss #:now t #:define name)`: the define-name to
 value table for one patient's resources, or with `#:define` that one define's value (a name the
 library does not define is an error naming the nearest). `#:now` (a DateTime string) fixes the
-clock, as `--now` does; `cql/value`'s `current-evaluation-time` parameter does it for any call.
+clock, as `--now` does (`#:now #f`, the default, reads the clock); `cql/value`'s `current-evaluation-time` parameter does it for any call.
 Nothing runs when it is required.
 
 **In a workspace** (fhir-mcp). A `.cql` file is a Library. `run` evaluates every define (or one,
 `entry`) for every patient of the workspace's data, one row per patient. `explain` follows one
 patient's answer through the defines it uses down to the retrieves, with how many resources of each
 type the patient has and which ones the filter kept. `query("cql", "AgeInYears() > 65")` evaluates
-one expression for every patient without a file. Includes resolve from the workspace's `.cql` files,
+one expression for every patient without a file; it includes the workspace's libraries by name, so
+`query("cql", 'Diabetes."Latest Value"')` reads a define of `Diabetes.cql`. Includes resolve from the workspace's `.cql` files,
 then the data source's Libraries, then the bundled FHIRHelpers. Value sets resolve from the workspace
 (a `.vcl` file, an FSH ValueSet), then the data, then the packages. Parameters are CQL expressions,
 set in `workspace.yaml` or on the run.

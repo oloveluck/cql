@@ -47,9 +47,13 @@
             'code (hasheq 'coding (list (hasheq 'system "http://loinc.org" 'code "4548-4")))
             'effectiveDateTime date 'valueQuantity (hasheq 'value value 'unit "%" 'system "http://unitsofmeasure.org" 'code "%")))
   (define rl (load-runtime-library (ok-value (parse-cql (library-named "LatestA1c"))) #:resolver bundled
-                                   #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")
+                                   #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p"
+                                                                         'name (list (hasheq 'given '("Ann" "Marie") 'family "Ng")))
                                                                  (obs "a" "2025-01-10" 9.6) (obs "b" "2025-06-02" 8.9)))))
   (check-regexp-match #rx"\"value\":8[.]9" (render (rlib-value rl "Latest Value")))
+  (check-equal? (render (rlib-value rl "Latest Number")) "8.9")
+  (check-regexp-match #rx"%" (render (rlib-value rl "Latest Unit")))
+  (check-equal? (rlib-value rl "Name") "Ann Marie Ng")
   (check-equal? (rlib-value rl "Poorly Controlled") #f))
 
 (test-case "the choice-timing problem reads as the guide says"

@@ -399,3 +399,9 @@ operators, `if`/`case`. Layers:
   #:define name` answers one define, a missing name with the nearest; a terminology reference to a
   codesystem/code the library does not define is a translation error at its definition (`known-term`;
   the TCK, ELM, eCQM and QDM corpora are unchanged by it). `tests/module-test.rkt`.
+
+- **New users, round 4** (2026-11-09): ad-hoc workspace queries include the workspace's libraries by
+  name and report their translation error about the query text (`query-includes`, `query-error`);
+  `Combine` joins model primitives by their scalar value (`scalar-of`; the reference translator would
+  convert the list elements in the ELM — ours does not yet); the latest-value recipe gained
+  `Latest Number`/`Latest Unit`/`Name`, tested.

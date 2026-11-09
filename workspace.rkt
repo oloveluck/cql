@@ -26,13 +26,14 @@
 (require racket/contract racket/list racket/string racket/match racket/runtime-path racket/file racket/promise
          net/base64 json
          fhir/lang/workspace
-         (only-in fhir/diagnostic diagnostic loc exn:fail:diagnostic)
+         (only-in fhir/diagnostic diagnostic loc exn:fail:diagnostic exn:fail:diagnostic? exn:fail:diagnostic-diagnostic diagnostic-message)
+         (only-in fhir/suggest closest-names)
          (only-in fhir/data-source current-data-source data-source-all data-source-search)
          (only-in fhir/registry registered-resources)
          (only-in fhir/result/result ok? ok-value err? err-error)
          (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
          (only-in "parser/ast.rkt" cql-library? cql-library-id cql-library-version cql-library-defs cql-using?
-                  cql-using-model cql-using-version)
+                  cql-using-model cql-using-version cql-def? cql-def-name)
          (only-in "compile.rkt" compile-library compile-library/errors compile-library/diagnostics compile-expr current-library-resolver)
          (only-in "elm/ast.rkt" elm-library-statements elm-def? elm-def-name elm-def-expression elm-def-context
                   elm-retrieve? elm-retrieve-data-type elm-retrieve-codes elm-retrieve-code-property
@@ -90,10 +91,46 @@
 ;; ---- libraries ----------------------------------------------------------------------------------
 ;; query-text : text -> text   an expression, not a library, wrapped as one: its value is "Query"
 (define (library-text? text) (regexp-match? #px"^\\s*(?:(?://[^\n]*\n|/\\*.*?\\*/)\\s*)*library\\b" text))
-(define (as-library text)
+;; The wrapper includes FHIRHelpers and every library of the workspace over FHIR 4.0.1, each called
+;; by its own name, so a query reads a library's defines as `Diabetes."Latest Value"`.
+(define (as-library text [ws #f])
   (if (library-text? text) text
       (string-append "library Query\nusing FHIR version '4.0.1'\ninclude FHIRHelpers version '4.0.1' called FHIRHelpers\n"
+                     (apply string-append (map (lambda (i) (string-append i "\n")) (query-includes ws)))
                      "context Patient\ndefine \"Query\":\n" text "\n")))
+
+;; query-includes : workspace|#f -> (listof string)   an include per workspace library a query can use
+(define (query-includes ws)
+  (if (not ws) '()
+      (for/list ([(name lib) (in-hash (workspace-libraries ws))]
+                 #:when (regexp-match? #px"^[A-Za-z_][A-Za-z0-9_]*$" name)
+                 #:unless (member name '("Query" "FHIRHelpers"))
+                 #:when (for/and ([u (in-list (cql-library-defs lib))] #:when (cql-using? u))
+                          (or (not (equal? (format "~a" (cql-using-model u)) "FHIR")) (member (cql-using-version u) '(#f "4.0.1"))))
+                 #:when (for/or ([u (in-list (cql-library-defs lib))]) (cql-using? u)))
+        (define v (cql-library-version lib))
+        (format "include ~a~a called ~a" name (if v (format " version '~a'" v) "") name))))
+
+;; query-error : exn workspace -> exn   an ad-hoc query's translation error, about the query's own text:
+;; positioned in it (not at the wrapper's `define "Query"`), with the workspace's defines as suggestions
+(define (query-error e ws)
+  (define d (and (exn:fail:diagnostic? e) (exn:fail:diagnostic-diagnostic e)))
+  (define msg (regexp-replace #px"^in (?:define )?\"?Query\"?: "(if d (diagnostic-message d) (exn-message e)) ""))
+  (define unknown (let ([m (regexp-match #px"unknown identifier '([^']+)'" msg)]) (and m (cadr m))))
+  (define qualified                                     ; Lib."Define" for every workspace library's define
+    (if ws
+        (for*/list ([(name lib) (in-hash (workspace-libraries ws))]
+                    [d (in-list (cql-library-defs lib))] #:when (cql-def? d))
+          (cons (format "~a" (cql-def-name d)) (format "~a.\"~a\"" name (cql-def-name d))))
+        '()))
+  (define near (if unknown (closest-names unknown (map car qualified)) '()))
+  (define hint (cond [(pair? near) (format " — a workspace library defines it: ~a"
+                                           (string-join (for/list ([n (in-list near)]) (cdr (assoc n qualified))) " or "))]
+                     [(and unknown (pair? qualified)) " — the workspace's libraries are included by name (Library.\"Define\")"]
+                     [else ""]))
+  (define text (string-append msg hint))
+  (raise (exn:fail:diagnostic (string-append "cql: " text) (current-continuation-marks)
+                              (diagnostic 'cql 'compile 'error text (loc "query" 1 1 #f #f)))))
 
 ;; parse : text path|#f -> cql-library   raises the positioned diagnostic
 (define (parse text path)
@@ -244,11 +281,14 @@
 
 ;; prepared : workspace path text options -> (values library elm defines (pid -> rlib) data-of)
 (define (prepare ws path text opts)
-  (define src (if path text (as-library text)))
+  (define src (if path text (as-library text ws)))
   (define lib (parse src path))
   (define resolver (make-resolver ws))
   (define c (parameterize ([current-library-resolver resolver]) (compile-library lib)))
-  (when (err? c) (raise-cql (err-error c) path))
+  (when (err? c)
+    (if (or path (library-text? text))
+        (raise-cql (err-error c) path)
+        (with-handlers ([exn:fail? (lambda (e) (query-error e ws))]) (raise-cql (err-error c) path))))
   (define vdiags (version-diagnostics ws lib src (or path "query")))
   (when (pair? vdiags) (raise (exn:fail:diagnostic "FHIR version" (current-continuation-marks) (car vdiags))))
   (define elm (ok-value c))
@@ -457,6 +497,13 @@
     ;; an expression, not a library: it is the define "Query"
     (define q (run ws #f "AgeInYears() > 60" (hasheq)))
     (check-equal? (map (lambda (row) (hash-ref row 'Query)) (run-result-rows q)) '(#t #f #f))
+    ;; it reads the workspace's libraries by name; a misspelt define is suggested, positioned in the query
+    (check-equal? (map (lambda (row) (hash-ref row 'Query)) (run-result-rows (run ws #f "Gap.\"Gap\"" (hasheq 'over "Patient/b"))))
+                  '(#t))
+    (check-exn (lambda (e) (and (exn:fail:diagnostic? e)
+                                (regexp-match? #rx"^unknown identifier 'Gpa'.*Gap[.]\"Gap\"" (diagnostic-message (exn:fail:diagnostic-diagnostic e)))
+                                (equal? (loc-line (diagnostic-loc (exn:fail:diagnostic-diagnostic e))) 1)))
+               (lambda () (run ws #f "\"Gpa\"" (hasheq))))
     ;; parameters are CQL expressions
     (define plib "library P\nusing FHIR version '4.0.1'\nparameter \"Cutoff\" Integer\ncontext Patient\ndefine \"Twice\": \"Cutoff\" * 2\n")
     (define pq (run ws #f plib (hasheq 'parameters (hasheq 'Cutoff "3 + 4") 'over "Patient/a")))
