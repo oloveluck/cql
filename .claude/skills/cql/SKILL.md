@@ -50,7 +50,9 @@ bundled FHIRHelpers:
 (require (only-in cql/run read-json-files) "gap.cql")
 (hash-ref (evaluate (read-json-files "patient") #:valuesets (read-json-files "valuesets")) "Gap")
 ```
-It also provides `elm` and `elm-json`. For control over everything (parameters, timezone, one
+It also provides `elm` and `elm-json`. Compiling the module (`raco make`) translates every define: an
+unknown identifier or function fails the build at its line. A value prints as CQL writes it with
+`render` from `cql/value` (a FHIR value, as its JSON). For control over everything (parameters, timezone, one
 define at a time), use `cql/run`:
 ```racket
 (require cql/run cql/value (only-in cql/parser/parse parse-cql) (only-in fhir/result/result ok-value) racket/file)

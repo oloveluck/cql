@@ -55,6 +55,25 @@ define "Gap": AgeInYears() >= 18 and "No HbA1c"
 ```
 Over a Patient born in 1970 with no Observations, `Gap` is `true`.
 
+## Recipe: the latest value per patient
+"Is the most recent HbA1c above 9%?" is not "was any HbA1c above 9%?": a FHIR search like
+`Observation?code=…|4548-4&value-quantity=gt9` answers the second. Sort by the date, take the last:
+```cql
+library LatestA1c version '1'
+using FHIR version '4.0.1'
+include FHIRHelpers version '4.0.1' called FHIRHelpers
+codesystem "LOINC": 'http://loinc.org'
+code "HbA1c code": '4548-4' from "LOINC"
+context Patient
+define "Results": [Observation: "HbA1c code"] O where O.status in { 'final', 'amended', 'corrected' }
+define "Latest": Last("Results" O sort by (effective as dateTime))
+define "Latest Value": "Latest".value as Quantity
+define "Latest Date": "Latest".effective as dateTime
+define "Poorly Controlled": "Latest Value" > 9 '%'
+```
+With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %) and
+`Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null` for "never tested".
+
 ## Running it
 **Command line.** `cql` (or `raco cql`):
 ```

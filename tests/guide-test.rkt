@@ -41,6 +41,17 @@
                                    #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p" 'birthDate "1970-03-01")))))
   (check-equal? (rlib-value rl "Gap") #t))
 
+(test-case "the latest-value recipe answers as the guide says"
+  (define (obs id date value)
+    (hasheq 'resourceType "Observation" 'id id 'status "final" 'subject (hasheq 'reference "Patient/p")
+            'code (hasheq 'coding (list (hasheq 'system "http://loinc.org" 'code "4548-4")))
+            'effectiveDateTime date 'valueQuantity (hasheq 'value value 'unit "%" 'system "http://unitsofmeasure.org" 'code "%")))
+  (define rl (load-runtime-library (ok-value (parse-cql (library-named "LatestA1c"))) #:resolver bundled
+                                   #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")
+                                                                 (obs "a" "2025-01-10" 9.6) (obs "b" "2025-06-02" 8.9)))))
+  (check-regexp-match #rx"\"value\":8[.]9" (render (rlib-value rl "Latest Value")))
+  (check-equal? (rlib-value rl "Poorly Controlled") #f))
+
 (test-case "the choice-timing problem reads as the guide says"
   ;; an Observation with effectiveDateTime inside the period: the bare choice reads only a Period
   ;; (null); the cast reads the dateTime (true)

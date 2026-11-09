@@ -387,3 +387,9 @@ operators, `if`/`case`. Layers:
   (`O.effective during P` reads only the Period member — null for an effectiveDateTime) says which
   member to cast to; guide-test pins the warning at its line. Unknown identifiers and functions
   suggest the nearest names (`ctype->string` prints types as CQL writes them).
+
+- **Translated when it compiles** (2026-11-09): the `#lang cql` reader translates every definition
+  (includes beside the file, then bundled): an error fails `raco make` at its define, warnings print.
+  A module's `evaluate`/`results` raise an `exn:fail` (positioned when the error knows where) instead
+  of the raw `cql-error` struct. `render` prints a model's data (a FHIR Quantity, a resource) as JSON.
+  guide.md has the latest-value-per-patient recipe, tested.

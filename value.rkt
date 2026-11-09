@@ -11,7 +11,8 @@
          (only-in racket/string string-join)
          (only-in fhirpath/decimal fp-decimal? decimal->string)
          (only-in fhirpath/value fp-long? fp-long fp-long-v fp-quantity? fp-quantity fp-quantity-value fp-quantity-unit)
-         (only-in fhirpath/temporal-ops moment? moment->string))
+         (only-in fhirpath/temporal-ops moment? moment->string)
+         (only-in json jsexpr->string))
 
 (provide (struct-out cql-interval) (struct-out cql-tuple) (struct-out cql-ratio) (struct-out model-node)
          current-evaluation-offset
@@ -109,6 +110,8 @@
     [(cql-ratio? v) (format "~a : ~a" (render (cql-ratio-numerator v)) (render (cql-ratio-denominator v)))]
     [(cql-code? v) (format "Code '~a' from ~a" (cql-code-code v) (cql-code-system v))]
     [(cql-concept? v) (format "Concept{~a}" (string-join (map render (cql-concept-codes v)) ", "))]
+    ;; a model's data (a FHIR Quantity, a resource) is the JSON it is, not a Racket struct
+    [(model-node? v) (with-handlers ([exn:fail? (lambda (_) (format "~a" v))]) (jsexpr->string (model-node-data v)))]
     [else (format "~a" v)]))
 
 (module+ test

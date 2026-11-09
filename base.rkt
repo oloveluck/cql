@@ -25,7 +25,8 @@
          (only-in fhir/result/result ok? ok-value err-error)
          (only-in fhir/registry register-resources!)
          (only-in cql/library library-resource)
-         (only-in cql/error cql-error-string))
+         (only-in cql/error cql-error-string cql-error? cql-error-diagnostic)
+         (only-in fhir/diagnostic raise-diagnostic))
 
 (provide (except-out (all-from-out racket/base) #%module-begin)
          (rename-out [cql-module-begin #%module-begin])
@@ -41,6 +42,15 @@
     (pattern ((~datum cql-library-form) ast text:str)
              #:fail-unless (cql-library? (syntax->datum #'ast)) "not a CQL library AST")))
 
+;; as-exn : thunk -> value   a CQL error raised while evaluating is an exn:fail — positioned at its
+;; define (exn:fail:diagnostic) when it knows where — so a caller's `exn:fail?` handler catches it
+(define (as-exn thunk)
+  (with-handlers ([cql-error? (lambda (e)
+                                (define d (cql-error-diagnostic e))
+                                (if d (raise-diagnostic d)
+                                    (raise (exn:fail (string-append "cql: " (cql-error-string e)) (current-continuation-marks)))))])
+    (thunk)))
+
 (define-syntax (cql-module-begin stx)
   (syntax-parse stx
     [(_ (~optional form:library-form))
@@ -54,9 +64,9 @@
         (define elm-result (and library (parameterize ([current-library-resolver resolver]) (compile-library library))))
         (define elm (and elm-result (ok? elm-result) (ok-value elm-result))) ; the ELM library AST
         (define elm-json (and elm (elm->json-string elm)))       ; canonical ELM JSON string
-        (define (results) (if elm (run-library elm) (hash)))     ; define-name -> value, no data
+        (define (results) (as-exn (lambda () (if elm (run-library elm) (hash)))))     ; define-name -> value, no data
         (define (evaluate resources #:parameters [ps (hash)] #:valuesets [vss '()])
-          (evaluate-library library resources #:parameters ps #:valuesets vss #:resolver resolver))
+          (as-exn (lambda () (evaluate-library library resources #:parameters ps #:valuesets vss #:resolver resolver))))
         (provide library elm elm-json results evaluate resource)
         (module+ main
           (cond
