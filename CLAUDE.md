@@ -381,3 +381,9 @@ operators, `if`/`case`. Layers:
   FHIRHelpers could not run before); `cql-value` (a CQL expression's value, for parameters) backs
   `--parameter`.
 
+
+- **Claude as the user** (2026-11-09; the main repo's CLAUDE.md). `compile-library/diagnostics`
+  returns warnings beside the errors (`warn!`, positioned at the definition): the choice-timing trap
+  (`O.effective during P` reads only the Period member — null for an effectiveDateTime) says which
+  member to cast to; guide-test pins the warning at its line. Unknown identifiers and functions
+  suggest the nearest names (`ctype->string` prints types as CQL writes them).

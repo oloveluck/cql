@@ -7,7 +7,8 @@
 
 (require rackunit racket/runtime-path racket/file racket/list
          (only-in cql/parser/parse parse-cql)
-         (only-in cql/compile compile-library/errors current-library-resolver)
+         (only-in cql/compile compile-library/errors compile-library/diagnostics current-library-resolver)
+         (only-in fhir/diagnostic diagnostic-message diagnostic-severity diagnostic-loc loc-line)
          (only-in cql/error cql-error-string)
          (only-in cql/workspace guide)
          cql/run
@@ -53,4 +54,11 @@
                                                                  (hasheq 'resourceType "Observation" 'id "o" 'subject (hasheq 'reference "Patient/p")
                                                                          'effectiveDateTime "2024-05-01")))))
   (check-equal? (map render (rlib-value rl "Bare")) '("null"))
-  (check-equal? (rlib-value rl "Cast") '(#t)))
+  (check-equal? (rlib-value rl "Cast") '(#t))
+  ;; and the translation warns about the bare one, at its define, naming the member to cast to
+  (define-values (elm errors warnings)
+    (parameterize ([current-library-resolver bundled]) (compile-library/diagnostics (ok-value (parse-cql lib)))))
+  (check-equal? errors '())
+  (check-equal? (map diagnostic-severity warnings) '(warning))
+  (check-equal? (loc-line (diagnostic-loc (car warnings))) 6)
+  (check-regexp-match #rx"Bare.*dateTime" (diagnostic-message (car warnings))))
