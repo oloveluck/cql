@@ -16,7 +16,7 @@
 ;;; (their type is needed at the reference), so forward references and included libraries both work.
 ;;; Errors raise a cql-error caught at the API boundary and returned as (err …).
 
-(require (only-in fhir/suggest did-you-mean)
+(require (only-in fhir/suggest did-you-mean closest-names)
          racket/match racket/list racket/string
          "parser/ast.rkt"
          "elm/ast.rkt"
@@ -690,7 +690,13 @@
     [(hash-ref (lctx-params lx) name #f)
      => (lambda (p) (values (elm-parameter-ref s a) (parameterize ([current-lctx lx]) (param-type p))))]
     [(hash-ref (lctx-terms lx) name #f) => (lambda (k) (values (elm-term-ref k s a) (term-type k)))]
-    [else (fail (format "unknown identifier '~a.~a'" alias name))]))
+    [else
+     ;; the nearest names of that library, written as they are referenced: Alias."Name"
+     (define near (closest-names s (map (lambda (k) (format "~a" k))
+                                        (append (hash-keys (lctx-defs lx)) (hash-keys (lctx-params lx)) (hash-keys (lctx-terms lx))))))
+     (fail (format "unknown identifier '~a.~a'~a" alias name
+                   (if (null? near) ""
+                       (format " (did you mean ~a?)" (string-join (for/list ([n (in-list near)]) (format "`~a.\"~a\"`" alias n)) " or ")))))]))
 
 (define (include-alias? env x)
   (and (cql-ref? x) (not (local-ref env (cql-ref-name x)))
@@ -1404,6 +1410,10 @@
              (func-result-type lx f))]
     [(and alias (not lx))                                  ; unresolved include: untyped reference
      (values (elm-function-ref (symbol->string name) (symbol->string alias) (map car compiled) #f) "Any")]
+    ;; a name the library does not define at all: say so, with the nearest of its functions
+    [(and lx (null? cands))
+     (fail (format "unknown function ~a~a~a" (if alias (format "~a." alias) "") name
+                   (did-you-mean (symbol->string name) (map (lambda (k) (format "~a" k)) (hash-keys (lctx-funcs lx))))))]
     [else (fail (format "no overload of ~a~a matches ~s" (if alias (format "~a." alias) "") name (map cdr compiled)))]))
 
 ;; ---- overloads and conversions ----------------------------------------------

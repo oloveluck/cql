@@ -405,3 +405,7 @@ operators, `if`/`case`. Layers:
   `Combine` joins model primitives by their scalar value (`scalar-of`; the reference translator would
   convert the list elements in the ELM — ours does not yet); the latest-value recipe gained
   `Latest Number`/`Latest Unit`/`Name`, tested.
+
+- **New users, round 6** (2026-11-09): an unknown qualified name suggests the nearest of that library's
+  names as written (`` `Diabetes."Latest Value"` ``); a call to a function an included library lacks is
+  `unknown function Lib.F (did you mean …)`, not "no overload … matches"; the recipe has "No HbA1c".

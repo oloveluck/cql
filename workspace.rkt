@@ -124,7 +124,8 @@
           (cons (format "~a" (cql-def-name d)) (format "~a.\"~a\"" name (cql-def-name d))))
         '()))
   (define near (if unknown (closest-names unknown (map car qualified)) '()))
-  (define hint (cond [(pair? near) (format " — a workspace library defines it: ~a"
+  (define hint (cond [(regexp-match? #rx"did you mean" msg) ""]
+                     [(pair? near) (format " — a workspace library defines it: ~a"
                                            (string-join (for/list ([n (in-list near)]) (cdr (assoc n qualified))) " or "))]
                      [(and unknown (pair? qualified)) " — the workspace's libraries are included by name (Library.\"Define\")"]
                      [else ""]))
@@ -504,6 +505,9 @@
                                 (regexp-match? #rx"^unknown identifier 'Gpa'.*Gap[.]\"Gap\"" (diagnostic-message (exn:fail:diagnostic-diagnostic e)))
                                 (equal? (loc-line (diagnostic-loc (exn:fail:diagnostic-diagnostic e))) 1)))
                (lambda () (run ws #f "\"Gpa\"" (hasheq))))
+    ;; a qualified name misspelt: the nearest define of that library, written as it is referenced
+    (check-exn #rx"unknown identifier 'Gap.Gpa' [(]did you mean `Gap.\"Gap\"`[?][)]"
+               (lambda () (run ws #f "Gap.\"Gpa\"" (hasheq))))
     ;; parameters are CQL expressions
     (define plib "library P\nusing FHIR version '4.0.1'\nparameter \"Cutoff\" Integer\ncontext Patient\ndefine \"Twice\": \"Cutoff\" * 2\n")
     (define pq (run ws #f plib (hasheq 'parameters (hasheq 'Cutoff "3 + 4") 'over "Patient/a")))

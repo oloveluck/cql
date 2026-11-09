@@ -72,6 +72,7 @@ define "Latest Number": "Latest Value".value
 define "Latest Unit": "Latest Value".unit
 define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
+define "No HbA1c": "Latest" is null
 define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.name).family
 ```
 With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),

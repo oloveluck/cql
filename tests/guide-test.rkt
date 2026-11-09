@@ -54,7 +54,8 @@
   (check-equal? (render (rlib-value rl "Latest Number")) "8.9")
   (check-regexp-match #rx"%" (render (rlib-value rl "Latest Unit")))
   (check-equal? (rlib-value rl "Name") "Ann Marie Ng")
-  (check-equal? (rlib-value rl "Poorly Controlled") #f))
+  (check-equal? (rlib-value rl "Poorly Controlled") #f)
+  (check-equal? (rlib-value rl "No HbA1c") #f))
 
 (test-case "the choice-timing problem reads as the guide says"
   ;; an Observation with effectiveDateTime inside the period: the bare choice reads only a Period
