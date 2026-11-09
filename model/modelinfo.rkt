@@ -24,7 +24,7 @@
 ;; ---- CType ----------------------------------------------------------------------------------
 (provide list-ctype interval-ctype choice-ctype tuple-ctype
          list-ctype? interval-ctype? choice-ctype? tuple-ctype? compound-ctype?
-         ctype-element choice-members tuple-fields)
+         ctype-element choice-members tuple-fields ctype->string)
 ;; list-ctype / interval-ctype : CType -> CType ; choice-ctype : (listof CType) -> CType ;
 ;; tuple-ctype : (listof (cons symbol CType)) -> CType
 (define (list-ctype el) (vector 'list el))
@@ -44,6 +44,15 @@
 (define (choice-members t) (if (choice-ctype? t) (vector-ref t 1) (list t)))
 ;; tuple-fields : CType -> (listof (cons symbol CType))
 (define (tuple-fields t) (if (tuple-ctype? t) (vector-ref t 1) '()))
+;; ctype->string : CType -> string   as a CQL author writes it: a named type by its own name (the
+;; model's or System's prefix dropped: FHIR.dateTime -> dateTime), compounds in CQL's syntax
+(define (ctype->string t)
+  (cond [(string? t) (let ([parts (regexp-split #rx"[.]" t)]) (list-ref parts (sub1 (length parts))))]
+        [(list-ctype? t) (format "List<~a>" (ctype->string (ctype-element t)))]
+        [(interval-ctype? t) (format "Interval<~a>" (ctype->string (ctype-element t)))]
+        [(choice-ctype? t) (format "Choice<~a>" (string-join (map ctype->string (choice-members t)) ", "))]
+        [(tuple-ctype? t) (format "Tuple { ~a }" (string-join (for/list ([f (in-list (tuple-fields t))]) (format "~a ~a" (car f) (ctype->string (cdr f)))) ", "))]
+        [else (format "~a" t)]))
 
 ;; ---- models -------------------------------------------------------------------------------
 ;;; A Model is (model name url version required patient-class birth-date-path classes conversions contexts

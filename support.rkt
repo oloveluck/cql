@@ -10,7 +10,7 @@
          fhir/lang/support fhir/lang/declared
          (only-in fhir/result/result ok? err? ok-value err-error)
          (only-in "parser/parse.rkt" parse-cql)
-         (only-in "compile.rkt" compile-library/errors)
+         (only-in "compile.rkt" compile-library/diagnostics)
          (only-in "error.rkt" cql-error-diagnostic cql-error-message cql-error-phase))
 
 (provide (contract-out [support lang-support?]))
@@ -27,8 +27,8 @@
   (define r (parse-cql (blank-lang-line text) #:source (path-string path)))
   (cond
     [(err? r) (list (->diagnostic (err-error r)))]
-    [else (let-values ([(elm errors) (compile-library/errors (ok-value r))])
-            (map ->diagnostic errors))]))
+    [else (let-values ([(elm errors warnings) (compile-library/diagnostics (ok-value r))])
+            (append (map ->diagnostic errors) warnings))]))
 
 ;; the declarations: a line regexp per kind; an include is its alias, its id the library it names
 (define declarations

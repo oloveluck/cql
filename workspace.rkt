@@ -33,7 +33,7 @@
          (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
          (only-in "parser/ast.rkt" cql-library? cql-library-id cql-library-version cql-library-defs cql-using?
                   cql-using-model cql-using-version)
-         (only-in "compile.rkt" compile-library compile-library/errors compile-expr current-library-resolver)
+         (only-in "compile.rkt" compile-library compile-library/errors compile-library/diagnostics compile-expr current-library-resolver)
          (only-in "elm/ast.rkt" elm-library-statements elm-def? elm-def-name elm-def-expression elm-def-context
                   elm-retrieve? elm-retrieve-data-type elm-retrieve-codes elm-retrieve-code-property
                   elm-expression-ref? elm-expression-ref-name elm-expression-ref-library elm-term-ref? elm-term-ref-name)
@@ -186,14 +186,15 @@
        (define name (and (cql-library-id lib) (format "~a" (cql-library-id lib))))
        (define first (and name (hash-ref seen name #f)))
        (when (and name (not first)) (hash-set! seen name (car f)))
-       (define-values (_elm errors) (parameterize ([current-library-resolver resolver]) (compile-library/errors lib)))
+       (define-values (_elm errors warnings) (parameterize ([current-library-resolver resolver]) (compile-library/diagnostics lib)))
        (define twice
          (if first
              (list (diagnostic 'cql 'compile 'error (format "the library ~a is also declared in ~a: an include could mean either" name (path-string first))
                                (loc (path-string (car f)) (line-matching text #px"^\\s*library\\b") 1 #f #f)))
              '()))
        (values (if (and name (not first)) (cons (library-resource ws lib (cdr f) (car f)) rs) rs)
-               (append ds twice (version-diagnostics ws lib text (car f)) (map (lambda (e) (->diagnostic e (car f))) errors)))])))
+               (append ds twice (version-diagnostics ws lib text (car f)) (map (lambda (e) (->diagnostic e (car f))) errors)
+                       warnings))])))
 
 ;; ---- what a run needs ---------------------------------------------------------------------------
 ;; terminology : -> (url -> members|#f)   the workspace's value sets, the data source's, the packages'

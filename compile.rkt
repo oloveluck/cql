@@ -16,7 +16,8 @@
 ;;; (their type is needed at the reference), so forward references and included libraries both work.
 ;;; Errors raise a cql-error caught at the API boundary and returned as (err …).
 
-(require racket/match racket/list racket/string
+(require (only-in fhir/suggest did-you-mean)
+         racket/match racket/list racket/string
          "parser/ast.rkt"
          "elm/ast.rkt"
          "model/modelinfo.rkt"
@@ -37,6 +38,8 @@
   [compile-library (-> cql-library? (or/c ok? err?))]
   ;; every translation error (each positioned at its definition), and the library when there are none
   [compile-library/errors (-> cql-library? (values (or/c elm-library? #f) (listof cql-error?)))]
+  ;; the same, and the warnings (diagnostics, positioned at their definitions)
+  [compile-library/diagnostics (-> cql-library? (values (or/c elm-library? #f) (listof cql-error?) list?))]
   [compile-library/partial (-> cql-library? (values (or/c elm-library? #f) (listof cql-error?)))]
   ;; compile-expr : cql-expression-AST -> (ok elm-expr) | (err cql-error)  (bare-expression entry)
   [compile-expr    (-> any/c (or/c ok? err?))]))
@@ -142,6 +145,26 @@
       (define errors (remove-duplicates (reverse (unbox collected))
                                         (lambda (a b) (and (cql-error-diagnostic a) (equal? (cql-error-diagnostic a) (cql-error-diagnostic b))))))
       (values (and (null? errors) elm) errors))))
+;; compile-library/diagnostics : cql-library -> (values elm-library|#f (listof cql-error) (listof diagnostic))
+;; compile-library/errors, and the WARNINGS: what translates but likely does not mean what it says
+;; (a choice read through one member, see choice-to), each positioned at its definition
+(define (compile-library/diagnostics lib)
+  (define warnings (box '()))
+  (define-values (elm errors) (parameterize ([current-warnings warnings]) (compile-library/errors lib)))
+  (values elm errors (remove-duplicates (reverse (unbox warnings)))))
+;; current-warnings : (parameter (box (listof diagnostic)) | #f) ; current-definition : (parameter
+;; (cons label def) | #f), the definition being compiled (warn! positions and names it)
+(define current-warnings (make-parameter #f))
+(define current-definition (make-parameter #f))
+;; warn! : string -> void   a warning about the current definition, when someone collects them
+(define (warn! msg)
+  (define b (current-warnings))
+  (define d (current-definition))
+  (when b
+    (set-box! b (cons (diagnostic 'cql 'compile 'warning
+                                  (if d (format "in ~a: ~a" (car d) msg) msg)
+                                  (and d (attached-loc (cdr d))))
+                      (unbox b)))))
 ;; current-errors : (parameter (box (listof cql-error)) | #f)   where accumulating compiles collect
 (define current-errors (make-parameter #f))
 ;; collecting : thunk default -> value   run one statement's compile; with an accumulating compile, an
@@ -270,7 +293,7 @@
                      (define msg (format "in ~a: ~a" label (cql-error-message e)))
                      (raise (cql-error (cql-error-phase e) msg
                                        (diagnostic 'cql 'compile 'error msg (attached-loc d)))))])
-    (thunk)))
+    (parameterize ([current-definition (cons label d)]) (thunk))))
 
 ;; context-definition : string -> (cons elm CType)   `context Patient` = SingletonFrom([Patient])
 (define (context-definition cname)
@@ -537,6 +560,18 @@
   ;; a Quantity: value as Quantity, not a Case that promotes the Integer too)
   (define exact (filter (lambda (c) (equal? c target)) fits))
   (define members (if (pair? exact) exact fits))
+  ;; the choice-timing trap: against an interval the members read are the interval-typed ones; a
+  ;; member that is a POINT of the interval (an Observation's effectiveDateTime against a DateTime
+  ;; interval) is left out and gives null. The reference translator does the same; say so.
+  (when (interval-ctype? target)
+    (define points (for/list ([c (in-list (choice-members t))]
+                              #:unless (member c members)
+                              #:when (let ([k (conversion-cost c (ctype-element target))]) (and k (<= k 1))))
+                     c))
+    (when (and (pair? points) (pair? members))
+      (warn! (format "~a against an interval reads only its ~a member~a: a ~a value gives null. Say which member you mean: (… as ~a)"
+                     (ctype->string t) (string-join (map ctype->string members) ", ") (if (null? (cdr members)) "" "s")
+                     (ctype->string (car points)) (ctype->string (car points))))))
   ;; a member's type: a name, or a specifier for an interval or list member (Interval<Quantity>)
   (define (spec m) (if (string? m) (ctype->elm-name m) (ctype->elm-type m)))
   (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (spec m) #f) m)]) cn))
@@ -607,7 +642,15 @@
         => (lambda (t) (values (elm-identifier-ref s) t))]
        [(and (cenv-this env) (property-type (cdr (local-ref env (string->symbol (cenv-this env)))) s))
         => (lambda (t) (values (elm-property #f s (cenv-this env)) t))]
-       [else (fail (format "unknown identifier '~a'" name))])]))
+       [else (fail (format "unknown identifier '~a'~a" name (did-you-mean s (identifier-candidates env))))])]))
+
+;; identifier-candidates : cenv -> (listof string)   the names a reference could mean here: the
+;; library's defines, parameters and terminology, and the names in local scope (for "did you mean")
+(define (identifier-candidates env)
+  (define lx (L))
+  (map (lambda (k) (if (symbol? k) (symbol->string k) (format "~a" k)))
+       (append (hash-keys (lctx-defs lx)) (hash-keys (lctx-params lx)) (hash-keys (lctx-terms lx))
+               (hash-keys (cenv-locals env)))))
 
 (define (term-type kind)
   (case kind [("ValueSetRef") "ValueSet"] [("CodeSystemRef") "CodeSystem"] [("CodeRef") "Code"] [else "Concept"]))
@@ -1245,6 +1288,10 @@
 
 ;; age functions: AgeInYears() / AgeInYearsAt(x) / CalculateAgeInYearsAt(b, x) -> CalculateAge[At]
 (define age-rx #px"^(Calculate)?AgeIn(Years|Months|Weeks|Days|Hours|Minutes|Seconds)(At)?$")
+;; age-function-names : (listof string)   every name age-rx accepts (for "did you mean")
+(define age-function-names
+  (for*/list ([calc '("" "Calculate")] [p '("Years" "Months" "Weeks" "Days" "Hours" "Minutes" "Seconds")] [at '("" "At")])
+    (string-append calc "AgeIn" p at)))
 
 (define (compile-call target name args env)
   (define lx (L))
@@ -1468,7 +1515,10 @@
   (define spec (or (hash-ref system-ops name #f) (hash-ref system-ops (capitalize name) #f)))
   (set! name (if (hash-ref system-ops name #f) name (capitalize name)))
   (cond
-    [(not spec) (fail (format "unknown function '~a'" name))]
+    [(not spec) (fail (format "unknown function '~a'~a" name
+                              (did-you-mean (format "~a" name)
+                                            (map (lambda (k) (format "~a" k))
+                                                 (append (hash-keys system-ops) (hash-keys (lctx-funcs (L))) age-function-names)))))]
     [else
      (define-values (nodes0 types0)
        (for/lists (ns ts) ([a (in-list all-args)])
