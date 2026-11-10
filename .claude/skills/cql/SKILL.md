@@ -52,7 +52,7 @@ bundled FHIRHelpers:
           #:define "Gap" #:now "2025-06-30T12:00:00Z")    ; one define, the clock fixed
 ```
 Without `#:define` it answers every define as a hash; with a name the library lacks, an error naming
-the nearest. `#:now` (or `raco cql … --now <DateTime>`) fixes `Now()`/`Today()`/`AgeInYears()`.
+the nearest. `#:now` (or `raco cql … --now 2026-01-01`, a date or a DateTime) fixes `Now()`/`Today()`/`AgeInYears()`.
 It also provides `elm` and `elm-json`. Compiling the module (`raco make`) translates every define: an
 unknown identifier or function fails the build at its line. A value prints as CQL writes it with
 `render` from `cql/value` (`render : CqlValue -> string`: `true` is the string `"true"`, a FHIR value its

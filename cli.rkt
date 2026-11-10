@@ -7,7 +7,7 @@
 ;;;                            --libraries (default: beside the file), so included functions type-check
 ;;;                            (a leading `#lang cql` line is ignored, so both raw .cql and #lang files work)
 ;;;   raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…
-;;;            [--parameter "name=<CQL expression>"]… [--now <DateTime>]   (Now()/Today() fixed)
+;;;            [--parameter "name=<CQL expression>"]… [--now <date|DateTime>]   (Now()/Today() fixed: 2026-01-01 or 2026-01-01T09:00:00Z)
 ;;;                            RUN the library over FHIR data (resources or Bundles; patient context),
 ;;;                            includes found in --libraries (default: beside the file), terminology from
 ;;;                            the value sets in --valuesets; prints each definition (or the named ones)
@@ -98,7 +98,7 @@
   (displayln (elm->json-string elm)))
 
 (define (usage [code 2])                             ; --help: stdout, exit 0
-  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n                [--parameter \"<name>=<CQL expression>\"]… [--now <DateTime>]\n       raco cql --tck [-v]\n")
+  ((if (zero? code) printf eprintf) "usage: raco cql <file.cql> [--libraries <dir>]\n       raco cql <file.cql> --data <dir|file.json> [--valuesets <dir>] [--libraries <dir>] [--define <name>]…\n                [--parameter \"<name>=<CQL expression>\"]… [--now <date|DateTime>]   (2026-01-01, or 2026-01-01T09:00:00Z)\n       raco cql --tck [-v]\n")
   (exit code))
 
 (module+ main
@@ -131,7 +131,7 @@
          [(and (equal? (car as) "--parameter") (pair? (cdr as))) (loop (cddr as) data vs libs names (cons (cadr as) params))]
          ;; Now()/Today() at a fixed moment: a run that can be repeated
          [(and (equal? (car as) "--now") (pair? (cdr as)))
-          (with-handlers ([exn:fail:contract? (lambda (_) (eprintf "cql: --now takes a DateTime, e.g. 2025-06-30T12:00:00Z\n") (exit 2))])
+          (with-handlers ([exn:fail:contract? (lambda (_) (eprintf "cql: --now takes a date or a DateTime, e.g. 2025-06-30 or 2025-06-30T12:00:00Z\n") (exit 2))])
             (current-evaluation-time (cadr as)))
           (loop (cddr as) data vs libs names params)]
          [else (usage)]))]
