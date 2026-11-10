@@ -45,7 +45,7 @@
          (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version)
          (only-in "representation.rkt" record-type-name)
          (only-in "measure.rkt" packages-valuesets)
-         (only-in "value.rkt" cql-null? cql-null-list? model-node? model-node-data model-node-model cql-tuple? cql-tuple-fields render
+         (only-in "value.rkt" cql-code? cql-code-code cql-code-system cql-concept? cql-concept-codes cql-null? cql-null-list? model-node? model-node-data model-node-model cql-tuple? cql-tuple-fields render
                   current-evaluation-offset)
          (only-in "error.rkt" cql-error? cql-error-diagnostic cql-error-message cql-error-phase cql-error-string))
 
@@ -413,7 +413,13 @@
     (hasheq 'type type
             'filter (cond [(not codes) 'null]
                           [(elm-term-ref? codes) (format "~a in ~s" (or (elm-retrieve-code-property r) "code") (elm-term-ref-name codes))]
-                          [else (format "~a filtered by codes" (or (elm-retrieve-code-property r) "code"))])
+                          ;; the codes themselves (`code ~ http://loinc.org|4548-4`): "filtered by codes" said nothing
+                          [else (define cs (with-handlers ([exn:fail? (lambda (_) #f)]) (rlib-eval rl codes)))
+                                (define listed (filter cql-code? (cond [(list? cs) cs] [(cql-code? cs) (list cs)] [(cql-concept? cs) (cql-concept-codes cs)] [else '()])))
+                                (if (pair? listed)
+                                    (format "~a ~~ ~a" (or (elm-retrieve-code-property r) "code")
+                                            (string-join (for/list ([c (in-list listed)]) (format "~a|~a" (or (cql-code-system c) "") (cql-code-code c))) ", "))
+                                    (format "~a filtered by codes" (or (elm-retrieve-code-property r) "code")))])
             'line (or (line-matching src (pregexp (string-append "\\[\\s*" (regexp-quote type) "\\b"))) 'null)
             'patientHas (length (data type))
             'found found))
@@ -533,6 +539,12 @@
     (check-equal? (hash-ref rt 'found) '())
     (check-equal? (hash-ref rt 'line) 7)
     (check-regexp-match #rx"HbA1c" (hash-ref rt 'filter))
+    ;; a retrieve by code says which code (it said "code filtered by codes")
+    (define clib (string-append "library Codes\nusing FHIR version '4.0.1'\ninclude FHIRHelpers version '4.0.1' called FHIRHelpers\n"
+                                "codesystem \"LOINC\": 'http://loinc.org'\ncode \"A1c\": '4548-4' from \"LOINC\"\n"
+                                "context Patient\ndefine \"Results\": [Observation: \"A1c\"]\n"))
+    (define ce (explain ws #f clib "Patient/b" (hasheq 'entry "Results")))
+    (check-equal? (hash-ref (car (hash-ref ce 'retrieves)) 'filter) "code ~ http://loinc.org|4548-4")
     (define all (explain ws (build-path dir "Gap.cql") main "a" (hasheq)))
     (check-equal? (length (hash-ref all 'defines)) 3)
     (check-exn #rx"no Patient/zz" (lambda () (explain ws (build-path dir "Gap.cql") main "zz" (hasheq)))))

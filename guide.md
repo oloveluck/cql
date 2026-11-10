@@ -123,7 +123,12 @@ and `(evaluate resources #:parameters h #:valuesets vss #:now t #:define name)`:
 value table for one patient's resources, or with `#:define` that one define's value (a name the
 library does not define is an error naming the nearest). `#:now` (a DateTime string) fixes the
 clock, as `--now` does (`#:now #f`, the default, reads the clock); `cql/value`'s `current-evaluation-time` parameter does it for any call.
-Nothing runs when it is required.
+Nothing runs when it is required. The file is the library after one line — `#lang cql`, then
+`library Screening version '1.0'`, `using FHIR version '4.0.1'`, … — and another module says
+`(require "screening.cql")` and calls `(evaluate resources)`.
+Without the `#lang cql` line, requiring the file fails with `default-load-handler: expected a
+`module' declaration, but found something else`: add the line. `raco cql` reads the file with or
+without it.
 
 **In a workspace** (fhir-mcp). A `.cql` file is a Library. `run` evaluates every define (or one,
 `entry`) for every patient of the workspace's data, one row per patient. `explain` follows one
