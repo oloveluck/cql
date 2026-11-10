@@ -15,8 +15,10 @@ example, the data models, and the common problems (that guide is what fhir-mcp s
 1. **Translate.** `raco cql lib.cql` prints the ELM and exits 0, or lists every translation error,
    each at its line and naming its definition, and exits 1:
    ```
-   gap.cql:9:1: cql compile error: in define "Typo": unknown function 'Cuont'
+   gap.cql:9:16: cql compile error: in define "Typo": unknown function 'Cuont'
    ```
+   An unknown name is positioned at the name (`define "Typo": Cuont(…)`, column 16); any other
+   translation error at its `define`.
    `--format json` puts the same diagnostics on stdout as JSON (`line`, `column`, `message`,
    `phase`); `--format outcome` as a FHIR OperationOutcome.
 2. **Run over one patient.** `--data` is a resource, a Bundle, a QDM patient document, or a

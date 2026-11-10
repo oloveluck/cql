@@ -11,7 +11,7 @@
          (only-in fhir/result/result ok? err? ok-value err-error)
          (only-in "parser/parse.rkt" parse-cql)
          (only-in "compile.rkt" compile-library/diagnostics)
-         (only-in "error.rkt" cql-error-diagnostic cql-error-message cql-error-phase))
+         (only-in "error.rkt" cql-error-diagnostic cql-error-message cql-error-phase at-the-name))
 
 (provide (contract-out [support lang-support?]))
 
@@ -21,7 +21,7 @@
 ;; positioned when it carries a position
 (define (diagnose text path)
   (define (->diagnostic e)
-    (or (cql-error-diagnostic e)
+    (or (let ([d (cql-error-diagnostic e)]) (and d (at-the-name d text)))   ; at the name, not the define
         (positionless 'cql (case (cql-error-phase e) [(translate) 'compile] [(interpret) 'run] [else (cql-error-phase e)])
                       (cql-error-message e) path)))
   (define r (parse-cql (blank-lang-line text) #:source (path-string path)))

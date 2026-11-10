@@ -47,7 +47,7 @@
          (only-in "measure.rkt" packages-valuesets)
          (only-in "value.rkt" cql-code? cql-code-code cql-code-system cql-concept? cql-concept-codes cql-null? cql-null-list? model-node? model-node-data model-node-model cql-tuple? cql-tuple-fields render
                   current-evaluation-offset)
-         (only-in "error.rkt" cql-error? cql-error-diagnostic cql-error-message cql-error-phase cql-error-string))
+         (only-in "error.rkt" cql-error? cql-error-diagnostic cql-error-message cql-error-phase cql-error-string at-the-name))
 
 (provide (contract-out [workspace-support ws-support?]
                        ;; guide : the language guide (guide.md) a hub serves to agents (learn://cql)
@@ -139,8 +139,8 @@
   (if (ok? r) (ok-value r) (raise-cql (err-error r) path)))
 (define (blank-lang text) (regexp-replace #px"^#lang[^\n]*" text ""))
 
-(define (->diagnostic e path)
-  (or (cql-error-diagnostic e)
+(define (->diagnostic e path [text #f])
+  (or (let ([d (cql-error-diagnostic e)]) (and d (if text (at-the-name d text) d)))
       (diagnostic 'cql (case (cql-error-phase e) [(translate) 'compile] [(interpret) 'run] [else (cql-error-phase e)])
                   'error (cql-error-message e) (loc (and path (path-string path)) #f #f #f #f))))
 (define (raise-cql e path)
@@ -231,7 +231,7 @@
                                (loc (path-string (car f)) (line-matching text #px"^\\s*library\\b") 1 #f #f)))
              '()))
        (values (if (and name (not first)) (cons (library-resource ws lib (cdr f) (car f)) rs) rs)
-               (append ds twice (version-diagnostics ws lib text (car f)) (map (lambda (e) (->diagnostic e (car f))) errors)
+               (append ds twice (version-diagnostics ws lib text (car f)) (map (lambda (e) (->diagnostic e (car f) text)) errors)
                        warnings))])))
 
 ;; ---- what a run needs ---------------------------------------------------------------------------

@@ -423,3 +423,9 @@ operators, `if`/`case`. Layers:
 
 - **New users, round 12** (2026-11-10): guide.md's latest-value recipe says how to adapt it to another lab
   (code, comparison, units) and gives the yes/no table a person reads (SQL over the run).
+
+- **New users, round 15** (2026-11-10): a translation error about a name (`unknown function
+  'AgeInYear'`, `unknown identifier 'Foo'`) is positioned at the name inside its definition, not at
+  `define` (`at-the-name` in error.rkt, from the library text: `raco cql`, the `#lang cql` reader,
+  support's diagnostics, the workspace's artifacts); `raco cql --now` takes a date.
+  `tests/name-position-test.rkt`.
