@@ -421,18 +421,23 @@
     (define d (hash-ref table name))
     (define expr (elm-def-expression d))
     (define refs (remove-duplicates (walk expr elm-expression-ref?)))
-    (hasheq 'define name
-            'line (or (define-line src name) 'null)
-            'value (value name)
-            'retrieves (map retrieve-info (walk expr elm-retrieve?))
-            'uses (for/list ([r (in-list refs)])
+    ;; a define that retrieves nothing, or uses no other define, says nothing of it (the keys were
+    ;; noise in a rerun's answers)
+    (define (unless-empty k v h) (if (null? v) h (hash-set h k v)))
+    (unless-empty
+     'retrieves (map retrieve-info (walk expr elm-retrieve?))
+     (unless-empty
+     'uses (for/list ([r (in-list refs)])
                     (define n (elm-expression-ref-name r))
                     (cond [(elm-expression-ref-library r)
                            (hasheq 'define (format "~a.~a" (elm-expression-ref-library r) n)
                                    'value (with-handlers ([exn:fail? (lambda (e) (hasheq 'error (exn-message e)))]) (value->json (rlib-eval rl r))))]
                           [(or (member n seen) (not (hash-has-key? table n))) (hasheq 'define n 'value (value n))]
                           [(>= depth 4) (hasheq 'define n 'value (value n) 'line (or (define-line src n) 'null))]
-                          [else (step n (add1 depth) (cons n seen))]))))
+                          [else (step n (add1 depth) (cons n seen))]))
+     (hasheq 'define name
+             'line (or (define-line src name) 'null)
+             'value (value name)))))
   (define entry (or (hash-ref opts 'entry #f) (and (not path) "Query")))
   (cond
     [entry (unless (hash-has-key? table entry)

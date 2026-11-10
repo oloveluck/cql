@@ -409,3 +409,6 @@ operators, `if`/`case`. Layers:
 - **New users, round 6** (2026-11-09): an unknown qualified name suggests the nearest of that library's
   names as written (`` `Diabetes."Latest Value"` ``); a call to a function an included library lacks is
   `unknown function Lib.F (did you mean …)`, not "no overload … matches"; the recipe has "No HbA1c".
+
+- **New users, round 7** (2026-11-10): the workspace's `explain` leaves out a define's `retrieves`
+  and `uses` when it has none.
