@@ -420,3 +420,6 @@ operators, `if`/`case`. Layers:
 - **New users, round 10** (2026-11-10): the workspace's `explain` names a retrieve's code filter by its
   codes (`code ~ http://loinc.org|4548-4`, the codes evaluated with `rlib-eval`); guide.md shows a
   `#lang cql` file and the error Racket gives without the line.
+
+- **New users, round 12** (2026-11-10): guide.md's latest-value recipe says how to adapt it to another lab
+  (code, comparison, units) and gives the yes/no table a person reads (SQL over the run).

@@ -81,6 +81,13 @@ JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, s
 for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table should say false for them).
 `Name` is the patient's given names and family name, for a table a person reads.
 
+For another lab, change the code and the comparison: LDL cholesterol is `code "LDL code": '13457-7'
+from "LOINC"` with `"Latest Value" >= 160 'mg/dL'`, eGFR `'98979-8'` with `< 60 'mL/min/{1.73_m2}'`;
+the comparison's unit must be the data's (or convertible: `'mmol/L'` against `mg/dL` data is not).
+A table a person reads says yes/no rather than 1/0 and blank — in the workspace's SQL over the run:
+`SELECT "Name", "Latest Number", "Latest Date", CASE WHEN "No HbA1c" THEN 'never tested' WHEN
+"Poorly Controlled" THEN 'yes' ELSE 'no' END AS above_9 FROM LatestA1c` (a run is named by its file, `LatestA1c.cql`).
+
 Variations, each a define or two on the same `"Results"`: the latest in a window, the last two, and
 their mean (a trend needs more than one value):
 ```cql
