@@ -75,6 +75,7 @@
   (check-equal? (map (lambda (o) (cadr (regexp-match #rx"\"id\":\"([a-z]+)\"" (render o)))) (rlib-value rl "Last Two")) '("sep" "jun"))
   (check-equal? (render (rlib-value rl "Mean Of Last Two")) "9.05")
   (check-equal? (rlib-value rl "Rising") #t)
+  (check-equal? (rlib-value rl "Ever Above 9") #t)
   ;; without the parentheses the error says what happened (it was a `cadr` crash)
   (define bare (regexp-replace #rx"Take[(][(](.*desc)[)], 2[)]" (library-named "A1cVariations") "Take(\\1, 2)"))
   (check-false (equal? bare (library-named "A1cVariations")))

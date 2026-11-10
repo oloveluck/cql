@@ -14,7 +14,7 @@
          (only-in fhirpath/decimal fp-decimal? parse-decimal integer->decimal decimal->exact decimal->string decimal-precision)
          (only-in fhirpath/value fp-long? fp-quantity? fp-quantity-value fp-quantity-unit)
          (only-in fhirpath/temporal-ops
-                  moment moment? moment-compare moment->string parse-fp-date parse-fp-datetime parse-fp-time
+                  moment moment? moment-compare moment->string parse-fp-date parse-fp-datetime parse-fp-time calendar-problem
                   moment-kind moment-year moment-month moment-day moment-hour moment-minute moment-second
                   moment-frac moment-tzmin moment-prec moment-plus moment-add-ms)
          "../value.rkt" "base.rkt")
@@ -34,7 +34,12 @@
 ;; Components outside their domain (year 1..9999, month 1..12, day 1..31, hour 0..23, minute/second
 ;; 0..59, ms 0..999) are constructor errors — @T24:00 or DateTime(10000,…) must not build.
 (define (check-range what v lo hi) (when (and v (or (< v lo) (> v hi))) (fail (format "~a ~a is out of range" what v))))
-(define (check-date-parts y mo d) (check-range "year" y 1 9999) (check-range "month" mo 1 12) (check-range "day" d 1 31))
+(define (check-date-parts y mo d)
+  (check-range "year" y 1 9999) (check-range "month" mo 1 12) (check-range "day" d 1 31)
+  ;; the calendar, not only 1..31: February 30th names no day (leap years by 4/100/400)
+  (when (and y mo d (> d (days-in-month y mo)))
+    (fail (format "day ~a is out of range (~a-~a has ~a days)" d y (if (< mo 10) (format "0~a" mo) mo)
+                  (days-in-month y mo)))))
 (define (check-time-parts h mi s ms)
   (check-range "hour" h 0 23) (check-range "minute" mi 0 59) (check-range "second" s 0 59) (check-range "millisecond" ms 0 999))
 (define (build-date y mo d)
@@ -284,10 +289,13 @@
   (cond [(cql-null? x) cql-null]
         [(moment? x) x]
         [(string? x) (case kind
-                       [(date) (or (parse-fp-date x) cql-null)]
-                       [(datetime) (or (parse-fp-datetime x) cql-null)]
+                       [(date) (on-calendar (parse-fp-date x))]
+                       [(datetime) (on-calendar (parse-fp-datetime x))]
                        [(time) (or (parse-fp-time (strip-time-decorations x)) cql-null)])]
         [else cql-null]))
+;; on-calendar : moment|#f -> moment | cql-null   a string naming a day its month lacks converts to
+;; null, as any string that is not a date does ('1940-02-30')
+(define (on-calendar m) (if (and m (not (calendar-problem m))) m cql-null))
 (define (strip-time-decorations s)
   (regexp-replace #px"(Z|[+-][0-9]{2}:[0-9]{2})$" (regexp-replace #px"^T" s "") ""))
 
@@ -306,6 +314,12 @@
   (check-equal? (str (build-datetime 2024 3 5 10 30 15 250 -5)) "@2024-03-05T10:30:15.250-05:00")
   (check-equal? (str (build-time 10 30 #f #f)) "@T10:30")
   (check-true (cql-null? (build-date #f #f #f)))
+  ;; the calendar: February 30th is no day — a constructor error, a conversion to null
+  (check-exn (fails? #rx"1940-02 has 29 days") (lambda () (build-date 1940 2 30)))
+  (check-equal? (str (build-date 2000 2 29)) "@2000-02-29")
+  (check-exn (fails? #rx"1900-02 has 28 days") (lambda () (build-datetime 1900 2 29 #f #f #f #f #f)))
+  (check-true (cql-null? (to-temporal "1940-02-30" 'date)))
+  (check-true (cql-null? (to-temporal "1940-04-31T10:00:00" 'datetime)))
   (check-exn (fails? #rx"month 13 is out of range") (lambda () (build-date 2024 13 1)))
   (check-exn (fails? #rx"hour 24") (lambda () (build-time 24 0 #f #f)))
   ;; components

@@ -436,3 +436,8 @@ operators, `if`/`case`. Layers:
 
 - **New users, round 17** (2026-11-10): a workspace run lists patients in id order, and a define answering a
   few texts (at most six, besides nulls) is tallied by text (`tally`), not as `other`.
+
+- **New users, round 18** (2026-11-10): a day its month lacks is no date — `@1940-02-30` is a translation
+  error at its define (`calendar-day`, compile.rkt), `Date(1940, 2, 30)` a run-time error
+  (`check-date-parts`), `ToDate('1940-02-30')` null (`on-calendar`); guide.md has `Ever Above 9`.
+  `tests/calendar-test.rkt`. TCK 1820/1823 unchanged.

@@ -21,6 +21,7 @@
          "parser/ast.rkt"
          "elm/ast.rkt"
          "model/modelinfo.rkt"
+         (only-in "interp/temporal.rkt" days-in-month)
          (only-in "mapping.rkt" parse-mapping map-call map-path map-field map-field? map-field-name map-filter)
          (only-in "error.rkt" cql-error cql-error? cql-error-diagnostic cql-error-phase cql-error-message cql-error-string)
          (only-in fhir/diagnostic diagnostic attached-loc)
@@ -470,8 +471,8 @@
     [(ratio-lit? v) (values (elm-ratio (qty->elm (ratio-lit-numerator v)) (qty->elm (ratio-lit-denominator v))) "Ratio")]
     ;; @-literals compile to canonical ELM Date/DateTime/Time constructor nodes (ELM has no temporal
     ;; literal type): parse the lexeme to a moment, then emit component operands.
-    [(date-lit? v)     (values (moment->elm (parse-fp-date (date-lit-str v)) 'date) "Date")]
-    [(datetime-lit? v) (values (moment->elm (parse-fp-datetime (datetime-lit-str v)) 'dateTime) "DateTime")]
+    [(date-lit? v)     (values (moment->elm (calendar-day (parse-fp-date (date-lit-str v)) (date-lit-str v)) 'date) "Date")]
+    [(datetime-lit? v) (values (moment->elm (calendar-day (parse-fp-datetime (datetime-lit-str v)) (datetime-lit-str v)) 'dateTime) "DateTime")]
     [(time-lit? v)     (values (moment->elm (parse-fp-time (time-lit-str v)) 'time) "Time")]
     [else (fail (format "unsupported literal: ~s" v))]))
 
@@ -496,6 +497,16 @@
 (define (int-lit n) (elm-literal "Integer" (number->string n)))
 (define (opt-int n) (and n (int-lit n)))
 (define (frac->ms f) (and f (inexact->exact (round (* (or (string->number (string-append "0." f)) 0) 1000)))))
+;; calendar-day : moment string -> moment   a literal naming a day its month lacks (@1940-02-30) is a
+;; translation error, as an out-of-range Integer literal is
+(define (calendar-day m text)
+  (define-values (y mo d)
+    (if m (values (moment-year m) (moment-month m) (moment-day m)) (values #f #f #f)))
+  (when (and y mo d (<= 1 mo 12) (> d (days-in-month y mo)))
+    (fail (format "@~a names no day: ~a-~a has ~a days" text y (if (< mo 10) (format "0~a" mo) mo)
+                  (days-in-month y mo))))
+  m)
+
 ;; moment->elm : moment kind -> elm-date | elm-datetime | elm-time
 (define (moment->elm m kind)
   (case kind

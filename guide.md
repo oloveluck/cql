@@ -107,10 +107,12 @@ define "Latest In Period": Last("In Period" O sort by (effective as dateTime))
 define "Last Two": Take(("Results" O sort by (effective as dateTime) desc), 2)
 define "Mean Of Last Two": Avg("Last Two" O return (O.value as Quantity).value)
 define "Rising": ((First("Last Two").value as Quantity).value) > ((Last("Last Two").value as Quantity).value)
+define "Ever Above 9": exists ("Results" O where (O.value as Quantity) > 9 '%')
 ```
 With 9.6% (January), 8.9% (June) and 9.2% (September) and the period from March: `Latest In Period`
 is September's, `Last Two` is September's then June's, `Mean Of Last Two` is 9.05, and `Rising` is
-`true` (the newer is first). A window is a parameter, so `parameters: {"Measurement Period": …}` moves
+`true` (the newer is first). `Ever Above 9` is `true` (January's 9.6 %) though the latest is not
+above: "ever" is the question a FHIR search answers too, per patient here. A window is a parameter, so `parameters: {"Measurement Period": …}` moves
 it without editing the library. The query inside `Take` is in parentheses: `sort by … desc, 2` would
 read `2` as a second sort item.
 
