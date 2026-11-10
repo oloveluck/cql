@@ -441,3 +441,6 @@ operators, `if`/`case`. Layers:
   error at its define (`calendar-day`, compile.rkt), `Date(1940, 2, 30)` a run-time error
   (`check-date-parts`), `ToDate('1940-02-30')` null (`on-calendar`); guide.md has `Ever Above 9`.
   `tests/calendar-test.rkt`. TCK 1820/1823 unchanged.
+
+- **New users, round 19** (2026-11-10): a workspace run summarises a define answering numbers by
+  `numbers`/`min`/`max`/`mean` (`tally`); `cql-null` prints as `#<cql:null>` (value.rkt).

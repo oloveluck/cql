@@ -380,10 +380,19 @@
   ;; `{"other": 3}`), with its nulls
   (define texts (filter string? vs))
   (define distinct (remove-duplicates texts))
-  (if (and (pair? texts) (<= (length distinct) 6) (= (length texts) (count (lambda (v) (not (eq? v 'null))))))
-      (for/hasheq ([k (in-list (append distinct (if (memq 'null vs) '(null) '())))])
-        (values (if (symbol? k) k (string->symbol k)) (count (lambda (v) (equal? v k)))))
-      (basic-tally vs count)))
+  (define numbers (filter real? vs))
+  (cond
+    [(and (pair? texts) (<= (length distinct) 6) (= (length texts) (count (lambda (v) (not (eq? v 'null))))))
+     (for/hasheq ([k (in-list (append distinct (if (memq 'null vs) '(null) '())))])
+       (values (if (symbol? k) k (string->symbol k)) (count (lambda (v) (equal? v k)))))]
+    ;; a define answering numbers: their count, range and mean (it read `{"other": 2}`)
+    [(and (pair? numbers) (= (length numbers) (count (lambda (v) (not (eq? v 'null))))))
+     (define mean (/ (apply + numbers) (length numbers)))
+     (define (shown x) (if (integer? x) (inexact->exact x) (/ (round (* 100 (exact->inexact x))) 100.0)))
+     (define base (hasheq 'numbers (length numbers) 'min (shown (apply min numbers)) 'max (shown (apply max numbers))
+                          'mean (shown mean)))
+     (if (memq 'null vs) (hash-set base 'null (count (lambda (v) (eq? v 'null)))) base)]
+    [else (basic-tally vs count)]))
 (define (basic-tally vs count)
   (for/hasheq ([k '(true false null empty nonEmpty other errors)]
                [n (in-list (list (count (lambda (v) (eq? v #t))) (count (lambda (v) (eq? v #f))) (count (lambda (v) (eq? v 'null)))

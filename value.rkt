@@ -27,7 +27,9 @@
           [render     (-> any/c string?)]))     ; a debug/round-trip rendering (not canonical CQL)
 
 ;; the null singleton
-(struct cql-null-type () #:transparent)
+(struct cql-null-type () #:transparent
+  ;; printed as what it is (a REPL showed `(cql-null-type)` in a hash of defines)
+  #:property prop:custom-write (lambda (v out mode) (write-string "#<cql:null>" out)))
 (define cql-null (cql-null-type))
 (define (cql-null? x) (cql-null-type? x))
 
@@ -125,6 +127,8 @@
 
 (module+ test
   (require rackunit)
+  ;; a null prints as one (it printed as `(cql-null-type)` in a hash of defines)
+  (check-equal? (format "~s" (hash "Is 65 Or Older" cql-null)) "#hash((\"Is 65 Or Older\" . #<cql:null>))")
   (check-true (cql-null? cql-null))
   (check-false (cql-null? #f))
   (check-false (cql-null? '()))
