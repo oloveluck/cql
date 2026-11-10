@@ -362,7 +362,7 @@
     (error 'cql (format "no define ~s in the library (defines: ~a)" entry (string-join defines ", "))))
   (define shown (if entry (list entry) defines))
   (define rows
-    (for/list ([pid (in-list pids)])
+    (for/list ([pid (in-list (sort pids string<?))])               ; by patient: the same order every run
       (define rl (rlib-for pid))
       (for/fold ([row (hasheq 'patient pid)]) ([d (in-list shown)])
         (hash-set row (string->symbol d)
@@ -376,6 +376,15 @@
 ;; tally : (listof value) -> {true false null empty nonEmpty other errors}   only the non-zero counts
 (define (tally vs)
   (define (count p) (for/sum ([v (in-list vs)]) (if (p v) 1 0)))
+  ;; a define answering a few texts is counted by text (`{"never tested": 1, "no": 2}`; it read
+  ;; `{"other": 3}`), with its nulls
+  (define texts (filter string? vs))
+  (define distinct (remove-duplicates texts))
+  (if (and (pair? texts) (<= (length distinct) 6) (= (length texts) (count (lambda (v) (not (eq? v 'null))))))
+      (for/hasheq ([k (in-list (append distinct (if (memq 'null vs) '(null) '())))])
+        (values (if (symbol? k) k (string->symbol k)) (count (lambda (v) (equal? v k)))))
+      (basic-tally vs count)))
+(define (basic-tally vs count)
   (for/hasheq ([k '(true false null empty nonEmpty other errors)]
                [n (in-list (list (count (lambda (v) (eq? v #t))) (count (lambda (v) (eq? v #f))) (count (lambda (v) (eq? v 'null)))
                                  (count null?) (count pair?)
