@@ -81,6 +81,29 @@ JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, s
 for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table should say false for them).
 `Name` is the patient's given names and family name, for a table a person reads.
 
+Variations, each a define or two on the same `"Results"`: the latest in a window, the last two, and
+their mean (a trend needs more than one value):
+```cql
+library A1cVariations version '1'
+using FHIR version '4.0.1'
+include FHIRHelpers version '4.0.1' called FHIRHelpers
+codesystem "LOINC": 'http://loinc.org'
+code "HbA1c code": '4548-4' from "LOINC"
+parameter "Measurement Period" Interval<DateTime> default Interval[@2025-03-01T00:00:00Z, @2026-01-01T00:00:00Z)
+context Patient
+define "Results": [Observation: "HbA1c code"] O where O.status in { 'final', 'amended', 'corrected' }
+define "In Period": "Results" O where (O.effective as dateTime) during "Measurement Period"
+define "Latest In Period": Last("In Period" O sort by (effective as dateTime))
+define "Last Two": Take(("Results" O sort by (effective as dateTime) desc), 2)
+define "Mean Of Last Two": Avg("Last Two" O return (O.value as Quantity).value)
+define "Rising": ((First("Last Two").value as Quantity).value) > ((Last("Last Two").value as Quantity).value)
+```
+With 9.6% (January), 8.9% (June) and 9.2% (September) and the period from March: `Latest In Period`
+is September's, `Last Two` is September's then June's, `Mean Of Last Two` is 9.05, and `Rising` is
+`true` (the newer is first). A window is a parameter, so `parameters: {"Measurement Period": …}` moves
+it without editing the library. The query inside `Take` is in parentheses: `sort by … desc, 2` would
+read `2` as a second sort item.
+
 ## Running it
 **Command line.** `cql` (or `raco cql`):
 ```

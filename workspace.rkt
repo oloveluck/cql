@@ -20,7 +20,7 @@
 ;;; A Row of a run is {patient, <define>: value …}; a value is JSON: null, a boolean, a number, a
 ;;; string, a list, a record as "Type/id", a tuple as an object, anything else as CQL renders it.
 ;;; An explanation is a Step: {define, line, value, retrieves: [Retrieve], uses: [Step]}, where a
-;;; Retrieve is {type, filter, line, of-type, found: ["Type/id" …]}: how many resources of the type
+;;; Retrieve is {type, filter, line, patientHas, found: ["Type/id" …]}: how many resources of the type
 ;;; the patient has, and which the retrieve kept.
 
 (require racket/contract racket/list racket/string racket/match racket/runtime-path racket/file racket/promise
@@ -415,7 +415,7 @@
                           [(elm-term-ref? codes) (format "~a in ~s" (or (elm-retrieve-code-property r) "code") (elm-term-ref-name codes))]
                           [else (format "~a filtered by codes" (or (elm-retrieve-code-property r) "code"))])
             'line (or (line-matching src (pregexp (string-append "\\[\\s*" (regexp-quote type) "\\b"))) 'null)
-            'of-type (length (data type))
+            'patientHas (length (data type))
             'found found))
   (define (step name depth seen)
     (define d (hash-ref table name))
@@ -529,7 +529,7 @@
     (check-equal? (hash-ref tests 'define) "Tests")
     (define rt (car (hash-ref tests 'retrieves)))
     (check-equal? (hash-ref rt 'type) "Observation")
-    (check-equal? (hash-ref rt 'of-type) 1)
+    (check-equal? (hash-ref rt 'patientHas) 1)
     (check-equal? (hash-ref rt 'found) '())
     (check-equal? (hash-ref rt 'line) 7)
     (check-regexp-match #rx"HbA1c" (hash-ref rt 'filter))

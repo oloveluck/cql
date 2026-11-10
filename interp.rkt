@@ -879,9 +879,14 @@
 (def-nary!  "Expand"  (lambda (vs) (expand-interval (car vs) (and (pair? (cdr vs)) (cadr vs)))))
 
 ;; list operators
-(def-nary!  "Take"    (lambda (vs) (lst-take (car vs) (cadr vs))))
+;; Take(list, n) and Skip(list, n): with one argument (a query that swallowed `, n` as a second sort
+;; item: `Take(X sort by Y desc, 2)`) the error says so, where it used to be a `cadr` crash
+(define (two-args name vs)
+  (unless (= (length vs) 2)
+    (fail (format "~a takes a list and a count, got ~a argument(s) (a query inside it reads `sort by …, 2` as two sort items: put the query in parentheses)" name (length vs)))))
+(def-nary!  "Take"    (lambda (vs) (two-args "Take" vs) (lst-take (car vs) (cadr vs))))
 
-(def-nary!  "Skip"    (lambda (vs) (lst-skip (car vs) (cadr vs))))
+(def-nary!  "Skip"    (lambda (vs) (two-args "Skip" vs) (lst-skip (car vs) (cadr vs))))
 (def-unary! "Tail"    (lambda (x) (lst-tail x)))
 (def-nary!  "Slice"   (lambda (vs) (lst-slice (car vs)
                                               (if (>= (length vs) 2) (cadr vs) cql-null)

@@ -412,3 +412,7 @@ operators, `if`/`case`. Layers:
 
 - **New users, round 7** (2026-11-10): the workspace's `explain` leaves out a define's `retrieves`
   and `uses` when it has none.
+
+- **New users, round 9** (2026-11-10): `Take`/`Skip` with one argument (a query that read `, 2` as a
+  second sort item) is an error that says to parenthesize the query, not a `cadr` crash; guide.md has
+  recipe variations (a window, the last two, their mean), tested; explain's `of-type` is `patientHas`.

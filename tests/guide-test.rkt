@@ -57,6 +57,27 @@
   (check-equal? (rlib-value rl "Poorly Controlled") #f)
   (check-equal? (rlib-value rl "No HbA1c") #f))
 
+(test-case "the recipe's variations answer as the guide says"
+  (define (obs id date value)
+    (hasheq 'resourceType "Observation" 'id id 'status "final" 'subject (hasheq 'reference "Patient/p")
+            'code (hasheq 'coding (list (hasheq 'system "http://loinc.org" 'code "4548-4")))
+            'effectiveDateTime date 'valueQuantity (hasheq 'value value 'unit "%" 'system "http://unitsofmeasure.org" 'code "%")))
+  (define rl (load-runtime-library (ok-value (parse-cql (library-named "A1cVariations"))) #:resolver bundled
+                                   #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")
+                                                                 (obs "jan" "2025-01-10" 9.6) (obs "jun" "2025-06-02" 8.9)
+                                                                 (obs "sep" "2025-09-15" 9.2)))))
+  (check-regexp-match #rx"\"id\":\"sep\"" (render (rlib-value rl "Latest In Period")))
+  (check-equal? (map (lambda (o) (cadr (regexp-match #rx"\"id\":\"([a-z]+)\"" (render o)))) (rlib-value rl "Last Two")) '("sep" "jun"))
+  (check-equal? (render (rlib-value rl "Mean Of Last Two")) "9.05")
+  (check-equal? (rlib-value rl "Rising") #t)
+  ;; without the parentheses the error says what happened (it was a `cadr` crash)
+  (define bare (regexp-replace #rx"Take[(][(](.*desc)[)], 2[)]" (library-named "A1cVariations") "Take(\\1, 2)"))
+  (check-false (equal? bare (library-named "A1cVariations")))
+  (define rl2 (load-runtime-library (ok-value (parse-cql bare)) #:resolver bundled
+                                    #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p") (obs "jan" "2025-01-10" 9.6)))))
+  (check-exn (lambda (e) (regexp-match? #rx"put the query in parentheses" (if (exn? e) (exn-message e) (format "~a" e))))
+             (lambda () (rlib-value rl2 "Last Two"))))
+
 (test-case "the choice-timing problem reads as the guide says"
   ;; an Observation with effectiveDateTime inside the period: the bare choice reads only a Period
   ;; (null); the cast reads the dateTime (true)
