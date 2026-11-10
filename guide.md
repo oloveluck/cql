@@ -73,6 +73,7 @@ define "Latest Unit": "Latest Value".unit
 define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
 define "No HbA1c": "Latest" is null
+define "Above 9": if "No HbA1c" then 'never tested' else if "Poorly Controlled" then 'yes' else 'no'
 define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.name).family
 ```
 With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),
@@ -84,9 +85,11 @@ for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table shoul
 For another lab, change the code and the comparison: LDL cholesterol is `code "LDL code": '13457-7'
 from "LOINC"` with `"Latest Value" >= 160 'mg/dL'`, eGFR `'98979-8'` with `< 60 'mL/min/{1.73_m2}'`;
 the comparison's unit must be the data's (or convertible: `'mmol/L'` against `mg/dL` data is not).
-A table a person reads says yes/no rather than 1/0 and blank — in the workspace's SQL over the run:
-`SELECT "Name", "Latest Number", "Latest Date", CASE WHEN "No HbA1c" THEN 'never tested' WHEN
-"Poorly Controlled" THEN 'yes' ELSE 'no' END AS above_9 FROM LatestA1c` (a run is named by its file, `LatestA1c.cql`).
+A table a person reads says yes/no rather than 1/0 and blank: `Above 9` is that answer —
+`never tested`, `yes` or `no` — so the table is one call in a workspace,
+`run path=LatestA1c.cql as=csv columns="Name,Latest Number,Latest Date,Above 9"`. In SQL over the run
+it is the same (a run is named by its file, `LatestA1c.cql`):
+`SELECT "Name", "Latest Number", "Latest Date", "Above 9" FROM LatestA1c`.
 
 Variations, each a define or two on the same `"Results"`: the latest in a window, the last two, and
 their mean (a trend needs more than one value):
@@ -128,7 +131,7 @@ translation error names its definition and line, and exits 1.
 **As a module.** A file that starts with `#lang cql` is a Racket module providing `elm`, `elm-json`
 and `(evaluate resources #:parameters h #:valuesets vss #:now t #:define name)`: the define-name to
 value table for one patient's resources, or with `#:define` that one define's value (a name the
-library does not define is an error naming the nearest). `#:now` (a DateTime string) fixes the
+library does not define is an error naming the nearest). `#:now` (a date, `"2026-01-01"`, or a DateTime string) fixes the
 clock, as `--now` does (`#:now #f`, the default, reads the clock); `cql/value`'s `current-evaluation-time` parameter does it for any call.
 Nothing runs when it is required. The file is the library after one line — `#lang cql`, then
 `library Screening version '1.0'`, `using FHIR version '4.0.1'`, … — and another module says

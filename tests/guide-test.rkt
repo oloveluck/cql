@@ -55,7 +55,12 @@
   (check-regexp-match #rx"%" (render (rlib-value rl "Latest Unit")))
   (check-equal? (rlib-value rl "Name") "Ann Marie Ng")
   (check-equal? (rlib-value rl "Poorly Controlled") #f)
-  (check-equal? (rlib-value rl "No HbA1c") #f))
+  (check-equal? (rlib-value rl "No HbA1c") #f)
+  (check-equal? (rlib-value rl "Above 9") "no")
+  ;; never tested says so (a null read as "unknown" in a table)
+  (define none (load-runtime-library (ok-value (parse-cql (library-named "LatestA1c"))) #:resolver bundled
+                                     #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")))))
+  (check-equal? (rlib-value none "Above 9") "never tested"))
 
 (test-case "the recipe's variations answer as the guide says"
   (define (obs id date value)

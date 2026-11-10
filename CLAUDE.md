@@ -429,3 +429,7 @@ operators, `if`/`case`. Layers:
   `define` (`at-the-name` in error.rkt, from the library text: `raco cql`, the `#lang cql` reader,
   support's diagnostics, the workspace's artifacts); `raco cql --now` takes a date.
   `tests/name-position-test.rkt`.
+
+- **New users, round 16** (2026-11-10): the latest-value recipe has `"Above 9"` (`never tested`/`yes`/`no`,
+  the table a person reads, from the library — no SQL CASE); guide-test checks it both ways. `#:now`
+  takes a date in the guide's words too.
