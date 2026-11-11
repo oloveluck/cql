@@ -444,3 +444,10 @@ operators, `if`/`case`. Layers:
 
 - **New users, round 19** (2026-11-10): a workspace run summarises a define answering numbers by
   `numbers`/`min`/`max`/`mean` (`tally`); `cql-null` prints as `#<cql:null>` (value.rkt).
+
+- **New users, round 21** (2026-11-11): a model value meeting a System operator when the library does not
+  include the library that converts it (`Patient.gender = 'female'` without FHIRHelpers) is a
+  translation error naming the include (`to-system*`, compile.rkt); it compared the raw FHIR value and
+  answered false for a female patient. Inside the converting library itself nothing is said; the version
+  in the message is the model's (model-neutral). `AgeInYears()` needs no include. `tests/helpers-test.rkt`.
+

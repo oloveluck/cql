@@ -56,6 +56,9 @@ define "Gap": AgeInYears() >= 18 and "No HbA1c"
 Over a Patient born in 1970 with no Observations, `Gap` is `true`.
 
 ## Recipe: the latest value per patient
+(To save a recipe as a file: `raco fhir guide cql --blocks` lists this guide's code blocks,
+`raco fhir guide cql --block 3 > LatestA1c.cql` writes one.)
+
 "Is the most recent HbA1c above 9%?" is not "was any HbA1c above 9%?": a FHIR search like
 `Observation?code=…|4548-4&value-quantity=gt9` answers the second. Sort by the date, take the last:
 ```cql
@@ -90,6 +93,9 @@ A table a person reads says yes/no rather than 1/0 and blank: `Above 9` is that 
 `run path=LatestA1c.cql as=csv columns="Name,Latest Number,Latest Date,Above 9"`. In SQL over the run
 it is the same (a run is named by its file, `LatestA1c.cql`):
 `SELECT "Name", "Latest Number", "Latest Date", "Above 9" FROM LatestA1c`.
+Reading the answer: an empty `Latest Number` with `never tested` is a patient with no HbA1c at all
+(not a missing value); `no` with a value above 9 earlier is the latest that matters — `Ever Above 9`
+(below) is the other question.
 
 Variations, each a define or two on the same `"Results"`: the latest in a window, the last two, and
 their mean (a trend needs more than one value):
@@ -209,8 +215,11 @@ models:
 - `value set … is not available` at run time: no ValueSet with that url is in the value sets given
   (the workspace, the data, the packages). In a workspace, write a `.vcl` file for it and use its
   canonical. An unavailable value set is an error, never false.
-- `Could not resolve … FHIRHelpers`, or a comparison of a FHIR element with a CQL value that fails
-  to translate: add `include FHIRHelpers version '4.0.1' called FHIRHelpers` (4.4.000 for QI-Core).
+- `FHIR.AdministrativeGender meets a System operator here and is not converted: add `include
+  FHIRHelpers version '4.0.1' called FHIRHelpers``: a FHIR element compared with or computed against
+  a CQL value (`Patient.gender = 'female'`, `O.status = 'final'`) needs FHIRHelpers to convert it
+  (4.4.000 for QI-Core); without it the comparison would read the raw FHIR value. `AgeInYears()`,
+  retrieves and value-set membership need no include.
 - A define is null when you expected false: an operand was null (CQL's logic is three-valued).
   Explain it for that patient, or guard with `is null` / `Coalesce`.
 - A timing test on a choice element is never true: in a FHIR 4.0.1 library,

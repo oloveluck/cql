@@ -541,9 +541,22 @@
   (define conv (and m (string? t) (model-conversion m t)))
   (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
   (define alias (and fn (include-alias-for (string->symbol (cadr fn)))))
-  (if alias
-      (values (elm-function-ref (caddr fn) alias (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))) (car conv))
-      (values n t)))
+  (cond
+    [alias (values (elm-function-ref (caddr fn) alias (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))) (car conv))]
+    ;; a model value meets a System operator and the library that converts it is not included: the
+    ;; comparison ran on the raw model value and answered false (`Patient.gender = 'female'` for a
+    ;; female patient). The reference translator refuses it; so do we, naming the include. Inside the
+    ;; converting library itself (FHIRHelpers), and where it defines the function, nothing is said.
+    [(and fn (not (equal? (symbol->string* (lctx-name (L))) (cadr fn))))
+     (fail (format "~a meets a System operator here and is not converted: add `include ~a version '~a' called ~a` (its ~a converts it)"
+                   t (cadr fn) (helpers-version) (cadr fn) (cdr conv)))]
+    [else (values n t)]))
+(define (symbol->string* x) (cond [(symbol? x) (symbol->string x)] [(string? x) x] [else ""]))
+;; helpers-version : -> string   the version of the conversion library that goes with the model: the
+;; model's own (FHIRHelpers 4.0.1 for FHIR 4.0.1)
+(define (helpers-version)
+  (define m (lctx-model (L)))
+  (or (and m (string? (model-version m)) (model-version m)) "?"))
 (define (sys e env) (let-values ([(n t) (compile e env)]) (to-system n t)))
 
 ;; sys-terminology : cql cenv -> (values elm CType)   the code side of `x in "ValueSet"`: a choice
