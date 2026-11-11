@@ -5,7 +5,7 @@
 ;;; including the libraries it includes (the bundled FHIRHelpers versions), and the worked example
 ;;; answers what the text says it answers.
 
-(require rackunit racket/runtime-path racket/file racket/list
+(require rackunit racket/runtime-path racket/file racket/list racket/string
          (only-in cql/parser/parse parse-cql)
          (only-in cql/compile compile-library/errors compile-library/diagnostics current-library-resolver)
          (only-in fhir/diagnostic diagnostic-message diagnostic-severity diagnostic-loc loc-line)
@@ -64,7 +64,24 @@
   (define none (load-runtime-library (ok-value (parse-cql (library-named "LatestA1c"))) #:resolver bundled
                                      #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")))))
   (check-equal? (rlib-value none "Above 9") "never tested")
-  (check-equal? (rlib-value none "Ever Above 9") "never tested"))
+  (check-equal? (rlib-value none "Ever Above 9") "never tested")
+  ;; a latest result that cannot be compared (a unit that converts to nothing the rule's does) is
+  ;; `unknown`, never `no` (a rerun's eGFR table said "no" for every patient over a bad unit)
+  (define other (load-runtime-library (ok-value (parse-cql (library-named "LatestA1c"))) #:resolver bundled
+                                      #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")
+                                                                    (hash-set (obs "c" "2025-06-02" 75) 'valueQuantity
+                                                                              (hasheq 'value 75 'unit "mg" 'system "http://unitsofmeasure.org" 'code "mg"))))))
+  (check-equal? (rlib-value other "Above 9") "unknown"))
+
+(test-case "a unit that is not UCUM is a translation error, with the unit to write"
+  (define lib (string-replace (library-named "LatestA1c") "> 9 '%'" "< 60 'mL/min/1.73m2'"))
+  (define-values (_elm errors) (parameterize ([current-library-resolver bundled]) (compile-library/errors (ok-value (parse-cql lib)))))
+  (check-true (for/or ([e (in-list errors)])
+                (regexp-match? (regexp-quote "'mL/min/1.73m2' is not a UCUM unit (did you mean `mL/min/{1.73_m2}`?)") (cql-error-string e)))
+              (format "~s" (map cql-error-string errors)))
+  ;; the guide quotes that message
+  (check-regexp-match (regexp-quote "'mL/min/1.73m2' is not a UCUM unit (did you mean `mL/min/{1.73_m2}`?)")
+                      (string-normalize-spaces text)))
 
 (test-case "the recipe's variations answer as the guide says"
   (define (obs id date value)

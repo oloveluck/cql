@@ -17,6 +17,7 @@
 ;;; Errors raise a cql-error caught at the API boundary and returned as (err …).
 
 (require (only-in fhir/suggest did-you-mean closest-names)
+         (only-in fhirpath/ucum ucum-valid? ucum-suggestion)
          racket/match racket/list racket/string
          "parser/ast.rkt"
          "elm/ast.rkt"
@@ -467,7 +468,7 @@
     [(string? v)   (values (elm-literal "String" v) "String")]
     [(boolean? v)  (values (elm-literal "Boolean" (if v "true" "false")) "Boolean")]
     [(eq? v 'null) (values (elm-null #f) "Any")]
-    [(qty-lit? v)  (values (elm-quantity (qty-num->string (qty-lit-number v)) (qty-lit-unit v)) "Quantity")]
+    [(qty-lit? v)  (values (elm-quantity (qty-num->string (qty-lit-number v)) (ucum-unit (qty-lit-unit v))) "Quantity")]
     [(ratio-lit? v) (values (elm-ratio (qty->elm (ratio-lit-numerator v)) (qty->elm (ratio-lit-denominator v))) "Ratio")]
     ;; @-literals compile to canonical ELM Date/DateTime/Time constructor nodes (ELM has no temporal
     ;; literal type): parse the lexeme to a moment, then emit component operands.
@@ -497,6 +498,18 @@
 (define (int-lit n) (elm-literal "Integer" (number->string n)))
 (define (opt-int n) (and n (int-lit n)))
 (define (frac->ms f) (and f (inexact->exact (round (* (or (string->number (string-append "0." f)) 0) 1000)))))
+;; ucum-unit : unit -> unit   a Quantity literal's unit is UCUM or a calendar word (`3 days`): any other
+;; is a translation error with what to write. `< 60 'mL/min/1.73m2'` translated clean, every comparison
+;; with it was null (no conversion from a unit that is no unit), and a yes/no define answered "no"
+(define calendar-unit-words
+  '("year" "years" "month" "months" "week" "weeks" "day" "days" "hour" "hours" "minute" "minutes"
+    "second" "seconds" "millisecond" "milliseconds"))
+(define (ucum-unit u)
+  (define s (if (symbol? u) (symbol->string u) u))
+  (unless (or (not (string? s)) (member s calendar-unit-words) (ucum-valid? s))
+    (fail (format "'~a' is not a UCUM unit~a" s (ucum-suggestion s))))
+  u)
+
 ;; calendar-day : moment string -> moment   a literal naming a day its month lacks (@1940-02-30) is a
 ;; translation error, as an out-of-range Integer literal is
 (define (calendar-day m text)

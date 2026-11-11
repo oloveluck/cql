@@ -76,7 +76,8 @@ define "Latest Result": ToString("Latest Number") + ' ' + "Latest Value".unit
 define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
 define "No HbA1c": "Latest" is null
-define "Above 9": if "No HbA1c" then 'never tested' else if "Poorly Controlled" then 'yes' else 'no'
+define "Above 9": if "No HbA1c" then 'never tested' else if "Poorly Controlled" then 'yes'
+  else if "Poorly Controlled" is false then 'no' else 'unknown'
 define "Ever Above 9": if "No HbA1c" then 'never tested'
   else if exists ("Results" O where (O.value as Quantity) > 9 '%') then 'yes' else 'no'
 define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.name).family
@@ -90,6 +91,10 @@ for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table shoul
 For another lab, change the code and the comparison: LDL cholesterol is `code "LDL code": '13457-7'
 from "LOINC"` with `"Latest Value" >= 160 'mg/dL'`, eGFR `'98979-8'` with `< 60 'mL/min/{1.73_m2}'`;
 the comparison's unit must be the data's (or convertible: `'mmol/L'` against `mg/dL` data is not).
+A unit that is not UCUM is a translation error with what to write (`'mL/min/1.73m2' is not a UCUM
+unit (did you mean `mL/min/{1.73_m2}`?)`); one that converts to nothing the data has makes the
+comparison null, and `Above 9` then says `unknown`, never `no`. An annotation (`{1.73_m2}`) counts as 1
+in UCUM: `'mL/min'` compares equal to `mL/min/{1.73_m2}`, so write the annotated unit the data uses.
 A table a person reads says yes/no rather than 1/0 and blank: `Above 9` is that answer —
 `never tested`, `yes` or `no` — so the table is one call in a workspace,
 `run path=LatestA1c.cql as=csv columns="Name,Latest Result,Latest Date,Above 9,Ever Above 9"`. In SQL

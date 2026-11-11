@@ -462,3 +462,9 @@ operators, `if`/`case`. Layers:
 - **New users, round 25** (2026-11-11): `current-evaluation-time` given something that is not a date says
   how to write one (`write it as 2026-01-01, or 2026-01-01T12:00:00Z`).
 
+
+- **New users, round 30** (2026-11-11): a Quantity literal's unit is UCUM or a calendar word, else a
+  translation error at its define with what to write (`ucum-unit` in compile.rkt, through fhirpath/ucum's
+  `ucum-valid?`/`ucum-suggestion`): `'mL/min/1.73m2'` translated clean and every comparison with it was
+  null. The latest-value recipe's `Above 9` says `unknown` for a null comparison (it said `no`).
+  TCK 1820/1823 unchanged. guide-test checks both.
