@@ -73,7 +73,7 @@
                              [(and (string? v) (parse-fp-datetime (regexp-replace #rx"^@" v ""))) => values]
                              ;; one line, no stack trace: `--now 01/05/2015` said "contract violation,
                              ;; expected: a DateTime" with Racket's context (and a date works too)
-                             [else (raise-user-error 'now "~s is not a date (2026-01-01) or a DateTime (2026-01-01T12:00:00Z)" v)]))))
+                             [else (raise-user-error 'now "~s is not a date or a DateTime: write it as 2026-01-01, or 2026-01-01T12:00:00Z" v)]))))
 
 ;; A CqlValue is one of:
 ;;  - cql-null                          the null singleton (distinct from #f and '())
@@ -131,7 +131,7 @@
   (require rackunit)
   ;; a date or a DateTime; anything else one line saying which forms it takes (a user error)
   (check-not-false (parameterize ([current-evaluation-time "2026-01-01"]) (current-evaluation-time)))
-  (check-exn (lambda (e) (and (exn:fail:user? e) (regexp-match? #rx"\"01/05/2015\" is not a date [(]2026-01-01[)] or a DateTime" (exn-message e))))
+  (check-exn (lambda (e) (and (exn:fail:user? e) (regexp-match? #rx"\"01/05/2015\" is not a date or a DateTime: write it as 2026-01-01, or 2026-01-01T12:00:00Z" (exn-message e))))
              (lambda () (parameterize ([current-evaluation-time "01/05/2015"]) #t)))
   ;; a null prints as one (it printed as `(cql-null-type)` in a hash of defines)
   (check-equal? (format "~s" (hash "Is 65 Or Older" cql-null)) "#hash((\"Is 65 Or Older\" . #<cql:null>))")

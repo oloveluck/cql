@@ -459,3 +459,6 @@ operators, `if`/`case`. Layers:
   DateTime is a one-line user error; the recipe's `Latest Result` (value and unit as text) replaces
   `Latest Unit`; the workspace's `explain` explains each define once (`explained: "above"`).
 
+- **New users, round 25** (2026-11-11): `current-evaluation-time` given something that is not a date says
+  how to write one (`write it as 2026-01-01, or 2026-01-01T12:00:00Z`).
+
