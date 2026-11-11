@@ -369,9 +369,38 @@
                   (with-handlers ([cql-error? (lambda (e) (hasheq 'error (cql-error-message e)))]
                                   [exn:fail? (lambda (e) (hasheq 'error (exn-message e)))])
                     (value->json (rlib-value rl d)))))))
-  (run-result "patients" (cons "patient" shown) rows
-              (hasheq 'patients (length rows)
-                      'defines (for/hasheq ([d (in-list shown)]) (values (string->symbol d) (tally (map (lambda (r) (hash-ref r (string->symbol d))) rows)))))))
+  (define summary
+    (hasheq 'patients (length rows)
+            'defines (for/hasheq ([d (in-list shown)]) (values (string->symbol d) (tally (map (lambda (r) (hash-ref r (string->symbol d))) rows))))))
+  (define notes (all-null-notes src shown rows))
+  (run-result "patients" (cons "patient" shown) rows (if (null? notes) summary (hash-set summary 'notes notes))))
+
+;; all-null-notes : text defines rows -> (listof string)   a define null for every patient is said, with
+;; the units it compares with when its text has any: `"Latest Value" >= 4.1 'mmol/L'` over mg/dL data
+;; was null for all three patients and the run said nothing (UCUM converts no molar unit to a mass one)
+(define (all-null-notes src shown rows)
+  (for/list ([d (in-list shown)]
+             #:when (pair? rows)
+             #:when (for/and ([r (in-list rows)]) (eq? (hash-ref r (string->symbol d)) 'null)))
+    (define units (define-quantity-units src d))
+    (format "~s is null for every patient~a; `explain` one patient to see its values"
+            d (if (null? units) ""
+                  (format " (it compares with ~a: a value in a unit that does not convert to that one gives null)"
+                          (string-join (map (lambda (u) (format "'~a'" u)) units) ", "))))))
+
+;; define-quantity-units : text name -> (listof unit)   the units of the quantity literals in a define's
+;; own text (up to the next definition)
+(define (define-quantity-units src name)
+  (define lines (regexp-split #rx"\n" (or src "")))
+  (define start (define-line (or src "") name))
+  (cond
+    [(not start) '()]
+    [else
+     (define body (let loop ([ls (list-tail lines (sub1 start))] [acc '()] [first? #t])
+                    (cond [(null? ls) (reverse acc)]
+                          [(and (not first?) (regexp-match? #px"^\\s*(?:public\\s+|private\\s+)?(?:define|context|parameter|valueset|code|codesystem|concept|include)\\b" (car ls))) (reverse acc)]
+                          [else (loop (cdr ls) (cons (car ls) acc) #f)])))
+     (remove-duplicates (map cadr (regexp-match* #px"[0-9]\\s*'([^']+)'" (string-join body "\n") #:match-select values)))]))
 
 ;; tally : (listof value) -> {true false null empty nonEmpty other errors}   only the non-zero counts
 (define (tally vs)
@@ -491,6 +520,11 @@
   (require rackunit racket/file fhir/registry (only-in fhir/data-source resources->data-source)
            (only-in fhir/diagnostic diagnostic-message diagnostic-loc loc-line))
   ;; a define answering Quantities is summarised as numbers are, with its unit (it read {"other": 2})
+  ;; a define null for every patient is said, with the units it compares with (an LDL rule in mmol/L
+  ;; over mg/dL data was null for all and said nothing); one with a value for someone is not
+  (let ([src "library L\ndefine \"High\": \"Latest Value\" >= 4.1 'mmol/L'\ndefine \"Other\": 1\n"])
+    (check-equal? (all-null-notes src '("High" "Other") (list (hasheq 'patient "a" 'High 'null 'Other 1) (hasheq 'patient "b" 'High 'null 'Other 'null)))
+                  '("\"High\" is null for every patient (it compares with 'mmol/L': a value in a unit that does not convert to that one gives null); `explain` one patient to see its values")))
   (check-equal? (tally (list (hasheq 'value 8.9 'unit "%" 'code "%") (hasheq 'value 6.4 'code "%") 'null))
                 (hasheq 'quantities 2 'min 6.4 'max 8.9 'mean 7.65 'unit "%" 'null 1))
   (define dir (make-temporary-directory "cql-ws-~a"))

@@ -91,6 +91,10 @@ for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table shoul
 For another lab, change the code and the comparison: LDL cholesterol is `code "LDL code": '13457-7'
 from "LOINC"` with `"Latest Value" >= 160 'mg/dL'`, eGFR `'98979-8'` with `< 60 'mL/min/{1.73_m2}'`;
 the comparison's unit must be the data's (or convertible: `'mmol/L'` against `mg/dL` data is not).
+The defines named for HbA1c (`Poorly Controlled`, `No HbA1c`, `Above 9`, `Ever Above 9`) are only names:
+rename each where it is defined and where it is used (`Above 9` uses `No HbA1c` and `Poorly Controlled`),
+and write `>=` for "at or above". A run says when a define is null for every patient, with the units it
+compares with — the sign of a unit the data cannot convert to.
 A unit that is not UCUM is a translation error with what to write (`'mL/min/1.73m2' is not a UCUM
 unit (did you mean `mL/min/{1.73_m2}`?)`); one that converts to nothing the data has makes the
 comparison null, and `Above 9` then says `unknown`, never `no`. An annotation (`{1.73_m2}`) counts as 1

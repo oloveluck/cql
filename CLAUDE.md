@@ -468,3 +468,7 @@ operators, `if`/`case`. Layers:
   `ucum-valid?`/`ucum-suggestion`): `'mL/min/1.73m2'` translated clean and every comparison with it was
   null. The latest-value recipe's `Above 9` says `unknown` for a null comparison (it said `no`).
   TCK 1820/1823 unchanged. guide-test checks both.
+
+- **New users, round 31** (2026-11-11): a workspace run's summary has `notes` naming a define null for
+  every patient, with the quantity units its text compares with (`all-null-notes`,
+  `define-quantity-units`); guide.md lists the recipe's HbA1c-named defines to rename for another lab.
