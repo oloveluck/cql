@@ -392,6 +392,16 @@
      (define base (hasheq 'numbers (length numbers) 'min (shown (apply min numbers)) 'max (shown (apply max numbers))
                           'mean (shown mean)))
      (if (memq 'null vs) (hash-set base 'null (count (lambda (v) (eq? v 'null)))) base)]
+    ;; a define answering Quantities (FHIR's or CQL's, as JSON): the same, with their unit(s) (it read
+    ;; `{"other": 2}` beside the plain number define's range)
+    [(let ([qs (filter (lambda (v) (not (eq? v 'null))) vs)])
+       (and (pair? qs) (andmap (lambda (v) (and (hash? v) (real? (hash-ref v 'value #f)))) qs)))
+     (define qs (filter hash? vs))
+     (define base (tally (map (lambda (q) (hash-ref q 'value)) qs)))
+     (define units (remove-duplicates (filter string? (map (lambda (q) (or (hash-ref q 'code #f) (hash-ref q 'unit #f))) qs))))
+     (let* ([h (hash-remove (hash-set base 'quantities (hash-ref base 'numbers)) 'numbers)]
+            [h (if (pair? units) (hash-set h 'unit (if (null? (cdr units)) (car units) units)) h)])
+       (if (memq 'null vs) (hash-set h 'null (count (lambda (v) (eq? v 'null)))) h))]
     [else (basic-tally vs count)]))
 (define (basic-tally vs count)
   (for/hasheq ([k '(true false null empty nonEmpty other errors)]
@@ -475,6 +485,9 @@
 (module+ test
   (require rackunit racket/file fhir/registry (only-in fhir/data-source resources->data-source)
            (only-in fhir/diagnostic diagnostic-message diagnostic-loc loc-line))
+  ;; a define answering Quantities is summarised as numbers are, with its unit (it read {"other": 2})
+  (check-equal? (tally (list (hasheq 'value 8.9 'unit "%" 'code "%") (hasheq 'value 6.4 'code "%") 'null))
+                (hasheq 'quantities 2 'min 6.4 'max 8.9 'mean 7.65 'unit "%" 'null 1))
   (define dir (make-temporary-directory "cql-ws-~a"))
   (define-values (ws _w) (open-workspace dir))
   (define common "library Common version '1'\nusing FHIR version '4.0.1'\ncontext Patient\ndefine \"Adult\": AgeInYears() >= 18\n")

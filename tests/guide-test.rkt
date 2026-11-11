@@ -57,10 +57,13 @@
   (check-equal? (rlib-value rl "Poorly Controlled") #f)
   (check-equal? (rlib-value rl "No HbA1c") #f)
   (check-equal? (rlib-value rl "Above 9") "no")
+  ;; latest and ever, side by side (a reader took "nobody above 9" for a bug: January's 9.6 %)
+  (check-equal? (rlib-value rl "Ever Above 9") "yes")
   ;; never tested says so (a null read as "unknown" in a table)
   (define none (load-runtime-library (ok-value (parse-cql (library-named "LatestA1c"))) #:resolver bundled
                                      #:data (resources->data (list (hasheq 'resourceType "Patient" 'id "p")))))
-  (check-equal? (rlib-value none "Above 9") "never tested"))
+  (check-equal? (rlib-value none "Above 9") "never tested")
+  (check-equal? (rlib-value none "Ever Above 9") "never tested"))
 
 (test-case "the recipe's variations answer as the guide says"
   (define (obs id date value)

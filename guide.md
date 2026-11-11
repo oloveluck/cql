@@ -77,6 +77,8 @@ define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
 define "No HbA1c": "Latest" is null
 define "Above 9": if "No HbA1c" then 'never tested' else if "Poorly Controlled" then 'yes' else 'no'
+define "Ever Above 9": if "No HbA1c" then 'never tested'
+  else if exists ("Results" O where (O.value as Quantity) > 9 '%') then 'yes' else 'no'
 define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.name).family
 ```
 With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),
@@ -90,12 +92,13 @@ from "LOINC"` with `"Latest Value" >= 160 'mg/dL'`, eGFR `'98979-8'` with `< 60 
 the comparison's unit must be the data's (or convertible: `'mmol/L'` against `mg/dL` data is not).
 A table a person reads says yes/no rather than 1/0 and blank: `Above 9` is that answer —
 `never tested`, `yes` or `no` — so the table is one call in a workspace,
-`run path=LatestA1c.cql as=csv columns="Name,Latest Number,Latest Date,Above 9"`. In SQL over the run
-it is the same (a run is named by its file, `LatestA1c.cql`):
-`SELECT "Name", "Latest Number", "Latest Date", "Above 9" FROM LatestA1c`.
+`run path=LatestA1c.cql as=csv columns="Name,Latest Number,Latest Date,Above 9,Ever Above 9"`. In SQL
+over the run it is the same (a run is named by its file, `LatestA1c.cql`):
+`SELECT "Name", "Latest Number", "Latest Date", "Above 9", "Ever Above 9" FROM LatestA1c`.
 Reading the answer: an empty `Latest Number` with `never tested` is a patient with no HbA1c at all
-(not a missing value); `no` with a value above 9 earlier is the latest that matters — `Ever Above 9`
-(below) is the other question.
+(not a missing value). `Above 9` is the latest result; `Ever Above 9` is any result — Maria's row
+`8.9, 2025-06-02, no, yes` is "above 9 once (January's 9.6 %), not now", which is why the two
+questions are two columns.
 
 Variations, each a define or two on the same `"Results"`: the latest in a window, the last two, and
 their mean (a trend needs more than one value):

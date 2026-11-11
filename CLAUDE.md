@@ -451,3 +451,6 @@ operators, `if`/`case`. Layers:
   answered false for a female patient. Inside the converting library itself nothing is said; the version
   in the message is the model's (model-neutral). `AgeInYears()` needs no include. `tests/helpers-test.rkt`.
 
+- **New users, round 22** (2026-11-11): a workspace run summarises a define answering Quantities by
+  `quantities`/`min`/`max`/`mean` and `unit` (`tally`); the latest-value recipe has `Ever Above 9` beside
+  `Above 9`, tested both ways.
