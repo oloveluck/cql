@@ -451,7 +451,11 @@
             'line (or (line-matching src (pregexp (string-append "\\[\\s*" (regexp-quote type) "\\b"))) 'null)
             'patientHas (length (data type))
             'found found))
+  ;; each define is explained once: a second use of it says its value and that it is explained above
+  ;; (`Latest` -> `Results` -> the retrieve appeared under every define using `Latest`)
+  (define explained (make-hash))
   (define (step name depth seen)
+    (hash-set! explained name #t)
     (define d (hash-ref table name))
     (define expr (elm-def-expression d))
     (define refs (remove-duplicates (walk expr elm-expression-ref?)))
@@ -467,6 +471,7 @@
                            (hasheq 'define (format "~a.~a" (elm-expression-ref-library r) n)
                                    'value (with-handlers ([exn:fail? (lambda (e) (hasheq 'error (exn-message e)))]) (value->json (rlib-eval rl r))))]
                           [(or (member n seen) (not (hash-has-key? table n))) (hasheq 'define n 'value (value n))]
+                          [(hash-ref explained n #f) (hasheq 'define n 'value (value n) 'explained "above")]
                           [(>= depth 4) (hasheq 'define n 'value (value n) 'line (or (define-line src n) 'null))]
                           [else (step n (add1 depth) (cons n seen))]))
      (hasheq 'define name
@@ -576,6 +581,12 @@
                                 "context Patient\ndefine \"Results\": [Observation: \"A1c\"]\n"))
     (define ce (explain ws #f clib "Patient/b" (hasheq 'entry "Results")))
     (check-equal? (hash-ref (car (hash-ref ce 'retrieves)) 'filter) "code ~ http://loinc.org|4548-4")
+    ;; a define used twice is explained once: the second use says its value and that it is above
+    (define dlib (string-append clib "define \"Latest\": Last(\"Results\")\ndefine \"Has\": \"Latest\" is not null\n"
+                                "define \"Both\": \"Has\" and \"Latest\" is not null\n"))
+    (define de (explain ws #f dlib "Patient/b" (hasheq 'entry "Both")))
+    (check-equal? (map (lambda (u) (list (hash-ref u 'define) (hash-ref u 'explained #f))) (hash-ref de 'uses))
+                  '(("Has" #f) ("Latest" "above")))
     (define all (explain ws (build-path dir "Gap.cql") main "a" (hasheq)))
     (check-equal? (length (hash-ref all 'defines)) 3)
     (check-exn #rx"no Patient/zz" (lambda () (explain ws (build-path dir "Gap.cql") main "zz" (hasheq)))))

@@ -454,3 +454,8 @@ operators, `if`/`case`. Layers:
 - **New users, round 22** (2026-11-11): a workspace run summarises a define answering Quantities by
   `quantities`/`min`/`max`/`mean` and `unit` (`tally`); the latest-value recipe has `Ever Above 9` beside
   `Above 9`, tested both ways.
+
+- **New users, round 23** (2026-11-11): `current-evaluation-time` given something that is not a date or a
+  DateTime is a one-line user error; the recipe's `Latest Result` (value and unit as text) replaces
+  `Latest Unit`; the workspace's `explain` explains each define once (`explained: "above"`).
+

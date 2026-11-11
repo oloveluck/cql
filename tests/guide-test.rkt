@@ -52,7 +52,8 @@
                                                                  (obs "a" "2025-01-10" 9.6) (obs "b" "2025-06-02" 8.9)))))
   (check-regexp-match #rx"\"value\":8[.]9" (render (rlib-value rl "Latest Value")))
   (check-equal? (render (rlib-value rl "Latest Number")) "8.9")
-  (check-regexp-match #rx"%" (render (rlib-value rl "Latest Unit")))
+  ;; the value with its unit, as a person reads it in a table
+  (check-equal? (rlib-value rl "Latest Result") "8.9 %")
   (check-equal? (rlib-value rl "Name") "Ann Marie Ng")
   (check-equal? (rlib-value rl "Poorly Controlled") #f)
   (check-equal? (rlib-value rl "No HbA1c") #f)

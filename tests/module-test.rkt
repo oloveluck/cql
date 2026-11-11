@@ -18,6 +18,6 @@
 (check-equal? (hash-ref (evaluate (list patient) #:now "2025-07-01T12:00:00Z") "Age") 18)
 ;; a name the library does not define
 (check-exn #rx"defines no `Adlut` [(]did you mean `Adult`[?][)]" (lambda () (evaluate (list patient) #:define "Adlut")))
-(check-exn exn:fail:contract? (lambda () (evaluate (list patient) #:now "yesterday")))
+(check-exn (lambda (e) (and (exn:fail:user? e) (regexp-match? #rx"is not a date" (exn-message e)))) (lambda () (evaluate (list patient) #:now "yesterday")))
 
 (delete-directory/files dir)

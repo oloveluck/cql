@@ -57,7 +57,7 @@ Over a Patient born in 1970 with no Observations, `Gap` is `true`.
 
 ## Recipe: the latest value per patient
 (To save a recipe as a file: `raco fhir guide cql --blocks` lists this guide's code blocks,
-`raco fhir guide cql --block 3 > LatestA1c.cql` writes one.)
+`raco fhir guide cql --block LatestA1c > LatestA1c.cql` writes this one, by a word of its first line.)
 
 "Is the most recent HbA1c above 9%?" is not "was any HbA1c above 9%?": a FHIR search like
 `Observation?code=…|4548-4&value-quantity=gt9` answers the second. Sort by the date, take the last:
@@ -72,7 +72,7 @@ define "Results": [Observation: "HbA1c code"] O where O.status in { 'final', 'am
 define "Latest": Last("Results" O sort by (effective as dateTime))
 define "Latest Value": "Latest".value as Quantity
 define "Latest Number": "Latest Value".value
-define "Latest Unit": "Latest Value".unit
+define "Latest Result": ToString("Latest Number") + ' ' + "Latest Value".unit
 define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
 define "No HbA1c": "Latest" is null
@@ -82,8 +82,8 @@ define "Ever Above 9": if "No HbA1c" then 'never tested'
 define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.name).family
 ```
 With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),
-`Latest Number` is 8.9 and `Latest Unit` `'%'` (plain columns for a table, where a Quantity would be a
-JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null`
+`Latest Number` is 8.9 (to sort or compute with) and `Latest Result` is `8.9 %`, the value with its unit
+as a person reads it (plain columns for a table, where a Quantity would be a JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null`
 for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table should say false for them).
 `Name` is the patient's given names and family name, for a table a person reads.
 
@@ -92,12 +92,12 @@ from "LOINC"` with `"Latest Value" >= 160 'mg/dL'`, eGFR `'98979-8'` with `< 60 
 the comparison's unit must be the data's (or convertible: `'mmol/L'` against `mg/dL` data is not).
 A table a person reads says yes/no rather than 1/0 and blank: `Above 9` is that answer —
 `never tested`, `yes` or `no` — so the table is one call in a workspace,
-`run path=LatestA1c.cql as=csv columns="Name,Latest Number,Latest Date,Above 9,Ever Above 9"`. In SQL
+`run path=LatestA1c.cql as=csv columns="Name,Latest Result,Latest Date,Above 9,Ever Above 9"`. In SQL
 over the run it is the same (a run is named by its file, `LatestA1c.cql`):
-`SELECT "Name", "Latest Number", "Latest Date", "Above 9", "Ever Above 9" FROM LatestA1c`.
+`SELECT "Name", "Latest Result", "Latest Date", "Above 9", "Ever Above 9" FROM LatestA1c`.
 Reading the answer: an empty `Latest Number` with `never tested` is a patient with no HbA1c at all
 (not a missing value). `Above 9` is the latest result; `Ever Above 9` is any result — Maria's row
-`8.9, 2025-06-02, no, yes` is "above 9 once (January's 9.6 %), not now", which is why the two
+`8.9 %, 2025-06-02, no, yes` is "above 9 once (January's 9.6 %), not now", which is why the two
 questions are two columns.
 
 Variations, each a define or two on the same `"Results"`: the latest in a window, the last two, and
