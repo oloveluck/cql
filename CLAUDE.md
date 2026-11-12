@@ -472,3 +472,7 @@ operators, `if`/`case`. Layers:
 - **New users, round 31** (2026-11-11): a workspace run's summary has `notes` naming a define null for
   every patient, with the quantity units its text compares with (`all-null-notes`,
   `define-quantity-units`); guide.md lists the recipe's HbA1c-named defines to rename for another lab.
+
+- **New users, round 32** (2026-11-12): a non-UCUM unit's translation error is at the quoted unit
+  (`at-the-name` reads `'<u>' is not a UCUM unit`); `mEq/L` suggests `meq/L` (fhirpath/ucum's spellings).
+  `tests/name-position-test.rkt`.

@@ -29,8 +29,10 @@
 ;; function 'AgeInYear'`, `unknown identifier 'Foo'`) is positioned at the definition; with the text,
 ;; it moves to the name itself inside that definition — its line and column — so an editor and a
 ;; reader land on `AgeInYear`, not on `define`. Anything else, or a name not found, is left as it was.
+;; a unit that is not UCUM is placed at its quoted literal (`'mEq/L'`), as a name is at the name
 (define (at-the-name d text)
-  (define m (regexp-match #px"unknown (?:function|identifier) '?([^' (]+(?: [^' (]+)*)'?" (diagnostic-message d)))
+  (define unit (regexp-match #px"'([^']+)' is not a UCUM unit" (diagnostic-message d)))
+  (define m (or (regexp-match #px"unknown (?:function|identifier) '?([^' (]+(?: [^' (]+)*)'?" (diagnostic-message d)) unit))
   (define l (diagnostic-loc d))
   (define start (and m (loc? l) (loc-position l) (sub1 (loc-position l))))
   (cond
@@ -41,7 +43,9 @@
      (define end (let ([nx (regexp-match-positions #px"\n(?:define|context|parameter|code|valueset|codesystem|concept|include)\\b" text (add1 start))])
                    (if nx (caar nx) (string-length text))))
      (define body (let ([c (regexp-match-positions #rx":" text start end)]) (if c (cdar c) start)))
-     (define at (regexp-match-positions (pregexp (string-append "(?<![A-Za-z0-9_])\"?" (regexp-quote name) "(?![A-Za-z0-9_])"))
+     (define at (regexp-match-positions (if unit
+                                            (regexp (regexp-quote (string-append "'" (cadr unit) "'")))
+                                            (pregexp (string-append "(?<![A-Za-z0-9_])\"?" (regexp-quote name) "(?![A-Za-z0-9_])")))
                                         text body end))
      (cond
        [(not at) d]

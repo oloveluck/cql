@@ -31,4 +31,11 @@
 (parameterize ([current-error-port bout] [current-output-port (open-output-nowhere)])
   (void (system* (find-exe) (path->string m))))
 (check-regexp-match #rx"M[.]cql:7:3: cql compile error: in define \"Is 65 Or Older\": unknown function 'AgeInYear'" (get-output-string bout))
+;; a unit that is not UCUM, at its quoted literal, with what UCUM writes: labs write potassium in mEq/L
+(define u (build-path dir "U.cql"))
+(with-output-to-file u (lambda () (display "library U\ndefine \"High\": 5.8 > 5.5 'mEq/L'\n")))
+(define uout (open-output-string))
+(parameterize ([current-error-port uout] [current-output-port (open-output-nowhere)])
+  (void (system* (find-exe) "-l-" "raco" "cql" (path->string u))))
+(check-regexp-match #rx"U[.]cql:2:26: cql compile error: in define \"High\": 'mEq/L' is not a UCUM unit [(]did you mean `meq/L`[?][)]" (get-output-string uout))
 (delete-directory/files dir)
