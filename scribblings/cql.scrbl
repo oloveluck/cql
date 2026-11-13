@@ -3,6 +3,11 @@
                      cql/parser/parse cql/compile cql/elm/json cql/interp cql/run cql/measure
                      cql/value cql/error cql/model/modelinfo cql/cqm cql/workspace))
 
+@; tt : code inside a sentence, exactly as typed (scribble's own tt would turn -- into a dash and
+@; 'x' into curly quotes)
+@(require (only-in scribble/core element))
+@(define (tt . text) (element 'tt text))
+
 @title{cql: Clinical Quality Language}
 
 @hyperlink["https://cql.hl7.org/"]{Clinical Quality Language} (CQL) is how health care writes down
