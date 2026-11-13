@@ -18,7 +18,7 @@
          (struct-out cql-def) (struct-out cql-func) (struct-out cql-operand)
          (struct-out cql-lit) (struct-out cql-binop) (struct-out cql-unop)
          (struct-out cql-if) (struct-out cql-case) (struct-out cql-case-item)
-         (struct-out cql-interval) (struct-out cql-list) (struct-out cql-tuple) (struct-out cql-tuple-elem)
+         (struct-out cql-interval) (struct-out cql-list) (struct-out cql-typed-list) (struct-out cql-tuple) (struct-out cql-tuple-elem)
          (struct-out cql-property) (struct-out cql-ref) (struct-out cql-call) (struct-out cql-index)
          (struct-out cql-component) (struct-out cql-between) (struct-out cql-timing)
          (struct-out cql-query) (struct-out cql-source) (struct-out cql-let-def)
@@ -62,6 +62,7 @@
 (struct cql-case-item (when then)     #:prefab)
 (struct cql-interval  (low high low-closed? high-closed?) #:prefab)
 (struct cql-list      (elements)      #:prefab)
+(struct cql-typed-list (type elements) #:prefab) ; List<T> { … }: every element is a T ; type a type-spec
 (struct cql-tuple     (elements)      #:prefab) ; (listof cql-tuple-elem)
 (struct cql-tuple-elem (name value)   #:prefab)
 (struct cql-property  (target name)   #:prefab) ; target.name ; name symbol
@@ -281,7 +282,9 @@
      (cql-interval (lower low) (lower high)
                    (equal? (cadr open) "[") (equal? (cadr close) "]"))]
     [(list 'typed-list-selector parts ...)
-     (cql-list (append-map-body parts 'list-body))]
+     (match (findf (tagged? 'type-arg) parts)
+       [(list 'type-arg ts) (cql-typed-list (lower-type ts) (append-map-body parts 'list-body))]
+       [#f (cql-list (append-map-body parts 'list-body))])]
     [(list 'typed-tuple-selector parts ...)
      (cql-tuple (tuple-elems parts))]
     [(list 'braced) (cql-list '())]

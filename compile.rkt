@@ -380,6 +380,7 @@
     [(cql-if c t e) (compile-if c t e env)]
     [(cql-case comparand items els) (compile-case comparand items els env)]
     [(cql-list elems) (compile-list elems env)]
+    [(cql-typed-list type elems) (compile-typed-list type elems env)]
     [(cql-interval low high lc hc) (compile-interval low high lc hc env)]
     [(cql-tuple elems) (compile-tuple elems env)]
     [(cql-property target name) (compile-property target name env)]
@@ -833,7 +834,10 @@
                  "String")]
     [(-) (bin "Subtract" (arith-type lt rt))]
     [(*) (bin "Multiply" (arith-type lt rt))]
-    [(/) (bin "Divide" (if (equal? (numeric-or lt rt) "Quantity") "Quantity" "Decimal"))]
+    ;; `/` is defined on Decimals and Quantities: an Integer or Long operand is converted
+    [(/) (define (dec n t) (if (member t '("Integer" "Long")) (elm-unary "ToDecimal" n "Decimal") n))
+         (values (elm-nary "Divide" (list (dec lo lt) (dec ro rt)) (if (equal? (numeric-or lt rt) "Quantity") "Quantity" "Decimal"))
+                 (if (equal? (numeric-or lt rt) "Quantity") "Quantity" "Decimal"))]
     [(div) (bin "TruncatedDivide" (numeric-or lt rt))]
     [(mod) (bin "Modulo" (numeric-or lt rt))]
     [(^) (bin "Power" (numeric-or lt rt))]
@@ -1126,13 +1130,19 @@
                         (let-values ([(sn _st) (sys (cql-relationship-such-that r) envR)]) sn))))
   (define where (and (cql-query-where q) (let-values ([(n _t) (sys (cql-query-where q) env2)]) n)))
   (define-values (ret ret-t)
-    (if (cql-query-ret q)
-        (compile (cql-return-expr (cql-query-ret q)) env2)
-        ;; a multi-source query without a return yields a tuple of its aliases (the translator's
-        ;; Tuple{QualifyingEncounter: Encounter, SelectedProcedure: Procedure})
-        (values #f (if single? (elem (third (car srcs)))
-                       (tuple-ctype (for/list ([s (in-list srcs)]) (cons (string->symbol (format "~a" (first s))) (elem (third s)))))))))
-  (define ret-distinct (and (cql-query-ret q) (cql-return-distinct? (cql-query-ret q))))
+    (cond
+      [(cql-query-ret q) (compile (cql-return-expr (cql-query-ret q)) env2)]
+      [single? (values #f (elem (third (car srcs))))]
+      ;; a multi-source query without a return yields a tuple of its aliases, and the reference
+      ;; translator writes that return: `return distinct Tuple{QualifyingEncounter: QualifyingEncounter,
+      ;; SelectedProcedure: SelectedProcedure}` (an aggregate takes the rows themselves)
+      [else (values (and (not (cql-query-agg q))
+                         (elm-tuple (for/list ([s (in-list srcs)])
+                                      (elm-tuple-elem (first s) (elm-alias-ref (symbol->string (first s)))))))
+                    (tuple-ctype (for/list ([s (in-list srcs)]) (cons (string->symbol (format "~a" (first s))) (elem (third s))))))]))
+  (define ret-distinct (if (cql-query-ret q)
+                           (cql-return-distinct? (cql-query-ret q))
+                           (and ret #t)))
   ;; the accumulator has the starting value's type (`starting (null as List<Interval<Date>>)`), and
   ;; so does the result; with no typed start, the body's
   (define-values (agg agg-t)
@@ -1189,10 +1199,25 @@
   (define rt (or (for/fold ([rt #f]) ([b (in-list converted)] #:when (known (cdr b)))
                    (cond [(not rt) (cdr b)] [(promotion rt (cdr b)) (cdr b)] [else rt]))
                  "Any"))
-  (values (for/list ([b (in-list converted)])
-            (define n (if (and (known (cdr b)) (promotion (cdr b) rt)) (promote (car b) (cdr b) rt) (car b)))
-            (typed-null n (cdr b) rt))
-          rt))
+  (define promoted
+    (for/list ([b (in-list converted)])
+      (if (and (known (cdr b)) (promotion (cdr b) rt)) (cons (promote (car b) (cdr b) rt) rt) b)))
+  ;; branches that still differ meet at the choice of their types, each cast to it (FHIRHelpers'
+  ;; ToValue: a case whose arms are a String, a Boolean, a Date, …)
+  (define choice (branch-choice (remove-duplicates (filter known (map cdr promoted)))))
+  (define spec (and choice (ctype->elm-type choice)))
+  (cond
+    [spec (values (for/list ([b (in-list promoted)])
+                    (if (or (equal? (cdr b) choice) (not (known (cdr b)))) (typed-null (car b) (cdr b) choice) (elm-as (car b) spec #f)))
+                  choice)]
+    [else (values (for/list ([b (in-list promoted)]) (typed-null (car b) (cdr b) rt)) rt)]))
+;; branch-choice : (listof CType) -> CType|#f   the choice several distinct branch types meet at: none
+;; for one type, nor when one of them is a supertype of the rest (the branches are of that type)
+(define (branch-choice ts)
+  (define m (lctx-model (L)))
+  (define (covers? t) (for/and ([u (in-list ts)]) (or (equal? u t) (and m (string? u) (string? t) (model-subtype? m u t)))))
+  (and (pair? ts) (pair? (cdr ts)) (not (ormap covers? ts))
+       (choice-ctype (remove-duplicates (append-map choice-members ts)))))
 (define (model-type? t) (and (string? t) (regexp-match? #rx"[.]" t)))
 
 (define (compile-if c t e env)
@@ -1216,12 +1241,21 @@
           rt))
 
 ;; ---- collections -----------------------------------------------------------
+;; compile-list : (listof cql) cenv -> (values elm CType)   { a, b, … }: the elements meet at one
+;; type the way if/case branches do ({1, 2.0} is {ToDecimal(1), 2.0}, a List<Decimal>)
 (define (compile-list elems env)
-  (define-values (nodes t)
-    (for/fold ([acc '()] [t "Any"] #:result (values (reverse acc) t)) ([e (in-list elems)])
-      (define-values (n et) (compile e env))
-      (values (cons n acc) et)))
+  (define compiled (for/list ([e (in-list elems)]) (let-values ([(n t) (compile e env)]) (cons n t))))
+  (define-values (nodes t) (if (null? compiled) (values '() "Any") (unify-branches compiled)))
   (values (elm-list nodes) (list-ctype t)))
+;; compile-typed-list : type-spec (listof cql) cenv -> (values elm CType)   List<T> { a, b, … }: each
+;; element converted to T as an argument to a T parameter is (List<Decimal> { 1 } holds ToDecimal(1);
+;; an element of a choice T is cast to the choice); the list is a List<T> whatever it holds
+(define (compile-typed-list type elems env)
+  (define want (type->ctype type))
+  (values (elm-list (for/list ([e (in-list elems)])
+                      (define-values (n t) (compile e env))
+                      (if (conversion-cost t want) (coerce n t want) n)))
+          (list-ctype want)))
 
 (define (compile-interval low high lc hc env)
   (define-values (ln0 lt0) (sys low env))
@@ -1362,7 +1396,7 @@
 
 ;; system operators over Any (lists, nulls): their operands are NOT converted to System types
 (define generic-ops '(IsNull Exists Count First Last SingletonFrom Flatten Distinct Coalesce Message Indexer
-                      Tail Take Skip Slice IndexOf Length Combine))
+                      Tail Take Skip Slice IndexOf Length))
 
 ;; age functions: AgeInYears() / AgeInYearsAt(x) / CalculateAgeInYearsAt(b, x) -> CalculateAge[At]
 (define age-rx #px"^(Calculate)?AgeIn(Years|Months|Weeks|Days|Hours|Minutes|Seconds)(At)?$")
@@ -1614,11 +1648,14 @@
      ;; is converted (Coalesce(start of P, R.authoredOn) -> …, ToDateTime(R.authoredOn))
      (define-values (nodes types)
        (if (eq? name 'Coalesce)
-           (let ([sys-t (for/first ([t (in-list types0)] #:when (and (known t) (not (model-type? t)))) t)])
+           (let ([sys-t (for/first ([t (in-list types0)] #:when (and (known t) (not (model-type? t)) (not (choice-ctype? t)))) t)])
              (for/lists (ns ts) ([n (in-list nodes0)] [t (in-list types0)])
-               (if (and sys-t (model-type? t))
-                   (let-values ([(cn ct) (to-system n t)]) (if (equal? ct sys-t) (values cn ct) (values n t)))
-                   (values n t))))
+               (define-values (cn ct)
+                 (cond [(and sys-t (model-type? t)) (to-system n t)]
+                       ;; a choice among them is read through its member that converts to that type
+                       [(and sys-t (choice-ctype? t)) (choice-to n t sys-t)]
+                       [else (values n t)]))
+               (if (equal? ct sys-t) (values cn ct) (values n t))))
            (values nodes0 types0)))
      (define rt (cdr spec))
      (define t (or rt (derived-result-type name types)))

@@ -53,7 +53,8 @@
 ;; where the position says it (InValueSet's `valueset`, Retrieve's `codes`), Retrieve's default
 ;; `codeComparator` "in" — the two corpus packages' translators disagree, so neither form is held.
 ;; The same for the empty String literal: hl7.fhir.uv.cql's translator leaves its `value` out, the
-;; others (and ours) write `"value": ""`.
+;; others (and ours) write `"value": ""`; and for a Ratio's parts, which fhir.cqf.common's translator
+;; tags `"type": "Quantity"` and the newer ones (and the schema, which declares them Quantity) do not.
 (define (normalize-elm j [key #f])
   (cond [(hash? j) (for/hash ([(k v) (in-hash j)]
                               #:unless (and (eq? k 'value) (equal? v "") (equal? (hash-ref j 'type #f) "Literal"))
@@ -67,6 +68,7 @@
                               ;; schema default is true, so it is meaningful; our emitter writes it)
                               #:unless (and (memq k '(lowClosed highClosed)) (eq? v #f))
                               #:unless (and (eq? k 'type) (equal? v "ValueSetRef") (memq key '(valueset codes)))
+                              #:unless (and (eq? k 'type) (equal? v "Quantity") (memq key '(numerator denominator)))
                               #:unless (and (eq? k 'codeComparator) (equal? v "in")))
                      (values k (normalize-elm v k)))]
         [(list? j) (map (lambda (x) (normalize-elm x key)) j)]
