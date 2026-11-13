@@ -1,0 +1,30 @@
+/* Additions to Scribble's manual style for this family's documentation.
+   Commands and their output are shown as they are printed, so a line can be
+   wider than the text column: such a block scrolls sideways instead of running
+   off the page, and is set apart from the prose around it. */
+
+table.SVerbatim {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.6em 0;
+  padding: 0.6em 0.9em;
+  background: #f6f6f4;
+  border-left: 3px solid #d8d8d2;
+}
+
+table.SVerbatim p {
+  margin: 0;
+}
+
+.SCodeFlow {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Look-up tables: a little air between rows and columns. */
+.maincolumn > table td,
+.SIntrapara > table td {
+  vertical-align: top;
+}

@@ -39,7 +39,7 @@ jobs:
           raco test tests/elm-corpus-test.rkt tests/measure-test.rkt tests/measure-operation-test.rkt
       - name: Build the documentation
         run: |
-          raco scribble +m --html --dest site --dest-name index.html --redirect-main https://docs.racket-lang.org/ scribblings/cql.scrbl
+          raco scribble +m --html --dest site --dest-name index.html --redirect-main https://docs.racket-lang.org/ ++style scribblings/manual.css scribblings/cql.scrbl
       # Publish: the built site goes to the gh-pages branch, which GitHub serves as the Pages site
       # (enabled automatically for a public repository; otherwise choose "Deploy from a branch:
       # gh-pages" once under Settings > Pages).
