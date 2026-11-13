@@ -103,9 +103,27 @@
 ;; operator-body : string (listof elm) boolean -> jsexpr   unary operands are an object, n-ary a list
 (define (operator-body op operands unary?)
   (match (hash-ref operator-attributes op #f)
-    [#f (hasheq 'type op 'operand (if unary? (expr->jsexpr (car operands)) (map expr->jsexpr operands)))]
+    [#f (cond [unary? (hasheq 'type op 'operand (expr->jsexpr (car operands)))]
+              [(null? operands) (hasheq 'type op)]          ; Today, Now, TimeOfDay: no operand element
+              [else (hasheq 'type op 'operand (map expr->jsexpr operands))])]
     [names (for/fold ([h (hasheq 'type op)]) ([nm (in-list names)] [o (in-list operands)])
              (hash-set h nm (expr->jsexpr o)))]))
+
+;; quantity-body : elm-quantity -> jsexpr   value and unit. The schema types `value` xs:decimal, a JSON
+;; number in the reference translator's output and in what other engines read (it was the lexeme as a
+;; string here, which the corpus comparison's number normalisation hid).
+(define (quantity-body q)
+  (drop-false (hasheq 'value (let ([v (elm-quantity-value q)]) (and v (decimal-json v)))
+                      'unit (elm-quantity-unit q))))
+;; decimal-json : lexeme -> number|string   the decimal as a JSON number: one written as an integer as
+;; one, any other as the double that prints back as the same decimal (`1.0` stays `1.0`); a lexeme no double holds exactly enough (more
+;; than ~15 significant digits) stays the lexeme, since a rounded value would be another quantity
+(define (decimal-json lexeme)
+  (define exact (string->number lexeme 10 'number-or-false 'decimal-as-exact))
+  (cond [(not (and exact (rational? exact))) lexeme]
+        [(regexp-match? #px"^[+-]?[0-9]+$" lexeme) exact]   ; written as an integer (`5`, not `5.0`)
+        [else (define f (exact->inexact exact))
+              (if (eqv? (string->number (number->string f) 10 'number-or-false 'decimal-as-exact) exact) f lexeme)]))
 
 ;; section : (listof X) (X -> jsexpr) -> jsexpr|#f   an ELM {def: […]} section, absent when empty
 (define (section xs f) (and (pair? xs) (hasheq 'def (map f xs))))
@@ -168,15 +186,12 @@
      (drop-false (hasheq 'type "Null"
                          'valueType (and (elm-null-value-type e)
                                          (system-type-name (elm-null-value-type e)))))]
-    [(elm-quantity? e)
-     (with-rt (drop-false (hasheq 'type "Quantity"
-                                  'value (elm-quantity-value e)
-                                  'unit (elm-quantity-unit e)))
-              "Quantity")]
+    [(elm-quantity? e) (with-rt (hash-set (quantity-body e) 'type "Quantity") "Quantity")]
     [(elm-ratio? e)
+     ;; a Ratio's parts are declared Quantity in the schema: they carry no `type` of their own
      (hasheq 'type "Ratio"
-             'numerator (expr->jsexpr (elm-ratio-numerator e))
-             'denominator (expr->jsexpr (elm-ratio-denominator e)))]
+             'numerator (quantity-body (elm-ratio-numerator e))
+             'denominator (quantity-body (elm-ratio-denominator e)))]
     [(elm-date? e)
      (drop-false (hasheq 'type "Date" 'year (opt-expr (elm-date-year e))
                          'month (opt-expr (elm-date-month e)) 'day (opt-expr (elm-date-day e))))]
@@ -354,6 +369,18 @@
                         'operand (list (expr->jsexpr (elm-literal "Integer" "1"))
                                        (expr->jsexpr (elm-literal "Integer" "2")))
                         'resultTypeName "{urn:hl7-org:elm-types:r1}Integer"))
+  ;; a Quantity's value is a JSON number (the lexeme when no double holds it); a Ratio's parts carry
+  ;; no type; an operator without operands has no operand element
+  (check-equal? (expr->jsexpr (elm-quantity "5" "mg"))
+                (hasheq 'type "Quantity" 'value 5 'unit "mg" 'resultTypeName "{urn:hl7-org:elm-types:r1}Quantity"))
+  (check-equal? (hash-ref (expr->jsexpr (elm-quantity "1.50" "mg")) 'value) 1.5)
+  (check-equal? (hash-ref (expr->jsexpr (elm-quantity "1.0" "mg")) 'value) 1.0)
+  (check-equal? (hash-ref (expr->jsexpr (elm-quantity "0.1" "mg")) 'value) 0.1)
+  (check-equal? (hash-ref (expr->jsexpr (elm-quantity "99999999999999999999.99999999" "1")) 'value) "99999999999999999999.99999999")
+  (check-equal? (expr->jsexpr (elm-ratio (elm-quantity "5" "mg") (elm-quantity "10" "mL")))
+                (hasheq 'type "Ratio" 'numerator (hasheq 'value 5 'unit "mg") 'denominator (hasheq 'value 10 'unit "mL")))
+  (check-equal? (expr->jsexpr (elm-nary "Today" '() "Date")) (hasheq 'type "Today" 'resultTypeName "{urn:hl7-org:elm-types:r1}Date"))
+  (check-true (string? (elm->json-string (elm-quantity "1.50" "mg"))))
   ;; interval with closed flags
   (check-equal? (hash-ref (expr->jsexpr (elm-interval (elm-literal "Integer" "1") (elm-literal "Integer" "10") #t #f)) 'highClosed) #f)
   ;; a whole library round-trips to a JSON string containing the library wrapper

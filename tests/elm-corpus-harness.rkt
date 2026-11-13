@@ -52,8 +52,11 @@
 ;; default) is the same as no `strict`, and around value sets — ValueSetRef's `preserve`, its `type`
 ;; where the position says it (InValueSet's `valueset`, Retrieve's `codes`), Retrieve's default
 ;; `codeComparator` "in" — the two corpus packages' translators disagree, so neither form is held.
+;; The same for the empty String literal: hl7.fhir.uv.cql's translator leaves its `value` out, the
+;; others (and ours) write `"value": ""`.
 (define (normalize-elm j [key #f])
   (cond [(hash? j) (for/hash ([(k v) (in-hash j)]
+                              #:unless (and (eq? k 'value) (equal? v "") (equal? (hash-ref j 'type #f) "Literal"))
                               #:unless (memq k dropped-keys)
                               #:unless (null? v)
                               #:unless (and (eq? k 'type) (member v structural-types))

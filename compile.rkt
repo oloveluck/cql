@@ -761,32 +761,16 @@
 (define (simple-rt t) (and (string? t) (not (regexp-match? #rx"[.]" t)) (not (equal? t "Any")) t))
 
 ;; ---- binary ----------------------------------------------------------------
-(define generic-binops '(union intersect except))
-;; A union chain groups the way the reference translator's parse does: adjacent operands pair up,
-;; the pairs fold left, an odd operand comes last — A u B u C u D u E = ((A u B) u (C u D)) u E.
-;; union-chain : cql -> (listof cql)   the operands of a left-deep union chain
-(define (union-chain e)
-  (match e [(cql-binop 'union l r) (append (union-chain l) (list r))] [_ (list e)]))
-(define (regroup-union operands)
-  (define pairs (let loop ([xs operands])
-                  (match xs
-                    [(list a b rest ...) (cons (cql-binop 'union a b) (loop rest))]
-                    [(list a) (list a)]
-                    ['() '()])))
-  (for/fold ([acc (car pairs)]) ([p (in-list (cdr pairs))]) (cql-binop 'union acc p)))
+(define generic-binops '(intersect except))
 
 (define (compile-binop op l r env)
-  (define chain (and (eq? op 'union) (union-chain (cql-binop 'union l r))))
   (cond
-    [(and chain (> (length chain) 3) (not (regrouped? l)))
-     (define g (regroup-union chain))
-     (compile-binop 'union (mark-regrouped (cql-binop-lhs g)) (cql-binop-rhs g) env)]
-    [(and (eq? op 'union) (union-of-different-types l r env)) => (lambda (r) (values (car r) (cadr r)))]
+    [(eq? op 'union) (compile-union (union-tree (union-chain (cql-binop 'union l r))) env)]
     [(memq op generic-binops)
      (define-values (lo lt) (compile l env))
      (define-values (ro rt) (compile r env))
-     (define name (case op [(union) "Union"] [(intersect) "Intersect"] [else "Except"]))
-     (values (elm-nary name (list lo ro) (simple-rt (or (composite-or lt rt) "Any"))) (or (composite-or lt rt) lt))]
+     (values (elm-nary (if (eq? op 'intersect) "Intersect" "Except") (list lo ro) (simple-rt (or (composite-or lt rt) "Any")))
+             (or (composite-or lt rt) lt))]
     [(memq op '(in contains)) (compile-membership op l r env)]
     [else
      (define-values (lo0 lt0) (sys-against l r env))
@@ -795,6 +779,44 @@
      (define lt (if (eq? lo lo0) lt0 t))
      (define rt (if (eq? ro ro0) rt0 t))
      (compile-binop* op lo lt ro rt)]))
+
+;; ---- union -----------------------------------------------------------------
+;; A union chain groups the way the reference translator's parse does: adjacent operands pair up,
+;; the pairs fold left, an odd operand comes last — A u B u C u D u E = ((A u B) u (C u D)) u E.
+;; A UnionTree is one of: a CQL expression (an operand of the chain) | (upair UnionTree UnionTree).
+(struct upair (left right))
+;; union-chain : cql -> (listof cql)   the operands of a left-deep union chain
+(define (union-chain e)
+  (match e [(cql-binop 'union l r) (append (union-chain l) (list r))] [_ (list e)]))
+;; union-tree : (listof cql) -> UnionTree   (at least one operand)
+(define (union-tree operands)
+  (define pairs (let loop ([xs operands])
+                  (match xs
+                    [(list a b rest ...) (cons (upair a b) (loop rest))]
+                    [_ xs])))
+  (for/fold ([acc (car pairs)]) ([p (in-list (cdr pairs))]) (upair acc p)))
+;; compile-union : UnionTree cenv -> (values elm CType)
+(define (compile-union t env)
+  (match t
+    [(upair a b)
+     (define-values (lo lt) (compile-union a env))
+     (define-values (ro rt) (compile-union b env))
+     (union-nodes lo lt ro rt)]
+    [e (compile e env)]))
+;; union-nodes : elm CType elm CType -> (values elm CType)   List<A> union List<B> of unrelated model
+;; types: both cast to List<Choice<A, B>>, as the reference does; any other pair as it is
+(define (union-nodes lo lt ro rt)
+  (define m (lctx-model (L)))
+  (define (el t) (and (list-ctype? t) (ctype-element t)))
+  (define a (el lt)) (define b (el rt))
+  (cond
+    [(and m a b (not (equal? a b)) (or (model-type? a) (compound-ctype? a)) (or (model-type? b) (compound-ctype? b))
+          (not (and (string? a) (string? b) (or (model-subtype? m a b) (model-subtype? m b a)))))
+     (define ct (list-ctype (choice-ctype (remove-duplicates (append (choice-members a) (choice-members b))))))
+     (define spec (ctype->elm-type ct))
+     (define (cast n t) (if (equal? t ct) n (elm-as n spec #f)))
+     (values (elm-nary "Union" (list (cast lo lt) (cast ro rt)) #f) ct)]
+    [else (values (elm-nary "Union" (list lo ro) (simple-rt (or (composite-or lt rt) "Any"))) (or (composite-or lt rt) lt))]))
 
 (define (compile-binop* op lo lt ro rt)
   (define (bin name res) (values (elm-nary name (list lo ro) (simple-rt res)) res))
@@ -836,8 +858,13 @@
         [else (numeric-or a b)]))
 
 ;; membership: `x in ValueSet` -> InValueSet (AnyInValueSet for a list) ; `x in CodeSystem` ->
-;; InCodeSystem ; otherwise In/Contains over a list or interval, the point promoted to its element type
+;; InCodeSystem ; `ValueSet contains x` is the same, read the other way ; otherwise In/Contains over a
+;; list or interval, the point promoted to its element type
 (define (compile-membership op l r env)
+  (if (and (eq? op 'contains) (let-values ([(_n lt) (compile l env)]) (member lt '("ValueSet" "CodeSystem"))))
+      (compile-membership* 'in r l env)
+      (compile-membership* op l r env)))
+(define (compile-membership* op l r env)
   (define-values (ro rt) (sys-against r l env))
   (define-values (lo lt)
     (if (member rt '("ValueSet" "CodeSystem"))
@@ -863,29 +890,6 @@
         [ra a] [rb b] [else "Any"]))
 (define (composite-or a b) (cond [(compound-ctype? a) a] [(compound-ctype? b) b] [else #f]))
 
-;; union-of-different-types : cql cql cenv -> (list elm CType) | #f
-;; List<A> union List<B> of unrelated model types: both cast to List<Choice<A, B>>, as the reference does
-(define (union-of-different-types l r env)
-  (define-values (lo lt) (compile l env))
-  (define-values (ro rt) (compile r env))
-  (define m (lctx-model (L)))
-  (define (el t) (and (list-ctype? t) (ctype-element t)))
-  (define a (el lt)) (define b (el rt))
-  (define members choice-members)
-  (cond
-    [(and m a b (not (equal? a b)) (or (model-type? a) (compound-ctype? a)) (or (model-type? b) (compound-ctype? b))
-          (not (and (string? a) (string? b) (or (model-subtype? m a b) (model-subtype? m b a)))))
-     (define ct (list-ctype (choice-ctype (remove-duplicates (append (members a) (members b))))))
-     (define spec (ctype->elm-type ct))
-     (define (cast n t) (if (equal? t ct) n (elm-as n spec #f)))
-     (list (elm-nary "Union" (list (cast lo lt) (cast ro rt)) #f) ct)]
-    [else #f]))
-
-;; a regrouped chain's left side must not be regrouped again (it is itself a union chain)
-(define regrouped (make-weak-hasheq))
-(define (mark-regrouped e) (hash-set! regrouped e #t) e)
-(define (regrouped? e) (hash-ref regrouped e #f))
-
 ;; ---- timing ----------------------------------------------------------------
 ;; compile-timing : op prec cql cql cenv -> (values elm "Boolean")
 ;; point-vs-interval picks the ELM form: `point during I` is In, `I includes point` is Contains
@@ -902,7 +906,18 @@
       [(includes) (if (and b-point? (interval-ctype? at0)) 'contains op)]
       [(properly-includes) (if (and b-point? (interval-ctype? at0)) 'proper-contains op)]
       [else op]))
-  (values (elm-timing op* (and prec (units->prec prec)) an bn) "Boolean"))
+  ;; a point beside an interval under an operator that relates intervals (`P before I`, `A starts
+  ;; after I`): the point is promoted to the interval [P, P], as the reference translator writes it
+  (define relates-intervals? (not (memq op* '(in proper-in contains proper-contains))))
+  (define (known-point? t) (and (string? t) (not (equal? t "Any"))))
+  (define-values (an* bn*)
+    (cond [(and relates-intervals? (known-point? at0) (interval-ctype? bt0)) (values (point->interval an) bn)]
+          [(and relates-intervals? (known-point? bt0) (interval-ctype? at0)) (values an (point->interval bn))]
+          [else (values an bn)]))
+  (values (elm-timing op* (and prec (units->prec prec)) an* bn*) "Boolean"))
+;; point->interval : elm -> elm   if P is null then null else Interval[P, P]
+(define (point->interval n)
+  (elm-if (elm-unary "IsNull" n "Boolean") (elm-null #f) (elm-interval n n #t #t)))
 
 ;; A <quantity> [or less|or more|…] before|after B — the translator's expansion:
 ;;   or less / less than : In(A, Interval[B - q, B]) and not (B is null)   (bounds per phrase)
@@ -1612,7 +1627,14 @@
         (unless (= 1 (length nodes)) (fail (format "~a expects 1 argument" name)))
         (values (elm-unary (symbol->string name) (car nodes) rt) t)]
        [(nary)
-        (values (elm-nary (symbol->string name) nodes rt) t)])]))
+        (values (elm-nary (symbol->string name) (with-default-operands name nodes) rt) t)])]))
+
+;; with-default-operands : sym (listof elm) -> (listof elm)   ELM's Collapse and Expand are binary (the
+;; source and `per`): written without a `per`, the second operand is Null, as the reference writes it
+(define (with-default-operands name nodes)
+  (if (and (memq name '(Collapse Expand)) (= 1 (length nodes)))
+      (list (car nodes) (elm-null #f))
+      nodes))
 
 (define (capitalize sym)
   (define s (symbol->string sym))
