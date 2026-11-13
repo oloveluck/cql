@@ -151,6 +151,10 @@
   (define pids (if subject
                    (list (regexp-replace #rx"^Patient/" subject ""))
                    (for/list ([p (in-list ((data-source-all ds) "Patient"))]) (hash-ref p 'id))))
+  ;; a subject the data source does not hold is "no such patient", not a patient in no population
+  ;; (an individual report of zeros read as "evaluated: not in the initial population")
+  (when (and subject (not ((data-source-read ds) "Patient" (car pids))))
+    (operation-error "not-found" "$evaluate-measure: the subject Patient/~a is not in the data source" (car pids)))
   (define groups (hash-ref measure 'group '()))
   (define counts                                          ; one count hash per group
     (for/fold ([acc (map (lambda (_g) (hash)) groups)]) ([pid (in-list pids)])

@@ -51,4 +51,7 @@
     ;; piped: the Measure itself is the subject
     (check-equal? (populations ($evaluate-measure measure #:periodStart "2021-01-01T00:00:00-07:00" #:periodEnd "2021-12-31"))
                   (populations report))
-    (check-exn #rx"needs input 'periodStart'" (lambda () ($evaluate-measure measure #:periodEnd "2021-12-31")))))
+    (check-exn #rx"needs input 'periodStart'" (lambda () ($evaluate-measure measure #:periodEnd "2021-12-31")))
+    ;; a subject the data does not hold is an error, not a report of zeros
+    (check-exn #rx"the subject Patient/nobody is not in the data source"
+               (lambda () ($evaluate-measure measure #:periodStart "2021-01-01" #:periodEnd "2021-12-31" #:subject "Patient/nobody")))))

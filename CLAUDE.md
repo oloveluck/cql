@@ -486,3 +486,7 @@ operators, `if`/`case`. Layers:
 - **New users, round 32** (2026-11-12): a non-UCUM unit's translation error is at the quoted unit
   (`at-the-name` reads `'<u>' is not a UCUM unit`); `mEq/L` suggests `meq/L` (fhirpath/ucum's spellings).
   `tests/name-position-test.rkt`.
+
+- **A subject the data does not hold** (2026-11-13): `evaluate-measure #:subject "Patient/nobody"` is
+  a `not-found` operation error; it answered an individual MeasureReport of zeros, which read as
+  "evaluated, not in the initial population". `tests/measure-operation-test.rkt`.
