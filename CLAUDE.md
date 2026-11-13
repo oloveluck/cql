@@ -473,6 +473,16 @@ operators, `if`/`case`. Layers:
   every patient, with the quantity units its text compares with (`all-null-notes`,
   `define-quantity-units`); guide.md lists the recipe's HbA1c-named defines to rename for another lab.
 
+- **A library states what it needs** (2026-11-13): `requirements.rkt` (`library-requirements`, pure
+  over the ELM as JSON) reads a translated library's includes, codesystems and valuesets as
+  `depends-on` relatedArtifacts and its retrieves as DataRequirements (type, templateId as profile,
+  the code filter by value set or by the code a CodeRef names; statements in order, a node's keys
+  by name, so the answer is deterministic). The workspace's Library resource carries them when the
+  library translates (`library-resource … elm`); an included library's canonical is the
+  workspace's for a workspace file, a stored Library's url, else `<the model's url>/Library/<name>`
+  (model-neutral: `http://hl7.org/fhir/Library/FHIRHelpers`). fhir-mcp's dependency tracing and
+  `$data-requirements` read them from the resource.
+
 - **New users, round 32** (2026-11-12): a non-UCUM unit's translation error is at the quoted unit
   (`at-the-name` reads `'<u>' is not a UCUM unit`); `mEq/L` suggests `meq/L` (fhirpath/ucum's spellings).
   `tests/name-position-test.rkt`.

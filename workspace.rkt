@@ -42,7 +42,9 @@
          (only-in "run.rkt" load-runtime-library valuesets->terminology caching-resolver patient-data patient-class bundled-library)
          (only-in "model/modelinfo.rkt" find-model current-model-providers)
          (only-in "model/structure-definitions.rkt" structure-definitions->model logical-model?)
-         (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version)
+         (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version elm-using-uri elm-library?)
+         (only-in "elm/json.rkt" elm->jsexpr)
+         (only-in "requirements.rkt" library-requirements)
          (only-in "representation.rkt" record-type-name)
          (only-in "measure.rkt" packages-valuesets)
          (only-in "value.rkt" cql-code? cql-code-code cql-code-system cql-concept? cql-concept-codes cql-null? cql-null-list? model-node? model-node-data model-node-model cql-tuple? cql-tuple-fields render
@@ -199,7 +201,11 @@
   (line-matching text (pregexp (string-append "^\\s*(?:public\\s+|private\\s+)?define\\s+(?:fluent\\s+)?(?:function\\s+)?(?:\""
                                               (regexp-quote name) "\"|" (regexp-quote name) "\\b)"))))
 
-(define (library-resource ws lib text path)
+;; library-resource : workspace library text path elm|#f -> Library   the library as a FHIR resource:
+;; its source, and — when it translates — what it depends on and the data it retrieves
+;; (requirements.rkt: `relatedArtifact` depends-on, `dataRequirement`), as CRMI's computable library
+;; states them and its dependency tracing reads them
+(define (library-resource ws lib text path [elm #f])
   (define name (format "~a" (cql-library-id lib)))
   (define version (cql-library-version lib))
   (define base (hasheq 'resourceType "Library" 'id (regexp-replace* #rx"[^A-Za-z0-9.-]" name "-")
@@ -207,7 +213,31 @@
                        'name name 'status "active"
                        'type (hasheq 'coding (list (hasheq 'system "http://terminology.hl7.org/CodeSystem/library-type" 'code "logic-library")))
                        'content (list (hasheq 'contentType "text/cql" 'data (bytes->string/utf-8 (base64-encode (string->bytes/utf-8 text) #""))))))
-  (if version (hash-set base 'version version) base))
+  (define-values (related data)
+    (if elm (library-requirements (elm->jsexpr elm) (included-canonical ws elm)) (values '() '())))
+  (for/fold ([r (if version (hash-set base 'version version) base)])
+            ([kv (in-list (list (cons 'relatedArtifact related) (cons 'dataRequirement data)))] #:when (pair? (cdr kv)))
+    (hash-set r (car kv) (cdr kv))))
+
+;; included-canonical : workspace elm -> (name version|#f -> canonical)   where an included library
+;; lives: a workspace file's is the workspace's (`<canonical>/Library/<name>`); one the data holds,
+;; by its url; any other (a library shipped with the engine) under the url of the model the
+;; including library uses (`http://hl7.org/fhir/Library/FHIRHelpers`)
+(define (included-canonical ws elm)
+  (define own (workspace-libraries ws))
+  (define model-url (for/first ([u (in-list (elm-library-usings elm))] #:unless (equal? (elm-using-local-id u) "System"))
+                      (elm-using-uri u)))
+  (lambda (name version)
+    (define stored
+      (with-handlers ([exn:fail? (lambda (_) #f)])
+        (for/first ([l (in-list ((data-source-all (current-data-source)) "Library"))]
+                    #:when (and (equal? (hash-ref l 'name #f) name) (string? (hash-ref l 'url #f))))
+          (hash-ref l 'url))))
+    (define url (cond [(hash-ref own name #f) (string-append (ws-config-canonical (workspace-config ws)) "/Library/" name)]
+                      [stored stored]
+                      [model-url (string-append model-url "/Library/" name)]
+                      [else #f]))
+    (and url (if (string? version) (string-append url "|" version) url))))
 
 ;; artifacts : workspace files -> (values Library resources diagnostics)
 (define (artifacts ws files) (with-models ws (lambda () (artifacts* ws files))))
@@ -224,13 +254,13 @@
        (define name (and (cql-library-id lib) (format "~a" (cql-library-id lib))))
        (define first (and name (hash-ref seen name #f)))
        (when (and name (not first)) (hash-set! seen name (car f)))
-       (define-values (_elm errors warnings) (parameterize ([current-library-resolver resolver]) (compile-library/diagnostics lib)))
+       (define-values (elm errors warnings) (parameterize ([current-library-resolver resolver]) (compile-library/diagnostics lib)))
        (define twice
          (if first
              (list (diagnostic 'cql 'compile 'error (format "the library ~a is also declared in ~a: an include could mean either" name (path-string first))
                                (loc (path-string (car f)) (line-matching text #px"^\\s*library\\b") 1 #f #f)))
              '()))
-       (values (if (and name (not first)) (cons (library-resource ws lib (cdr f) (car f)) rs) rs)
+       (values (if (and name (not first)) (cons (library-resource ws lib (cdr f) (car f) (and (null? errors) elm)) rs) rs)
                (append ds twice (version-diagnostics ws lib text (car f)) (map (lambda (e) (->diagnostic e (car f) text)) errors)
                        warnings))])))
 
