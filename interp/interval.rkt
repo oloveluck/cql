@@ -9,7 +9,7 @@
 (require (only-in racket/list append-map)
          (only-in fhirpath/decimal fp-decimal? parse-decimal decimal->exact)
          (only-in fhirpath/value fp-long fp-long? fp-long-v fp-quantity fp-quantity? fp-quantity-value fp-quantity-unit)
-         (only-in fhirpath/temporal-ops moment? moment-compare moment-kind moment-year moment-prec moment-frac moment-plus moment-add-ms)
+         (only-in fhirpath/temporal-ops moment? moment-prec moment-plus)
          "../value.rkt" "base.rkt" "temporal.rkt" "arith.rkt" "compare.rkt")
 
 (provide make-interval-value point-succ point-pred point-step int-guard-overflow? iv-start iv-end iv-width iv-point collapse-intervals merge-iv >=? cmp-low cmp-high expand-interval expand-step expand-points point-le? step-scale expand-one number-point? ->exactnum num->cql interval-timing or-null and3 starts-strictly-before ends-strictly-after trunc-iv trunc-pt cmp-endpoints le-or-null ge-or-null rel-before rel-after rel-overlaps unknown-interval? rel-meets start-contains end-contains rel-includes rel-starts rel-ends timing-op-eval list-timing in-op point-in-interval set-op interval-set-op merge-iv2 step-or-fail)

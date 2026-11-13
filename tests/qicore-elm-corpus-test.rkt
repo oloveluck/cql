@@ -21,4 +21,4 @@
 (check-equal? (length rs) 98)
 (check-true (>= (count lib-result-parse-ok? rs) 98) "fewer QI-Core libraries parse than the floor")
 (check-true (>= (count lib-result-compile-ok? rs) 98) "fewer QI-Core libraries compile than the floor")
-(check-true (>= (sum lib-result-defs-equal) 1854) "fewer ELM-equal QI-Core definitions than the floor")
+(check-true (>= (sum lib-result-defs-equal) 1932) "fewer ELM-equal QI-Core definitions than the floor")

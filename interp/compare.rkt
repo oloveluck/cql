@@ -7,9 +7,8 @@
 ;;; precision, calendar durations pairwise), and the ordered operators read an Interval operand as
 ;;; an uncertainty band. The null-aware list helpers (membership, dedup) rest on cql-eq?.
 
-(require (only-in racket/list remove-duplicates)
-         (only-in fhirpath/decimal fp-decimal? decimal->exact decimal->string decimal-cmp decimal-round)
-         (only-in fhirpath/value fp-long? fp-long-v fp-quantity? fp-quantity-value fp-quantity-unit)
+(require (only-in fhirpath/decimal fp-decimal? decimal->exact decimal->string decimal-cmp decimal-round)
+         (only-in fhirpath/value fp-quantity? fp-quantity-value fp-quantity-unit)
          (only-in fhirpath/quantity quantity-compare)
          (only-in fhirpath/temporal-ops moment? moment-compare moment-frac)
          (only-in fhirpath/equality item-equal? item-equiv?)

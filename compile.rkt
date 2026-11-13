@@ -82,8 +82,8 @@
         [(? cql-def?) (values (hash-set dm (cql-def-name d) d) (hash-set cm (cql-def-name d) ctx) ctx)]
         [(? cql-func?) (values dm (hash-set cm (cql-func-name d) ctx) ctx)]
         [_ (values dm cm ctx)])))
-  (define funcs (for/fold ([h (hash)]) ([d (in-list defs)] #:when (cql-func? d))
-                  (hash-update h (cql-func-name d) (lambda (l) (append l (list d))) '())))
+  (define funcs (for/fold ([h (hash)]) ([d (in-list (reverse defs))] #:when (cql-func? d))   ; overloads in order
+                  (hash-update h (cql-func-name d) (lambda (l) (cons d l)) '())))
   (define params (for/hash ([d (in-list defs)] #:when (cql-parameter? d)) (values (cql-parameter-name d) d)))
   (define terms (for/hash ([d (in-list defs)]
                            #:when (or (cql-valueset? d) (cql-codesystem? d) (cql-code-def? d) (cql-concept-def? d)))
@@ -139,14 +139,20 @@
 ;; still compile (a reference to it is untyped, so it does not cascade); errors in source order,
 ;; each positioned at its definition
 (define (compile-library/errors lib)
+  (define-values (elm errors) (assemble/collecting lib))
+  (define distinct (remove-duplicates errors
+                                      (lambda (a b) (and (cql-error-diagnostic a) (equal? (cql-error-diagnostic a) (cql-error-diagnostic b))))))
+  (values (and (null? distinct) elm) distinct))
+;; assemble/collecting : cql-library -> (values elm-library|#f (listof cql-error))   the library
+;; assembled with every statement's error recorded, in source order; an error outside any statement
+;; (the library's context cannot be made) is the only one, with no library
+(define (assemble/collecting lib)
   (define collected (box '()))
   (with-handlers ([cql-error? (lambda (e) (values #f (list e)))])
     (define lx (make-lctx lib))
     (parameterize ([current-lctx lx] [compile-memo (make-hasheq)] [current-errors collected])
       (define elm (assemble-library lib lx))
-      (define errors (remove-duplicates (reverse (unbox collected))
-                                        (lambda (a b) (and (cql-error-diagnostic a) (equal? (cql-error-diagnostic a) (cql-error-diagnostic b))))))
-      (values (and (null? errors) elm) errors))))
+      (values elm (reverse (unbox collected))))))
 ;; compile-library/diagnostics : cql-library -> (values elm-library|#f (listof cql-error) (listof diagnostic))
 ;; compile-library/errors, and the WARNINGS: what translates but likely does not mean what it says
 ;; (a choice read through one member, see choice-to), each positioned at its definition
@@ -190,12 +196,7 @@
 ;; statement translated; a failing definition becomes one that raises its error when evaluated (the
 ;; reference translator's error recovery leaves a Null there), so the rest of the library runs
 (define (compile-library/partial lib)
-  (parameterize ([current-partial? #t])
-    (define collected (box '()))
-    (with-handlers ([cql-error? (lambda (e) (values #f (list e)))])
-      (define lx (make-lctx lib))
-      (parameterize ([current-lctx lx] [compile-memo (make-hasheq)] [current-errors collected])
-        (values (assemble-library lib lx) (reverse (unbox collected)))))))
+  (parameterize ([current-partial? #t]) (assemble/collecting lib)))
 
 ;; compile-expr : cql-ast -> (ok elm-node) | (err cql-error)  — a bare expression (harness/CLI)
 (define (compile-expr ast)
@@ -502,12 +503,10 @@
 ;; ucum-unit : unit -> unit   a Quantity literal's unit is UCUM or a calendar word (`3 days`): any other
 ;; is a translation error with what to write. `< 60 'mL/min/1.73m2'` translated clean, every comparison
 ;; with it was null (no conversion from a unit that is no unit), and a yes/no define answered "no"
-(define calendar-unit-words
-  '("year" "years" "month" "months" "week" "weeks" "day" "days" "hour" "hours" "minute" "minutes"
-    "second" "seconds" "millisecond" "milliseconds"))
+(define calendar-units '(year years month months week weeks day days hour hours minute minutes second seconds millisecond milliseconds))
 (define (ucum-unit u)
   (define s (if (symbol? u) (symbol->string u) u))
-  (unless (or (not (string? s)) (member s calendar-unit-words) (ucum-valid? s))
+  (unless (or (not (string? s)) (memq (string->symbol s) calendar-units) (ucum-valid? s))
     (fail (format "'~a' is not a UCUM unit~a" s (ucum-suggestion s))))
   u)
 
@@ -545,25 +544,34 @@
      (define-values (cn ct) (to-system* (elm-alias-ref "X") (ctype-element t)))
      (values (elm-query (list (cons "X" n)) '() '() #f cn 'all #f #f) (list-ctype ct))]
     [else (to-system* n t)]))
-(define (convertible? t)
-  (define m (lctx-model (L)))
-  (define conv (and m (model-conversion m t)))
-  (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
-  (and fn (include-alias-for (string->symbol (cadr fn))) #t))
-(define (to-system* n t)
-  (define m (lctx-model (L)))
+;; A Conversion is (conversion to library function alias): how a model's type becomes a System one —
+;; the System type, the library and function the model names for it ("FHIRHelpers", "ToString"), and
+;; the alias that library is included under here (#f: not included).
+(struct conversion (to library function alias))
+;; type-conversion : model CType -> Conversion|#f   the model's implicit conversion of a named type
+(define (type-conversion m t)
   (define conv (and m (string? t) (model-conversion m t)))
-  (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
-  (define alias (and fn (include-alias-for (string->symbol (cadr fn)))))
+  (match (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv)))
+    [(list _ library function) (conversion (car conv) library function (include-alias-for (string->symbol library)))]
+    [_ #f]))
+;; converted : Conversion elm CType -> elm   the conversion function applied to a value of the type
+(define (converted c n t)
+  (elm-function-ref (conversion-function c) (conversion-alias c) (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))))
+
+(define (convertible? t)
+  (define c (type-conversion (lctx-model (L)) t))
+  (and c (conversion-alias c) #t))
+(define (to-system* n t)
+  (define c (type-conversion (lctx-model (L)) t))
   (cond
-    [alias (values (elm-function-ref (caddr fn) alias (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))) (car conv))]
+    [(and c (conversion-alias c)) (values (converted c n t) (conversion-to c))]
     ;; a model value meets a System operator and the library that converts it is not included: the
     ;; comparison ran on the raw model value and answered false (`Patient.gender = 'female'` for a
     ;; female patient). The reference translator refuses it; so do we, naming the include. Inside the
     ;; converting library itself (FHIRHelpers), and where it defines the function, nothing is said.
-    [(and fn (not (equal? (symbol->string* (lctx-name (L))) (cadr fn))))
-     (fail (format "~a meets a System operator here and is not converted: add `include ~a version '~a' called ~a` (its ~a converts it)"
-                   t (cadr fn) (helpers-version) (cadr fn) (cdr conv)))]
+    [(and c (not (equal? (symbol->string* (lctx-name (L))) (conversion-library c))))
+     (fail (format "~a meets a System operator here and is not converted: add `include ~a version '~a' called ~a` (its ~a.~a converts it)"
+                   t (conversion-library c) (helpers-version) (conversion-library c) (conversion-library c) (conversion-function c)))]
     [else (values n t)]))
 (define (symbol->string* x) (cond [(symbol? x) (symbol->string x)] [(string? x) x] [else ""]))
 ;; helpers-version : -> string   the version of the conversion library that goes with the model: the
@@ -630,15 +638,16 @@
       (warn! (format "~a against an interval reads only its ~a member~a: a ~a value gives null. Say which member you mean: (… as ~a)"
                      (ctype->string t) (string-join (map ctype->string members) ", ") (if (null? (cdr members)) "" "s")
                      (ctype->string (car points)) (ctype->string (car points))))))
-  ;; a member's type: a name, or a specifier for an interval or list member (Interval<Quantity>)
-  (define (spec m) (if (string? m) (ctype->elm-name m) (ctype->elm-type m)))
-  (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (spec m) #f) m)]) cn))
+  (define (conv m) (let-values ([(cn _ct) (to-system (elm-as n (member-spec m) #f) m)]) cn))
   (match members
     ['() (values n t)]
-    [(list m) (to-system (elm-as n (spec m) #f) m)]
-    [ms (values (elm-case #f (for/list ([m (in-list ms)]) (elm-case-item (elm-is n (spec m)) (conv m)))
+    [(list m) (to-system (elm-as n (member-spec m) #f) m)]
+    [ms (values (elm-case #f (for/list ([m (in-list ms)]) (elm-case-item (elm-is n (member-spec m)) (conv m)))
                           (elm-null #f))
                 target)]))
+;; member-spec : CType -> string | elm type-spec   how a choice's member is named in an Is or an As:
+;; a named type by its name (isType/asType), an interval or list member by a specifier
+(define (member-spec m) (if (string? m) (ctype->elm-name m) (ctype->elm-type m)))
 
 ;; System implicit promotions, the translator's order: Integer -> Long -> Decimal -> Quantity,
 ;; Date -> DateTime, Code -> Concept — and an interval of one (Interval<Date> -> Interval<DateTime>).
@@ -684,7 +693,7 @@
   (define s (symbol->string name))
   (match (local-ref env name)
     [(cons 'alias t) (values (elm-alias-ref s) t)]
-    [(cons 'let t) (values (elm-query-let-ref s) t)]
+    [(cons (or 'let 'acc) t) (values (elm-query-let-ref s) t)]       ; an aggregate's accumulator too
     [(cons 'row t) (values (elm-identifier-ref s) t)]                 ; $this, the sort row
     [(cons _ t) (values (elm-operand-ref s) t)]
     [#f
@@ -866,9 +875,10 @@
 ;; list or interval, the point promoted to its element type
 (define (compile-membership op l r env)
   (if (and (eq? op 'contains) (let-values ([(_n lt) (compile l env)]) (member lt '("ValueSet" "CodeSystem"))))
-      (compile-membership* 'in r l env)
-      (compile-membership* op l r env)))
-(define (compile-membership* op l r env)
+      (compile-membership* 'in r l env #t)
+      (compile-membership* op l r env #f)))
+;; reversed?: written `ValueSet contains x` (the reference writes the value set as an expression then)
+(define (compile-membership* op l r env reversed?)
   (define-values (ro rt) (sys-against r l env))
   (define-values (lo lt)
     (if (member rt '("ValueSet" "CodeSystem"))
@@ -877,7 +887,7 @@
   (cond
     [(and (eq? op 'in) (member rt '("ValueSet" "CodeSystem")))
      (define kind (string-append (if (list-ctype? lt) "Any" "") (if (equal? rt "ValueSet") "InValueSet" "InCodeSystem")))
-     (values (elm-in-valueset kind lo ro) "Boolean")]   ; (json: code vs codes by kind)
+     (values (elm-in-valueset kind lo ro reversed?) "Boolean")]   ; (json: code vs codes by kind)
     [(eq? op 'in)
      (define el (ctype-element rt))
      (values (elm-nary "In" (list (if el (promote lo lt el) lo) ro) "Boolean") "Boolean")]
@@ -989,14 +999,16 @@
   (define codes* (and term (if (or (list-ctype? ct) (member ct '("ValueSet" "CodeSystem")))
                                codes
                                (elm-unary "ToList" codes #f))))
-  (values (if (and (not cmp) (equal? ct "ValueSet") (valueset-alternative? m qname code-property))
-              ;; the element maps a ValueSet as well (QI-Core's NotDone profiles: the value set the
-              ;; action was not done for): those records match by `~`, the others by `in`
-              (elm-nary "Union" (list (retrieve-node qname code-property "in" codes*)
-                                      (retrieve-node qname code-property "~" codes*))
-                        #f)
-              (retrieve-node qname code-property comparator codes*))
+  (values (cond
+            ;; the element maps a ValueSet as well (QI-Core's NotDone profiles: the value set the
+            ;; action was not done for): those records match by `~`, the others by `in`
+            [(and (not cmp) (equal? ct "ValueSet") (valueset-alternative? m qname code-property))
+             (elm-nary "Union" (list (retrieve-node qname code-property "in" codes*)
+                                     (retrieve-node qname code-property "~" codes*))
+                       #f)]
+            [else (retrieve-node qname code-property comparator codes*)])
           (list-ctype qname)))
+
 ;; valueset-alternative? : model class path -> boolean   the element's mapping has a System.ValueSet
 ;; alternative
 (define (valueset-alternative? m qname path)
@@ -1101,10 +1113,8 @@
   (elm-nary "Equal" (list (target-to-system tm n (elem* t)) (elm-literal "String" text)) "Boolean"))
 ;; target-to-system : model elm type -> elm   through the target model's conversion (FHIRHelpers.ToString)
 (define (target-to-system tm n t)
-  (define conv (and (string? t) (model-conversion tm t)))
-  (define fn (and conv (regexp-match #rx"^([^.]+)[.](.+)$" (cdr conv))))
-  (define alias (and fn (include-alias-for (string->symbol (cadr fn)))))
-  (if alias (elm-function-ref (caddr fn) alias (list n) (let ([s (ctype->elm-type t)]) (and s (list s)))) n))
+  (define c (type-conversion tm t))
+  (if (and c (conversion-alias c)) (converted c n t) n))
 
 ;; ---- queries ---------------------------------------------------------------
 ;; sources/lets bind aliases with their element types; relationships, where, return and aggregate
@@ -1208,15 +1218,17 @@
   (define spec (and choice (ctype->elm-type choice)))
   (cond
     [spec (values (for/list ([b (in-list promoted)])
-                    (if (or (equal? (cdr b) choice) (not (known (cdr b)))) (typed-null (car b) (cdr b) choice) (elm-as (car b) spec #f)))
+                    ;; (a branch that is a choice already is within the result, and stays as it is)
+                    (if (or (choice-ctype? (cdr b)) (not (known (cdr b)))) (typed-null (car b) (cdr b) choice) (elm-as (car b) spec #f)))
                   choice)]
     [else (values (for/list ([b (in-list promoted)]) (typed-null (car b) (cdr b) rt)) rt)]))
 ;; branch-choice : (listof CType) -> CType|#f   the choice several distinct branch types meet at: none
-;; for one type, nor when one of them is a supertype of the rest (the branches are of that type)
+;; for one type, nor when one of them is a supertype of the rest (the branches are of that type), nor
+;; among tuples (tuples of one shape whose elements differ in type are compatible, not alternatives)
 (define (branch-choice ts)
   (define m (lctx-model (L)))
   (define (covers? t) (for/and ([u (in-list ts)]) (or (equal? u t) (and m (string? u) (string? t) (model-subtype? m u t)))))
-  (and (pair? ts) (pair? (cdr ts)) (not (ormap covers? ts))
+  (and (pair? ts) (pair? (cdr ts)) (not (ormap covers? ts)) (not (ormap tuple-ctype? ts))
        (choice-ctype (remove-duplicates (append-map choice-members ts)))))
 (define (model-type? t) (and (string? t) (regexp-match? #rx"[.]" t)))
 
@@ -1369,7 +1381,6 @@
         'Split '(nary . #f) 'LastPositionOf '(nary . "Integer") 'Matches '(nary . "Boolean")
         'ReplaceMatches '(nary . "String") 'Message '(nary . #f)
         'Predecessor '(unary . #f) 'Successor '(unary . #f)
-        'ToDate '(unary . "Date") 'ToDateTime '(unary . "DateTime") 'ToTime '(unary . "Time")
         'Today '(nary . "Date") 'Now '(nary . "DateTime") 'TimeOfDay '(nary . "Time")
         'Precision '(unary . "Integer") 'LowBoundary '(nary . #f) 'HighBoundary '(nary . #f)
         'descendents '(unary . #f) 'ToConcept '(unary . "Concept") 'ToCode '(unary . "Code")))
@@ -1387,7 +1398,6 @@
     [(DateTime) (values (elm-datetime (arg 0) (arg 1) (arg 2) (arg 3) (arg 4) (arg 5) (arg 6) (arg 7)) "DateTime")]))
 
 ;; a bare calendar-unit word used as a per-step (expand … per day) means "1 <unit>"
-(define calendar-units '(year years month months week weeks day days hour hours minute minutes second seconds millisecond milliseconds))
 (define (normalize-per-arg a)
   (if (and (cql-ref? a) (memq (cql-ref-name a) calendar-units))
       (cql-lit (qty-lit 1 (symbol->string (cql-ref-name a))))
@@ -1452,9 +1462,8 @@
      (values (elm-query (list (cons "$this" tn)) '() '() #f r #f #f #f) (list-ctype rt))]
     ['empty (values (elm-unary "Not" (elm-unary "Exists" tn "Boolean") "Boolean") "Boolean")]
     ;; skip(n) / take(n) / tail() are Slice(source, start, end)
-    ['skip (values (elm-nary "Slice" (list tn (compile1 (car args) env) (elm-null #f)) #f) tt)]
-    ['take (values (elm-nary "Slice" (list tn (elm-literal "Integer" "0") (compile1 (car args) env)) #f) tt)]
-    ['tail (values (elm-nary "Slice" (list tn (elm-literal "Integer" "1") (elm-null #f)) #f) tt)]
+    [(or 'skip 'take 'tail)
+     (values (slice (capitalize op) (cons tn (for/list ([a (in-list args)]) (compile1 a env)))) tt)]
     [(or "First" "Last" "SingletonFrom") (values (elm-unary op tn #f) el)]
     ["Count" (values (elm-unary op tn "Integer") "Integer")]
     ["Exists" (values (elm-unary op tn "Boolean") "Boolean")]
@@ -1564,10 +1573,9 @@
     [(and (choice-ctype? to) (choice-ctype? from) (eqv? (conversion-cost from to) 1)
           (exact-overlap from to))
      => (lambda (ms)
-          (define (spec m) (if (string? m) (ctype->elm-name m) (ctype->elm-type m)))
           (define whole (ctype->elm-type to))
           (elm-case #f (for/list ([m (in-list ms)])
-                         (elm-case-item (elm-is n (spec m)) (elm-as (elm-as n (spec m) #f) whole #f)))
+                         (elm-case-item (elm-is n (member-spec m)) (elm-as (elm-as n (member-spec m) #f) whole #f)))
                     (elm-null #f)))]
     [(and (choice-ctype? to) (choice-ctype? from) (eqv? (conversion-cost from to) 1))
      (let ([spec (ctype->elm-type to)]) (if spec (elm-as n spec #f) n))]
@@ -1624,12 +1632,12 @@
   (values (elm-precision-op (if (or at? calc?) "CalculateAgeAt" "CalculateAge") prec converted) "Integer"))
 
 ;; system functions (the operator registry's names), operands converted to System types
-(define (compile-system-call target name args env)
+(define (compile-system-call target name0 args env)
   ;; method-style x.f(args) is sugar for f(x, args)
   (define all-args (if target (cons target args) args))
   ;; FHIRPath-style lowercase names reach the System function: x.toDateTime() = ToDateTime(x)
-  (define spec (or (hash-ref system-ops name #f) (hash-ref system-ops (capitalize name) #f)))
-  (set! name (if (hash-ref system-ops name #f) name (capitalize name)))
+  (define name (if (hash-ref system-ops name0 #f) name0 (capitalize name0)))
+  (define spec (hash-ref system-ops name #f))
   (cond
     [(not spec) (fail (format "unknown function '~a'~a" name
                               (did-you-mean (format "~a" name)
@@ -1659,12 +1667,27 @@
            (values nodes0 types0)))
      (define rt (cdr spec))
      (define t (or rt (derived-result-type name types)))
-     (case (car spec)
+     (case (and (not (memq name '(Skip Take Tail))) (car spec))
+       [(#f) (values (slice name nodes) t)]
        [(unary)
         (unless (= 1 (length nodes)) (fail (format "~a expects 1 argument" name)))
         (values (elm-unary (symbol->string name) (car nodes) rt) t)]
        [(nary)
         (values (elm-nary (symbol->string name) (with-default-operands name nodes) rt) t)])]))
+
+;; slice : 'Skip|'Take|'Tail (listof elm) -> elm   ELM has no Skip, Take or Tail: each is the Slice the
+;; reference translator writes — Skip(X, n) = Slice(X, n, null) ; Take(X, n) = Slice(X, 0,
+;; Coalesce(n, 0)) (a null count takes nothing) ; Tail(X) = Slice(X, 1, null)
+(define (slice name nodes)
+  (define (int n) (elm-literal "Integer" (number->string n)))
+  (match* (name nodes)
+    [('Skip (list source n)) (elm-nary "Slice" (list source n (elm-null #f)) #f)]
+    [('Take (list source n)) (elm-nary "Slice" (list source (int 0) (elm-nary "Coalesce" (list n (int 0)) #f)) #f)]
+    [('Tail (list source)) (elm-nary "Slice" (list source (int 1) (elm-null #f)) #f)]
+    [('Tail _) (fail (format "Tail takes a list, got ~a arguments" (length nodes)))]
+    ;; a query inside it swallowed `, n` as a second sort item: `Take(X sort by Y desc, 2)`
+    [(_ _) (fail (format "~a takes a list and a count, got ~a argument(s) (a query inside it reads `sort by …, 2` as two sort items: put the query in parentheses)"
+                         name (length nodes)))]))
 
 ;; with-default-operands : sym (listof elm) -> (listof elm)   ELM's Collapse and Expand are binary (the
 ;; source and `per`): written without a `per`, the second operand is Null, as the reference writes it
@@ -1738,12 +1761,13 @@
 ;; ctype->elm-name : CType(string) -> "{urn:hl7-org:elm-types:r1}Integer" | "{http://hl7.org/fhir}Period"
 (define (ctype->elm-name s)
   (define m (lctx-model (L)))
-  (cond [(and (mapping-model? m) (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name m)) "[.]")) s))
-         (format "{~a}~a" (model-target-url m) (physical-name m s))]
-        [(and (mapping-model? m) (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name (target-model m))) "[.]")) s))
-         (format "{~a}~a" (model-target-url m) (strip-ns s))]
-        [(and m (regexp-match? (pregexp (string-append "^" (regexp-quote (model-name m)) "[.]")) s))
-         (format "{~a}~a" (model-url m) (local-name s))]
+  ;; of-model? : model -> boolean   `s` is a type of that model: "<its name>.<…>"
+  (define (of-model? x) (let ([n (model-name x)]) (and (> (string-length s) (string-length n))
+                                                       (string-prefix? s n)
+                                                       (char=? (string-ref s (string-length n)) #\.))))
+  (cond [(and (mapping-model? m) (of-model? m)) (format "{~a}~a" (model-target-url m) (physical-name m s))]
+        [(and (mapping-model? m) (of-model? (target-model m))) (format "{~a}~a" (model-target-url m) (strip-ns s))]
+        [(and m (of-model? m)) (format "{~a}~a" (model-url m) (local-name s))]
         [(regexp-match? #rx"[.{]" s) s]
         [else (system-type-name s)]))
 

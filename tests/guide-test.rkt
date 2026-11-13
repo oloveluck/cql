@@ -13,7 +13,7 @@
          (only-in cql/workspace guide)
          cql/run
          (only-in cql/value render)
-         (only-in fhir/result/result ok? ok-value err-error))
+         (only-in fhir/result/result ok? ok-value err? err-error))
 
 (define-runtime-path guide-file "../guide.md")
 (define text (file->string guide-file))
@@ -82,6 +82,13 @@
   ;; the guide quotes that message
   (check-regexp-match (regexp-quote "'mL/min/1.73m2' is not a UCUM unit (did you mean `mL/min/{1.73_m2}`?)")
                       (string-normalize-spaces text)))
+
+(test-case "a bare unit is refused, as the guide says"
+  (define r (parse-cql "library T\ndefine \"Dose\": 5 mg\n"))
+  (check-true (err? r))
+  (check-regexp-match (regexp-quote "a quantity's unit is written in quotes: 5 'mg'") (cql-error-string (err-error r)))
+  (check-regexp-match (regexp-quote "a quantity's unit is written in quotes: 5 'mg'") (string-normalize-spaces text))
+  (check-true (ok? (parse-cql "library T\ndefine \"Dose\": 5 'mg'\ndefine \"Wait\": 3 days\n"))))
 
 (test-case "the recipe's variations answer as the guide says"
   (define (obs id date value)

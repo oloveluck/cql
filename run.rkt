@@ -20,15 +20,13 @@
 (require racket/contract racket/match racket/list racket/string racket/file racket/runtime-path json
          "parser/ast.rkt"
          (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
-         (only-in "error.rkt" cql-error-string)
-         (only-in "compile.rkt" compile-library compile-library/partial compile-expr current-library-resolver)
+         (only-in "compile.rkt" compile-library/partial compile-expr current-library-resolver)
          (only-in "interp.rkt" make-rlib rlib-value runtime rlib? eval-elm make-ienv)
          (only-in "elm/ast.rkt" elm-library-parameters elm-parameter-def-name elm-parameter-def-default)
-         (only-in "value.rkt" current-evaluation-offset)
+         (only-in "value.rkt" current-evaluation-offset model-node? model-node-data)
          (only-in "error.rkt" cql-error? cql-error-string)
          (only-in "model/modelinfo.rkt" model? model-name model-context context-info-type context-info-key-element model-relationships model-subtype?)
          (only-in "representation.rkt" model-representation record-type-name record->node node-property reference-key)
-         (only-in "value.rkt" model-node? model-node-data)
          (only-in fhir/data-source bundle-resources)
          (only-in "cqm.rkt" cqm-patient-records)
          (only-in fhir/result/result ok? ok-value err-error))
@@ -83,8 +81,25 @@
   ;; offset: the evaluation request's timezone offset in minutes (DateTimes written without one take it)
   (define rt (runtime data valuesets offset))
   (define memo (make-hash))
+  ;; include-closure : cql-library -> (listof cql-library|#f)   what the library's translation reads
+  ;; besides its own text: the libraries its includes resolve to, and theirs, depth first (#f: an
+  ;; include that is not found; a cycle adds nothing)
+  (define closures (make-hasheq))
+  (define (include-closure ast)
+    (hash-ref! closures ast
+               (lambda ()
+                 (hash-set! closures ast '())
+                 (append* (for/list ([d (in-list (cql-library-defs ast))] #:when (cql-include? d))
+                            (define src (resolver (cql-include-lib d) (cql-include-version d)))
+                            (cons src (if src (include-closure src) '())))))))
+  ;; compile1 : cql-library -> elm-library   translated once for the same library over the same includes
   (define (compile1 ast)
-    (hash-ref! compiled-libraries ast (lambda () (compile1* ast))))
+    (define includes (include-closure ast))
+    (define hit (hash-ref compiled-libraries ast #f))
+    (cond [(and hit (same-libraries? (translation-includes hit) includes)) (translation-elm hit)]
+          [else (define elm (compile1* ast))
+                (hash-set! compiled-libraries ast (translation elm includes))
+                elm]))
   ;; a library whose definitions partly fail to translate still runs: a failed definition raises its
   ;; error when evaluated (a library that does not translate at all is an error here)
   (define (compile1* ast)
@@ -122,8 +137,16 @@
   (lambda (name version) (hash-ref! memo (cons name version) (lambda () (resolver name version)))))
 
 ;; compiled ELM by library AST (parse-cql memoises ASTs by source text, so the same CQL is the same
-;; object): evaluating a measure for many patients compiles each library once
+;; object): evaluating a measure for many patients compiles each library once.
+;; A Translation is (translation elm includes): a library's ELM and the libraries its includes
+;; resolved to when it was translated (its include closure). The ELM is typed by them — which
+;; overload a call names, which conversions an operand gets — so it is the library's translation only
+;; while they are the same: an included library edited between two runs of a server (the includer's
+;; own text unchanged) used to leave the includer running ELM typed by the old one.
+(struct translation (elm includes))
 (define compiled-libraries (make-weak-hasheq))
+;; same-libraries? : (listof cql-library|#f) (listof cql-library|#f) -> boolean   the same objects, in order
+(define (same-libraries? a b) (and (= (length a) (length b)) (andmap eq? a b)))
 
 ;; resources->data : Resources [#:patient-context?] -> (class-name model -> (listof jsexpr))
 ;; Patient context: when the data holds exactly one record of the model's Patient context class, a
@@ -341,6 +364,16 @@
   (check-false (hash-ref (tx "http://x/vs2") (cons "http://x/cs" "a") #f))
   (check-false (tx "http://x/none"))
   (check-true (truthy? (list 1))) (check-false (truthy? '())) (check-false (truthy? #f))
+  ;; a library is translated again when a library it includes is another one: Main's call names the
+  ;; overload by its argument's type, which is Lib's to say (it kept calling F(Integer) after Lib's
+  ;; "V" became a Decimal, and answered 'int')
+  (define main (ok-value (parse-cql "library Main\ninclude Lib called L\ndefine R: L.F(L.\"V\")\n")))
+  (define (lib-with v)
+    (ok-value (parse-cql (format "library Lib\ndefine \"V\": ~a\ndefine function F(x Integer): 'int'\ndefine function F(x Decimal): 'dec'\n" v))))
+  (define (run-main lib) (rlib-value (load-runtime-library main #:resolver (lambda (n v) (and (eq? n 'Lib) lib))) "R"))
+  (check-equal? (run-main (lib-with "1")) "int")
+  (check-equal? (run-main (lib-with "1.5")) "dec")
+  (check-equal? (run-main (lib-with "1")) "int")
   ;; a caching resolver asks the underlying one once per (name, version)
   (define asked 0)
   (define r (caching-resolver (lambda (n v) (set! asked (add1 asked)) (and (eq? n 'A) 'library-a))))

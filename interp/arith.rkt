@@ -6,9 +6,9 @@
 ;;; the left operand is a moment (temporal.rkt's moment-duration).
 
 (require (only-in racket/list last)
-         (only-in fhirpath/decimal fp-decimal? parse-decimal integer->decimal decimal->exact decimal->string
+         (only-in fhirpath/decimal parse-decimal decimal->string
                   decimal-add decimal-sub decimal-mul decimal-div decimal-round)
-         (only-in fhirpath/value fp-long fp-long? fp-long-v fp-quantity fp-quantity? fp-quantity-value fp-quantity-unit)
+         (only-in fhirpath/value fp-long fp-quantity fp-quantity? fp-quantity-value fp-quantity-unit)
          (only-in fhirpath/quantity quantity-add quantity-sub)
          (only-in fhirpath/temporal-ops moment?)
          "../value.rkt" "base.rkt" "temporal.rkt")

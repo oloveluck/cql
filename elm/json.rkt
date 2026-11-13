@@ -227,8 +227,6 @@
                         (hasheq 'name (symbol->string (elm-tuple-elem-name te))
                                 'value (expr->jsexpr (elm-tuple-elem-value te)))))]
     [(elm-query? e)
-     ;; NOTE: a reduced ELM Query shape (full ELM AliasedQuerySource/RelationshipClause detail is a
-     ;; deferred canonicalization) — sufficient to describe the query; the interpreter runs it.
      (drop-false
       (hasheq 'type "Query"
               'source (for/list ([s (in-list (elm-query-sources e))])
@@ -248,7 +246,16 @@
                            (let ([h (hasheq 'expression (expr->jsexpr (elm-query-ret e)))])
                              (case (elm-query-ret-distinct e)
                                [(#t) (hash-set h 'distinct #t)] [(all) (hash-set h 'distinct #f)] [else h])))
-              'sort (and (elm-query-sort e) (hasheq 'by (map sort-by->jsexpr (elm-query-sort e))))))]
+              'sort (and (elm-query-sort e) (hasheq 'by (map sort-by->jsexpr (elm-query-sort e))))
+              ;; the AggregateClause: (list identifier distinct? starting|#f expression). It was left
+              ;; out, so a query that aggregates read, in JSON, as one that returns its rows
+              'aggregate (match (elm-query-agg e)
+                           [(list identifier distinct? starting expression)
+                            (hash-set (drop-false (hasheq 'identifier identifier
+                                                          'starting (opt-expr starting)
+                                                          'expression (expr->jsexpr expression)))
+                                      'distinct (eq? distinct? #t))]      ; written either way, as the reference does
+                           [#f #f])))]
     [(elm-retrieve? e)
      (drop-false (hasheq 'type "Retrieve" 'dataType (elm-retrieve-data-type e)
                          'templateId (elm-retrieve-template-id e)
@@ -265,9 +272,12 @@
     [(elm-concept? e)
      (drop-false (hasheq 'type "Concept" 'code (map expr->jsexpr (elm-concept-codes e)) 'display (elm-concept-display e)))]
     [(elm-in-valueset? e)
-     (hasheq 'type (elm-in-valueset-kind e)
-             (if (regexp-match? #rx"^Any" (elm-in-valueset-kind e)) 'codes 'code) (expr->jsexpr (elm-in-valueset-code e))
-             'valueset (expr->jsexpr (elm-in-valueset-valueset e)))]
+     ;; `"VS" contains x` names its value set as an expression too, as the reference translator writes it
+     (define vs (expr->jsexpr (elm-in-valueset-valueset e)))
+     (define h (hasheq 'type (elm-in-valueset-kind e)
+                       (if (regexp-match? #rx"^Any" (elm-in-valueset-kind e)) 'codes 'code) (expr->jsexpr (elm-in-valueset-code e))
+                       'valueset vs))
+     (if (elm-in-valueset-as-expression? e) (hash-set h 'valuesetExpression vs) h)]
     [(elm-minmax? e)
      (hasheq 'type (if (eq? (elm-minmax-which e) 'min) "MinValue" "MaxValue") 'valueType (elm-minmax-value-type e))]
     [(elm-precision-op? e)
@@ -381,6 +391,12 @@
                 (hasheq 'type "Ratio" 'numerator (hasheq 'value 5 'unit "mg") 'denominator (hasheq 'value 10 'unit "mL")))
   (check-equal? (expr->jsexpr (elm-nary "Today" '() "Date")) (hasheq 'type "Today" 'resultTypeName "{urn:hl7-org:elm-types:r1}Date"))
   (check-true (string? (elm->json-string (elm-quantity "1.50" "mg"))))
+  ;; a query's aggregate clause is written (it was dropped)
+  (check-equal? (hash-ref (expr->jsexpr (elm-query (list (cons "X" (elm-list '()))) '() '() #f #f #f #f
+                                                   (list "R" #f (elm-literal "Integer" "0") (elm-operand-ref "R"))))
+                          'aggregate)
+                (hasheq 'identifier "R" 'distinct #f 'starting (expr->jsexpr (elm-literal "Integer" "0"))
+                        'expression (hasheq 'type "OperandRef" 'name "R")))
   ;; interval with closed flags
   (check-equal? (hash-ref (expr->jsexpr (elm-interval (elm-literal "Integer" "1") (elm-literal "Integer" "10") #t #f)) 'highClosed) #f)
   ;; a whole library round-trips to a JSON string containing the library wrapper

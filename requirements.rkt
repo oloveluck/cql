@@ -23,7 +23,9 @@
   [library-requirements (-> hash? (-> string? (or/c string? #f) (or/c string? #f))
                             (values (listof hash?) (listof hash?)))]))
 
+;; defs : elm-library-json key -> (listof jsexpr)   a section's definitions (`includes`, `valueSets`, …)
 (define (defs lib key) (let ([section (hash-ref lib key #f)]) (if (hash? section) (hash-ref section 'def '()) '())))
+;; versioned : url version|#f -> canonical   `url|version` when there is a version
 (define (versioned url version) (if (and (string? version) (not (string=? version ""))) (string-append url "|" version) url))
 
 (define (library-requirements elm library-canonical)
@@ -42,25 +44,28 @@
        (depends-on (format "Code system ~a" (hash-ref cs 'name "")) (versioned (hash-ref cs 'id) (hash-ref cs 'version #f))))
      (for/list ([vs (in-list value-sets)] #:when (string? (hash-ref vs 'id #f)))
        (depends-on (format "Value set ~a" (hash-ref vs 'name "")) (versioned (hash-ref vs 'id) (hash-ref vs 'version #f))))))
-  ;; code-filter : Retrieve -> (listof codeFilter)   by value set, or by the code(s) a CodeRef names
+  ;; coding : code-name -> (hasheq code [system]) | #f   the code a CodeRef names, with its code
+  ;; system's url when the library declares one
+  (define (coding name)
+    (define c (named codes name))
+    (define system (and c (named code-systems (hash-ref (hash-ref c 'codeSystem (hasheq)) 'name #f))))
+    (define url (and system (hash-ref system 'id #f)))
+    (and c (let ([h (hasheq 'code (hash-ref c 'id ""))]) (if url (hash-set h 'system url) h))))
+  ;; code-filter : Retrieve -> (listof codeFilter)   by value set, or by the code a CodeRef names
+  ;; (alone, or as the list a retrieve by one code is written with); none without a code path
   (define (code-filter r)
     (define path (hash-ref r 'codeProperty #f))
-    (define (coding ref)
-      (define c (named codes (hash-ref ref 'name #f)))
-      (define system (and c (named code-systems (hash-ref (hash-ref c 'codeSystem (hasheq)) 'name #f))))
-      (and c (for/fold ([h (hasheq 'code (hash-ref c 'id ""))]) ([s (in-value (and system (hash-ref system 'id #f)))] #:when s)
-               (hash-set h 'system s))))
-    (match (hash-ref r 'codes #f)
-      [(hash-table ('type "ValueSetRef") ('name name) _ ...)
-       (define vs (named value-sets name))
-       (if (and path vs) (list (hasheq 'path path 'valueSet (versioned (hash-ref vs 'id "") (hash-ref vs 'version #f)))) '())]
-      [(hash-table ('type "ToList") ('operand (hash-table ('type "CodeRef") ('name name) _ ...)) _ ...)
-       (define c (coding (hasheq 'name name)))
-       (if (and path c) (list (hasheq 'path path 'code (list c))) '())]
-      [(hash-table ('type "CodeRef") ('name name) _ ...)
-       (define c (coding (hasheq 'name name)))
-       (if (and path c) (list (hasheq 'path path 'code (list c))) '())]
-      [_ '()]))
+    (define by
+      (match (hash-ref r 'codes #f)
+        [(hash-table ('type "ValueSetRef") ('name name) _ ...)
+         (define vs (named value-sets name))
+         (and vs (hasheq 'valueSet (versioned (hash-ref vs 'id "") (hash-ref vs 'version #f))))]
+        [(or (hash-table ('type "CodeRef") ('name name) _ ...)
+             (hash-table ('type "ToList") ('operand (hash-table ('type "CodeRef") ('name name) _ ...)) _ ...))
+         (define c (coding name))
+         (and c (hasheq 'code (list c)))]
+        [_ #f]))
+    (if (and path by) (list (hash-set by 'path path)) '()))
   (define (requirement r)
     (define type (last (regexp-split #rx"[}]" (hash-ref r 'dataType ""))))
     (for/fold ([dr (hasheq 'type type)])

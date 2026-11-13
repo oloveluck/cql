@@ -32,8 +32,12 @@
 (struct map-field (name) #:prefab)
 (struct map-filter (conditions) #:prefab)
 
-;; parse-mapping : string -> Mapping   raises on text outside the grammar
-(define (parse-mapping s)
+;; parse-mapping : string -> Mapping   raises on text outside the grammar. Parsed once per text: the
+;; translator asks for an element's mapping at every use of the element (a tenth of the time it took
+;; to translate the QI-Core corpus), and a Mapping is immutable.
+(define parsed (make-weak-hash))
+(define (parse-mapping s) (hash-ref! parsed s (lambda () (parse-mapping* s))))
+(define (parse-mapping* s)
   (for/list ([alt (in-list (split-top s #\;))])
     (match (regexp-match #px"^\\s*([A-Za-z][A-Za-z0-9_.]*)\\s*:(?!:)(.*)$" alt)
       [(list _ type rest) #:when (not (regexp-match? #rx"^[%]" (string-trim alt))) (cons type (parse-term (string-trim rest)))]

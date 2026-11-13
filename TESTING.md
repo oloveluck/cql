@@ -8,11 +8,12 @@ that only rises. `raco test .` runs them all; the commands below run one with it
 | Suite | What it checks | Result |
 |---|---|---|
 | HL7 CQL suite (cqframework/cql-tests) | each expression compiled to ELM, run, and compared with the expected value | 1820/1823 |
-| Published libraries (FHIRHelpers, CQF Measures, the CQL IG) | each of 32 libraries parses and compiles; each definition's ELM compared with the reference translator's | 32/32 compile; 770/803 definitions ELM-identical |
-| QI-Core libraries (cqframework/ecqm-content-qicore-2024, `tests/qicore-elm-corpus-test.rkt`) | the 98 libraries of the 2024 eCQMs, written against QI-Core 4.1.1: each parses and compiles to ELM over FHIR; each definition's ELM compared with the reference translator's (3.25.0) | 98/98 compile; 1854/2144 definitions ELM-identical |
+| Published libraries (FHIRHelpers, CQF Measures, the CQL IG) | each of 32 libraries parses and compiles; each definition's ELM compared with the reference translator's | 32/32 compile; 786/803 definitions ELM-identical |
+| QI-Core libraries (cqframework/ecqm-content-qicore-2024, `tests/qicore-elm-corpus-test.rkt`) | the 98 libraries of the 2024 eCQMs, written against QI-Core 4.1.1: each parses and compiles to ELM over FHIR; each definition's ELM compared with the reference translator's (3.25.0) | 98/98 compile; 1932/2144 definitions ELM-identical |
 | QI-Core eCQMs (`tests/qicore-measure-test.rkt`) | Breast and Cervical Cancer Screening, Controlling High Blood Pressure, Diabetes Glycemic Status > 9%, over their 190 MADiE test cases: populations against each case's MeasureReport | 188/190 |
-| QDM libraries (cqm-execution's fixtures, `tests/qdm-elm-corpus-test.rkt`) | 42 libraries (QDM 5.0.2 to 5.6) and the ELM their measure documents carry | 41/42 compile; 555/723 definitions ELM-identical (older translators) |
+| QDM libraries (cqm-execution's fixtures, `tests/qdm-elm-corpus-test.rkt`) | 42 libraries (QDM 5.0.2 to 5.6) and the ELM their measure documents carry | 41/42 compile; 559/723 definitions ELM-identical (older translators) |
 | QDM measures (`tests/qdm-measure-test.rkt`) | 19 measures over 33 cqm-models patients: cqm-execution's own assertions (proportion, several population sets with strata, continuous-variable and ratio observations), then the expected values stored in the patients | all 31 assertions; 16/26 stored |
+| ELM shapes (`tests/elm-shape-test.rkt`) | construct by construct, the ELM the corpora made this translator write (a union chain's grouping, `ValueSet contains x`, a point beside an interval, a multi-source query's return, an aggregate, typed lists, branches of different types, Skip/Take/Tail as Slice …), each with the value it evaluates to | passes |
 | Mapping models (`tests/mapping-model-test.rkt`) | QI-Core and US Core over FHIR JSON: profile retrieves, mapped elements, QI-Core's NotDone value set, `convert … to days` | passes |
 | eCQMs (cqframework/ecqm-content-r4-2021) | four measures over their 76 test patients: populations against the expected results | 71/76 |
 | Evaluator differential | the compiled evaluator against the tree walker, result by result, over the three corpora above | 0 of 6,206 results differ |
@@ -56,8 +57,25 @@ names them):
 - `no-ip-CMS122-Patient`, whose MeasureReport leaves out a patient that meets every initial-population
   criterion.
 
-**Published libraries:** the 34 definitions whose ELM differs are printed by
-`tests/elm-corpus-test.rkt`, classified by the kind and path of the first difference.
+**Published libraries:** the 17 definitions whose ELM differs are printed by
+`tests/elm-corpus-test.rkt` (and the QI-Core and QDM ones by their tests), classified by the nodes
+at the first difference — what the reference wrote and what this translator wrote there
+(`Union | Retrieve`, `FunctionRef:ToConcept | Property.code`). The largest classes left:
+- `Union | Retrieve` (QI-Core, 56): the reference translator follows a code element through a
+  reference — `[MedicationRequest: "VS"]` is also the requests whose `medication` references a
+  Medication coded in the value set. Not written here yet (the manual's Limits say so).
+- a property of a value typed as a choice of resources (`ToValue | Property.performed`): the reference
+  resolves the property on each member.
+- EXM108's lists of mixed resource types passed through `Coalesce` and `in`.
+- `Example/includesOrStartsDuring`: the two packages' translators pick different choice members.
+
+What the comparison leaves out, because the corpus packages' translators disagree with each other
+or because it carries no meaning: translator metadata (localId, locator, annotations, result types,
+signatures), empty lists, structural `type` tags, `strict: false`, the forms around value sets, a
+false `lowClosed`/`highClosed`, an empty String literal's `value`, a Ratio's parts' `type`, and the
+order of a ChoiceTypeSpecifier's choices (in the reference, a hash set's iteration order).
+`tests/elm-shape-test.rkt` pins, construct by construct, the shapes the corpora made this
+translator write.
 
 ## Running them
 
@@ -77,3 +95,10 @@ racket tests/bench.rkt               # timings under both evaluators
 `tests/bench.rkt` times the HL7 suite end to end, an evaluation loop, and the eCQM corpus, each under
 both evaluators (`CQL_ELM_EVALUATOR=tree` selects the tree walker). On the 76 eCQM patients, with
 their data read up front, one patient takes about 0.32 ms.
+
+Translating is parsing, mostly: the grammar's parser costs about 60 µs a token, and translating the
+98 QI-Core libraries is 13 s of parsing and 0.4 s of everything else. So a definition is parsed
+once: the same definition met again — in another library, under another file name, in a document
+being edited — is not parsed again (FHIRHelpers: 0.55 s the first time, 8 ms after an edit to one
+definition), and a definition that is one long list is parsed element by element (a 93,000-token
+code table: 27 s, now 5).

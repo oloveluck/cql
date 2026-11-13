@@ -8,7 +8,8 @@
 ;;; failure is caught and returned as (err (cql-error 'parse …)). Results are memoized (prefab ASTs
 ;;; are immutable, so sharing is safe).
 
-(require racket/contract
+(require racket/contract racket/match
+         (only-in racket/list take drop last)
          (prefix-in g: "grammar.rkt")
          "lexer.rkt"
          (only-in brag/support srcloc-token? srcloc-token-token srcloc-token-srcloc token-struct? token-struct-type
@@ -16,7 +17,7 @@
          "ast.rkt"
          (only-in "../error.rkt" cql-error)
          (only-in fhir/diagnostic exn->diagnostic diagnostic->string diagnostic diagnostic-loc loc loc-line loc-column loc-position
-                  exn:fail:diagnostic error-position attach-loc!)
+                  loc-source exn:fail:diagnostic error-position attach-loc! attached-loc)
          (only-in fhir/result/result ok err ok? err?))
 
 (provide
@@ -25,36 +26,157 @@
   [parse-cql      (->* (string?) (#:source (or/c string? path? #f)) (or/c ok? err?))]
   [parse-cql-expr (-> string? (or/c ok? err?))]))  ; (ok expr-AST)   | (err cql-error)
 
+;; a bare expression (and a long list's element) is parsed as the body of this throwaway definition
+(define expr-prefix "define __expr__: ")
+
+;; The caches. A parse is the same for the same text, so results are kept — but a language server
+;; parses a document at every keystroke and a workspace server lives for days, so each cache is
+;; BOUNDED: when it reaches its limit it is emptied (the next parse of a text fills it again; nothing
+;; relies on a cached AST being the same object beyond one evaluation, whose resolver holds it).
+;;   lib-cache   : (cons text source) -> Result<cql-library>
+;;   expr-cache  : text -> Result<expr>
+;;   chunk-cache : ChunkKey -> cql-library      one definition's tokens -> its AST (below)
 (define lib-cache (make-hash))
 (define expr-cache (make-hash))
+(define chunk-cache (make-hash))
+(define lib-cache-limit 512)
+(define expr-cache-limit 16384)
+(define chunk-cache-limit 16384)
+;; cached : table key limit (-> value) -> value   hash-ref!, emptying a table that has reached its limit
+(define (cached table key limit compute)
+  (hash-ref table key
+            (lambda ()
+              (define v (compute))
+              (when (>= (hash-count table) limit) (hash-clear! table))
+              (hash-set! table key v)
+              v)))
 
 (define (parse-cql str #:source [source #f])
-  (hash-ref! lib-cache (cons str source)
-             (lambda ()
-               (with-handlers ([exn:fail? (lambda (e) (parse-failure e source))])
-                 (ok (merge-libraries
-                      (for/list ([chunk (in-list (definition-chunks (open-input-string str)))])
-                        (with-handlers ([exn:fail? (lambda (e) (raise (chunk-failure e chunk source)))])
-                          (located (lower-library (g:parse-to-datum (list->token-thunk chunk))) chunk source)))))))))
+  (cached lib-cache (cons str source) lib-cache-limit
+          (lambda ()
+            (with-handlers ([exn:fail? (lambda (e) (parse-failure e source))])
+              (ok (merge-libraries
+                   (for/list ([chunk (in-list (definition-chunks (open-input-string str)))])
+                     (with-handlers ([exn:fail? (lambda (e) (raise (chunk-failure e chunk source)))])
+                       (located (parsed-chunk chunk) chunk source)))))))))
+
+;; ---- one definition's tokens -> its AST, parsed once -----------------------------------------
+;; A ChunkKey is (listof (cons token-type token-value)): a chunk's tokens without their positions and
+;; without the skipped ones (space, comments). What a chunk parses to depends on nothing else —
+;; positions go to diagnostics, and a parse that fails raises and is not kept — so a definition met
+;; again is not parsed again: the same library under another source name, an `include` or a value
+;; set declared by a hundred libraries, FHIRHelpers 4.0.1's functions in FHIRHelpers 4.4.000, and
+;; every definition of a document but the one being edited (the grammar's parser costs ~60 µs a
+;; token; of the 5,001 definitions of the QI-Core corpus 1,896 repeat an earlier one).
+;; chunk-key : tokens -> ChunkKey
+(define (chunk-key chunk)
+  (for*/list ([t (in-list chunk)] [k (in-value (probe-token t))] #:when k)
+    (cons (token-struct-type k) (token-struct-val k))))
+;; parsed-chunk : tokens -> cql-library   the chunk's definitions: fresh definition structs (each use
+;; attaches its own position to them) over the cached, immutable bodies
+(define (parsed-chunk chunk)
+  (define lib (cached chunk-cache (chunk-key chunk) chunk-cache-limit (lambda () (parse-chunk chunk))))
+  (cql-library (cql-library-id lib) (cql-library-version lib) (map fresh-definition (cql-library-defs lib))))
+;; fresh-definition : def -> def   the same definition as a new object (a prefab struct of any kind)
+(define (fresh-definition d)
+  (apply make-prefab-struct (prefab-struct-key d) (cdr (vector->list (struct->vector d)))))
+;; parse-chunk : tokens -> cql-library   raises the grammar's exception when the chunk does not parse
+(define (parse-chunk chunk)
+  (or (and (> (length chunk) long-list-tokens) (parse-long-list chunk #:at-least long-list-elements))
+      (lower-library (g:parse-to-datum (list->token-thunk chunk)))))
+
+;; ---- a definition that is one long list ------------------------------------------------------
+;; The grammar's parser is QUADRATIC in the number of a list's elements (100 elements: 0.1-0.3 s;
+;; 400: 1-3 s; 800: 3-8 s), and memory with it: a code table written as a list of a thousand tuples
+;; (`define "DrugIngredients": { {…}, {…}, … }`, 93,000 tokens in one of the QDM corpus's
+;; libraries) took 27 s, 18 of them collecting garbage. Such a definition — its body exactly a
+;; braced list, not a tuple — is parsed ELEMENT BY ELEMENT, the way a library is parsed definition
+;; by definition: the definition with an empty list, then each element as an expression, put
+;; together as the list. Anything that does not fit, and any element that does not parse, is left
+;; to the whole-definition parse, so every error is the one it was (at the price it was).
+(define long-list-tokens 400)      ; a shorter definition is not looked at
+(define long-list-elements 50)     ; a shorter list is parsed with its definition
+;; parse-long-list : tokens [#:at-least n] -> cql-library | #f   (#f also for a list of fewer elements)
+(define (parse-long-list chunk #:at-least [at-least 1])
+  (define toks (filter probe-token chunk))
+  (define (type-of t) (token-struct-type (probe-token t)))
+  (define (is? t . types) (and (memq (type-of t) types) #t))
+  ;; the body's `{`: directly after the first top-level `:` (the definition's own; an operand list's
+  ;; parentheses are skipped), closed by the last token
+  (define open-index
+    (let loop ([ts toks] [i 0] [depth 0])
+      (cond [(null? ts) #f]
+            [(is? (car ts) '|(| '|[| '|{| '<) (loop (cdr ts) (add1 i) (add1 depth))]
+            [(is? (car ts) '|)| '|]| '|}| '>) (loop (cdr ts) (add1 i) (sub1 depth))]
+            [(and (zero? depth) (is? (car ts) ':)) (and (pair? (cdr ts)) (is? (cadr ts) '|{|) (add1 i))]
+            [else (loop (cdr ts) (add1 i) depth)])))
+  (define elements (let ([es (and open-index (is? (last toks) '|}|) (list-elements (drop toks (add1 open-index))))])
+                     (and es (>= (length es) at-least) es)))
+  (with-handlers ([exn:fail? (lambda (_) #f)])
+    (match (and elements
+                (cql-library-defs (lower-library (g:parse-to-datum
+                                                  (list->token-thunk (append (take toks (add1 open-index)) (list (last toks))))))))
+      [(list (cql-def name access (cql-list '())))
+       (cql-library #f #f (list (cql-def name access (cql-list (map parse-element elements)))))]
+      [(list (cql-func name access operands result-type (cql-list '()) fluent?))
+       (cql-library #f #f (list (cql-func name access operands result-type (cql-list (map parse-element elements)) fluent?)))]
+      [_ #f])))
+;; list-elements : tokens -> (listof tokens) | #f   the tokens after a list's `{`, up to the `}` that
+;; ends them, split at its commas; #f when the brace closes before the end, when an element is empty,
+;; or when it is a tuple (`{ name: value, … }`)
+(define (list-elements toks)
+  (define (type-of t) (token-struct-type (probe-token t)))
+  (and (not (and (pair? toks) (pair? (cdr toks)) (eq? (type-of (cadr toks)) ':)))
+       (let loop ([ts toks] [depth 0] [cur '()] [acc '()])
+         (cond [(null? ts) #f]
+               [(and (zero? depth) (eq? (type-of (car ts)) '|}|))
+                (and (null? (cdr ts)) (pair? cur) (reverse (cons (reverse cur) acc)))]
+               [(and (zero? depth) (eq? (type-of (car ts)) '|,|))
+                (and (pair? cur) (loop (cdr ts) depth '() (cons (reverse cur) acc)))]
+               [(memq (type-of (car ts)) '(|(| |[| |{|)) (loop (cdr ts) (add1 depth) (cons (car ts) cur) acc)]
+               [(memq (type-of (car ts)) '(|)| |]| |}|)) (loop (cdr ts) (sub1 depth) (cons (car ts) cur) acc)]
+               [else (loop (cdr ts) depth (cons (car ts) cur) acc)]))))
+;; parse-element : tokens -> expr   one list element, as the body of a throwaway definition
+(define element-prefix
+  (let ([next (tokenize (open-input-string expr-prefix))])
+    (let loop () (let ([t (next)]) (if (void? t) '() (cons t (loop)))))))
+(define (parse-element toks)
+  (match (cql-library-defs (cached chunk-cache (cons 'element (chunk-key toks)) chunk-cache-limit
+                                   (lambda () (lower-library (g:parse-to-datum (list->token-thunk (append element-prefix toks)))))))
+    [(list (cql-def _ _ body)) body]))
 ;; located : cql-library tokens source -> cql-library   each definition remembers where it starts
 ;; (fhir/diagnostic attach-loc!) so translation errors can point at it
 (define (located lib chunk source)
   (define first (for/first ([t (in-list chunk)] #:when (probe-token t)) t))
   (when (and first (srcloc-token? first))
-    (define sl (srcloc-token-srcloc first))
-    (define l (loc (and source (if (path? source) (path->string source) source))
-                   (srcloc-line sl) (and (srcloc-column sl) (add1 (srcloc-column sl))) (srcloc-position sl) (srcloc-span sl)))
+    (define l (token-loc first source))
     (for ([d (in-list (cql-library-defs lib))]) (attach-loc! d l)))
   lib)
+;; token-loc : srcloc-token source -> loc   where a token stands (1-based line and column)
+(define (token-loc t source)
+  (define sl (srcloc-token-srcloc t))
+  (loc (and source (if (path? source) (path->string source) source))
+       (srcloc-line sl) (and (srcloc-column sl) (add1 (srcloc-column sl))) (srcloc-position sl) (srcloc-span sl)))
 ;; chunk-failure : exn tokens source -> exn:fail:diagnostic   positioned; "the definition ends after"
-;; when the parse ran out of this definition's tokens
+;; when the parse ran out of this definition's tokens; a bare unit (`5 mg`) at the word
 (define (chunk-failure e chunk source)
   (define last-pos (for/last ([t (in-list chunk)] #:when (srcloc-token? t)
                               #:unless (let ([k (srcloc-token-token t)]) (and (token-struct? k) (token-struct-skip? k))))
                      (srcloc-position (srcloc-token-srcloc t))))
-  (define d (exn->diagnostic e 'cql #:source source #:last-position last-pos #:unit "definition"
-                             #:ran-out? (ran-out-probe chunk last-pos)))
+  (define d
+    (cond [(and (exn:fail:bare-unit? e) (bare-unit-token chunk (exn:fail:bare-unit-number e) (exn:fail:bare-unit-unit e)))
+           => (lambda (t) (diagnostic 'cql 'parse 'error (exn-message e) (token-loc t source)))]
+          [else (exn->diagnostic e 'cql #:source source #:last-position last-pos #:unit "definition"
+                                 #:ran-out? (ran-out-probe chunk last-pos))]))
   (exn:fail:diagnostic (diagnostic->string d) (current-continuation-marks) d))
+;; bare-unit-token : tokens number-lexeme word -> srcloc-token|#f   the word directly after that number
+(define (bare-unit-token chunk number unit)
+  (define real (filter (lambda (t) (and (srcloc-token? t) (probe-token t))) chunk))
+  (for/first ([n (in-list real)] [u (in-list (if (pair? real) (cdr real) '()))]
+              #:when (and (eq? (token-struct-type (probe-token n)) 'NUMBER) (equal? (token-struct-val (probe-token n)) number)
+                          (eq? (token-struct-type (probe-token u)) 'IDENTIFIER)
+                          (equal? (format "~a" (token-struct-val (probe-token u))) unit)))
+    u))
 
 ;; brag's general CFG parser is superlinear in input length, and FHIRHelpers is ~600 lines: parsing
 ;; it whole takes seconds. A library is a sequence of definitions, so we parse DEFINITION BY
@@ -105,7 +227,6 @@
 ;; one grammar (no separate expression start-rule) while letting the harness parse fragments.
 ;; parse-failure : exn source -> (err cql-error)   the message is the positioned one-liner; the
 ;; diagnostic rides along. #:prefix: characters the expression entry prepends on line 1.
-(define expr-prefix "define __expr__: ")
 (define (parse-failure e source #:prefix [prefix 0])
   (define d0 (exn->diagnostic e 'cql #:source source))
   (define d (let ([l (diagnostic-loc d0)])
@@ -116,19 +237,19 @@
   (err (cql-error 'parse (diagnostic->string d) d)))
 
 (define (parse-cql-expr str)
-  (hash-ref! expr-cache str
-             (lambda ()
-               (with-handlers ([exn:fail? (lambda (e) (parse-failure e #f #:prefix (string-length expr-prefix)))])
-                 (define lib (lower-library
-                              (g:parse-to-datum
-                               (tokenize (open-input-string (string-append expr-prefix str))))))
-                 (define defs (cql-library-defs lib))
-                 (cond
-                   [(and (pair? defs) (cql-def? (car defs))) (ok (cql-def-body (car defs)))]
-                   [else (err (cql-error 'parse "expected a single expression"))])))))
+  (cached expr-cache str expr-cache-limit
+          (lambda ()
+            (with-handlers ([exn:fail? (lambda (e) (parse-failure e #f #:prefix (string-length expr-prefix)))])
+              (define lib (lower-library
+                           (g:parse-to-datum
+                            (tokenize (open-input-string (string-append expr-prefix str))))))
+              (define defs (cql-library-defs lib))
+              (cond
+                [(and (pair? defs) (cql-def? (car defs))) (ok (cql-def-body (car defs)))]
+                [else (err (cql-error 'parse "expected a single expression"))])))))
 
 (module+ test
-  (require rackunit (only-in cql/error cql-error-diagnostic cql-error-string)
+  (require rackunit (only-in cql/error cql-error-string)
            (only-in fhir/result/result ok? ok-value err? err-error))
   (define (P s) (ok-value (parse-cql-expr s)))
   ;; literals
@@ -257,4 +378,62 @@
   (define (diag src) (cql-error-string (err-error (parse-cql src #:source "t.cql"))))
   (check-equal? (diag "library T\ndefine X: 1 + \ndefine Y: 2\n") "t.cql:2:13: cql parse error: the definition ends after `+`")
   (check-equal? (diag "library T\ndefine X: (1 + )\n") "t.cql:2:16: cql parse error: unexpected `)`")
-  (check-equal? (cql-error-string (err-error (parse-cql-expr "1 + * 2"))) "<input>:1:5: cql parse error: unexpected `*`"))
+  (check-equal? (cql-error-string (err-error (parse-cql-expr "1 + * 2"))) "<input>:1:5: cql parse error: unexpected `*`")
+  ;; a quantity's unit is a calendar word or a string (cql.g4's `unit`): `5 mg` is no quantity — it
+  ;; was read as `5 'mg'` — and the error is at the word
+  (check-equal? (P "5 days") (cql-lit (qty-lit 5 "days")))
+  (check-equal? (P "5 'mg'") (cql-lit (qty-lit 5 "mg")))
+  (check-equal? (diag "library T\ndefine X: 1\ndefine Y:\n  4 'mg' +\n  5 mg\n")
+                "t.cql:5:5: cql parse error: a quantity's unit is written in quotes: 5 'mg' (only the calendar words — years, months, … milliseconds — are written bare)")
+  (check-regexp-match #rx"a quantity's unit is written in quotes: 2.5 'mL'" (cql-error-string (err-error (parse-cql-expr "2.5 mL"))))
+
+  ;; ---- a definition parsed once: the same definition in two texts, each at its own place -----
+  (let* ([a (ok-value (parse-cql "library A\ndefine \"Shared\": 1 + 2\n" #:source "a.cql"))]
+         [b (ok-value (parse-cql "library B\n\n\n\ndefine \"Shared\": 1 + 2\n" #:source "b.cql"))]
+         [da (car (cql-library-defs a))] [db (car (cql-library-defs b))])
+    (check-equal? da db)
+    (check-false (eq? da db))                                   ; a definition struct of its own …
+    (check-true (eq? (cql-def-body da) (cql-def-body db)))      ; … over the one parsed body
+    (check-equal? (map (lambda (d) (list (loc-source (attached-loc d)) (loc-line (attached-loc d)))) (list da db))
+                  '(("a.cql" 2) ("b.cql" 5))))
+  ;; comments and spacing are not part of what a definition parses to
+  (check-equal? (chunk-key (car (definition-chunks (open-input-string "define X: /* c */ 1 +  2 // d"))))
+                (chunk-key (car (definition-chunks (open-input-string "define X: 1 + 2")))))
+  ;; a cache that reaches its limit is emptied and filled again
+  (let ([t (make-hash)] [computed 0])
+    (define (get k) (cached t k 2 (lambda () (set! computed (add1 computed)) (* k k))))
+    (check-equal? (list (get 1) (get 1) (get 2) (get 3) (get 1)) '(1 1 4 9 1))
+    (check-equal? computed 4)
+    (check-equal? (hash-count t) 2))
+
+  ;; ---- a definition that is one long list, parsed element by element --------------------------
+  (define (chunk-of text) (car (definition-chunks (open-input-string text))))
+  (define (whole chunk) (lower-library (g:parse-to-datum (list->token-thunk chunk))))
+  (define long-list
+    (string-append "define \"Table\": {\n"
+                   (apply string-append
+                          (for/list ([i (in-range 40)])
+                            (format "  { code: ~a, name: 'n~a', range: Interval[~a, ~a), tags: { 'a', 'b' }, top: Max({ ~a, 2 }) }~a\n"
+                                    i i i (+ i 5) i (if (= i 39) "" ","))))
+                   "}"))
+  (check-equal? (parse-long-list (chunk-of long-list)) (whole (chunk-of long-list)))
+  (check-equal? (length (cql-list-elements (cql-def-body (car (cql-library-defs (parse-long-list (chunk-of long-list))))))) 40)
+  (check-equal? (parse-long-list (chunk-of "define function F(a List<Integer>, b Tuple { x Integer }): { a, { b }, 1 + 2 }"))
+                (whole (chunk-of "define function F(a List<Integer>, b Tuple { x Integer }): { a, { b }, 1 + 2 }")))
+  (check-equal? (parse-long-list (chunk-of "define private X: { 1 }")) (whole (chunk-of "define private X: { 1 }")))
+  ;; what is not exactly a list is left to the whole-definition parse: a tuple, a list inside a larger
+  ;; expression, a typed list, an empty list, an element that does not parse
+  (check-false (parse-long-list (chunk-of "define X: { a: 1, b: 2 }")))
+  (check-false (parse-long-list (chunk-of "define X: { 1, 2 } union { 3 }")))
+  (check-false (parse-long-list (chunk-of "define X: List<Integer> { 1, 2 }")))
+  (check-false (parse-long-list (chunk-of "define X: { }")))
+  (check-false (parse-long-list (chunk-of "define X: { 1, 2 + }")))
+  (check-false (parse-long-list (chunk-of "define X: { 1, , 2 }")))
+  (check-false (parse-long-list (chunk-of "parameter P default { 1, 2 }")))
+  (check-false (parse-long-list (chunk-of "define X: { 1, 2, 3 }") #:at-least 4))
+  ;; past the thresholds a library takes that path (1,500 elements: a second or two; parsed whole,
+  ;; half a minute), with the errors it had
+  (define (numbers n tail) (string-append "library Big\ndefine \"T\": { " (apply string-append (for/list ([i (in-range n)]) (format "~a, " i))) tail " }\n"))
+  (check-equal? (length (cql-list-elements (cql-def-body (car (cql-library-defs (ok-value (parse-cql (numbers 1500 "0")))))))) 1501)
+  (check-regexp-match #rx"^t.cql:2:[0-9]+: cql parse error: unexpected `}`"
+                      (cql-error-string (err-error (parse-cql (numbers 150 "0 +") #:source "t.cql")))))

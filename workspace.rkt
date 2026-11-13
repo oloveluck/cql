@@ -32,17 +32,16 @@
          (only-in fhir/registry registered-resources)
          (only-in fhir/result/result ok? ok-value err? err-error)
          (only-in "parser/parse.rkt" parse-cql parse-cql-expr)
-         (only-in "parser/ast.rkt" cql-library? cql-library-id cql-library-version cql-library-defs cql-using?
+         (only-in "parser/ast.rkt" cql-library-id cql-library-version cql-library-defs cql-using?
                   cql-using-model cql-using-version cql-def? cql-def-name)
-         (only-in "compile.rkt" compile-library compile-library/errors compile-library/diagnostics compile-expr current-library-resolver)
-         (only-in "elm/ast.rkt" elm-library-statements elm-def? elm-def-name elm-def-expression elm-def-context
-                  elm-retrieve? elm-retrieve-data-type elm-retrieve-codes elm-retrieve-code-property
+         (only-in "compile.rkt" compile-library compile-library/diagnostics compile-expr current-library-resolver)
+         (only-in "elm/ast.rkt" elm-library-statements elm-def? elm-def-name elm-def-expression elm-retrieve? elm-retrieve-data-type elm-retrieve-codes elm-retrieve-code-property
                   elm-expression-ref? elm-expression-ref-name elm-expression-ref-library elm-term-ref? elm-term-ref-name)
          (only-in "interp.rkt" eval-elm make-ienv rlib-value rlib-eval)
          (only-in "run.rkt" load-runtime-library valuesets->terminology caching-resolver patient-data patient-class bundled-library)
          (only-in "model/modelinfo.rkt" find-model current-model-providers)
          (only-in "model/structure-definitions.rkt" structure-definitions->model logical-model?)
-         (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version elm-using-uri elm-library?)
+         (only-in "elm/ast.rkt" elm-library-usings elm-using-local-id elm-using-version elm-using-uri)
          (only-in "elm/json.rkt" elm->jsexpr)
          (only-in "requirements.rkt" library-requirements)
          (only-in "representation.rkt" record-type-name)
@@ -64,6 +63,10 @@
 ;; ---- data models ----------------------------------------------------------------------------------
 ;; model-provider : workspace -> (name version -> model|#f)   the models workspace.yaml names, each made
 ;; from the registered logical models under its canonical (the same model while they do not change)
+;; built-models : (list name version spec) -> (cons structure-definitions model)   the model last made
+;; for a declaration, and what it was made from: one entry per declaration, replaced when its logical
+;; models change (it was keyed by the definitions too, so every edit of a logical model left a model
+;; behind for as long as the server ran)
 (define built-models (make-hash))
 (define (model-provider ws)
   (define specs (ws-config-models (workspace-config ws)))
@@ -80,12 +83,15 @@
        (let ([sds (filter (lambda (sd) (and (logical-model? sd) (string-prefix? (hash-ref sd 'url "") url)))
                           (registered-resources "StructureDefinition"))])
          (and (pair? sds)
-              (hash-ref! built-models (list name v spec sds)
-                         (lambda ()
-                           (structure-definitions->model sds #:name name #:version v #:url url
-                                                         #:patient (hash-ref opts "patient" #f)
-                                                         #:birth-date (hash-ref opts "birthDate" #f)
-                                                         #:patient-key (hash-ref opts "key" "id"))))))))
+              (let ([built (hash-ref built-models (list name v spec) #f)])
+                (if (and built (equal? (car built) sds))
+                    (cdr built)
+                    (let ([m (structure-definitions->model sds #:name name #:version v #:url url
+                                                           #:patient (hash-ref opts "patient" #f)
+                                                           #:birth-date (hash-ref opts "birthDate" #f)
+                                                           #:patient-key (hash-ref opts "key" "id"))])
+                      (hash-set! built-models (list name v spec) (cons sds m))
+                      m)))))))
 ;; with-models : workspace thunk -> any   the workspace's models findable by `using`
 (define (with-models ws thunk)
   (parameterize ([current-model-providers (cons (model-provider ws) (current-model-providers))]) (thunk)))
@@ -432,44 +438,45 @@
                           [else (loop (cdr ls) (cons (car ls) acc) #f)])))
      (remove-duplicates (map cadr (regexp-match* #px"[0-9]\\s*'([^']+)'" (string-join body "\n") #:match-select values)))]))
 
-;; tally : (listof value) -> {true false null empty nonEmpty other errors}   only the non-zero counts
+;; A Tally is a hasheq summarising one define's values over the patients (as JSON), by what they are:
+;;   a few texts (at most six distinct)  each text -> how many patients answered it
+;;   numbers                             numbers, min, max, mean
+;;   Quantities (the model's or CQL's)   quantities, min, max, mean, and their unit(s)
+;;   anything else                       true false empty nonEmpty other errors — the non-zero counts
+;; each with `null`, the patients with no answer, when there are some. (A define answering texts,
+;; numbers or quantities used to read `{"other": 3}`.)
+;; tally : (listof jsexpr) -> Tally
 (define (tally vs)
-  (define (count p) (for/sum ([v (in-list vs)]) (if (p v) 1 0)))
-  ;; a define answering a few texts is counted by text (`{"never tested": 1, "no": 2}`; it read
-  ;; `{"other": 3}`), with its nulls
-  (define texts (filter string? vs))
-  (define distinct (remove-duplicates texts))
-  (define numbers (filter real? vs))
+  (define present (filter (lambda (v) (not (eq? v 'null))) vs))
+  (define nulls (- (length vs) (length present)))
+  (define (with-nulls h) (if (positive? nulls) (hash-set h 'null nulls) h))
+  (define (all? pred) (and (pair? present) (andmap pred present)))
   (cond
-    [(and (pair? texts) (<= (length distinct) 6) (= (length texts) (count (lambda (v) (not (eq? v 'null))))))
-     (for/hasheq ([k (in-list (append distinct (if (memq 'null vs) '(null) '())))])
-       (values (if (symbol? k) k (string->symbol k)) (count (lambda (v) (equal? v k)))))]
-    ;; a define answering numbers: their count, range and mean (it read `{"other": 2}`)
-    [(and (pair? numbers) (= (length numbers) (count (lambda (v) (not (eq? v 'null))))))
-     (define mean (/ (apply + numbers) (length numbers)))
-     (define (shown x) (if (integer? x) (inexact->exact x) (/ (round (* 100 (exact->inexact x))) 100.0)))
-     (define base (hasheq 'numbers (length numbers) 'min (shown (apply min numbers)) 'max (shown (apply max numbers))
-                          'mean (shown mean)))
-     (if (memq 'null vs) (hash-set base 'null (count (lambda (v) (eq? v 'null)))) base)]
-    ;; a define answering Quantities (FHIR's or CQL's, as JSON): the same, with their unit(s) (it read
-    ;; `{"other": 2}` beside the plain number define's range)
-    [(let ([qs (filter (lambda (v) (not (eq? v 'null))) vs)])
-       (and (pair? qs) (andmap (lambda (v) (and (hash? v) (real? (hash-ref v 'value #f)))) qs)))
-     (define qs (filter hash? vs))
-     (define base (tally (map (lambda (q) (hash-ref q 'value)) qs)))
-     (define units (remove-duplicates (filter string? (map (lambda (q) (or (hash-ref q 'code #f) (hash-ref q 'unit #f))) qs))))
-     (let* ([h (hash-remove (hash-set base 'quantities (hash-ref base 'numbers)) 'numbers)]
-            [h (if (pair? units) (hash-set h 'unit (if (null? (cdr units)) (car units) units)) h)])
-       (if (memq 'null vs) (hash-set h 'null (count (lambda (v) (eq? v 'null)))) h))]
-    [else (basic-tally vs count)]))
-(define (basic-tally vs count)
-  (for/hasheq ([k '(true false null empty nonEmpty other errors)]
-               [n (in-list (list (count (lambda (v) (eq? v #t))) (count (lambda (v) (eq? v #f))) (count (lambda (v) (eq? v 'null)))
-                                 (count null?) (count pair?)
-                                 (count (lambda (v) (not (or (boolean? v) (eq? v 'null) (list? v) (and (hash? v) (hash-has-key? v 'error))))))
-                                 (count (lambda (v) (and (hash? v) (hash-has-key? v 'error))))))]
-               #:when (positive? n))
-    (values k n)))
+    [(and (all? string?) (<= (length (remove-duplicates present)) 6))
+     (with-nulls (for/hasheq ([text (in-list (remove-duplicates present))])
+                   (values (string->symbol text) (count (lambda (v) (equal? v text)) present))))]
+    [(all? real?) (with-nulls (number-tally present 'numbers))]
+    [(all? quantity-json?)
+     (define units (remove-duplicates (filter string? (map (lambda (q) (or (hash-ref q 'code #f) (hash-ref q 'unit #f))) present))))
+     (define numbers (number-tally (map (lambda (q) (hash-ref q 'value)) present) 'quantities))
+     (with-nulls (if (pair? units) (hash-set numbers 'unit (if (null? (cdr units)) (car units) units)) numbers))]
+    [else (basic-tally vs)]))
+;; quantity-json? : jsexpr -> boolean   an object with a numeric `value`
+(define (quantity-json? v) (and (hash? v) (real? (hash-ref v 'value #f))))
+;; number-tally : (listof real) key -> Tally   how many (under `key`), their range and mean; a whole
+;; number as one, any other to two decimals
+(define (number-tally ns key)
+  (define (shown x) (if (integer? x) (inexact->exact x) (/ (round (* 100 (exact->inexact x))) 100.0)))
+  (hasheq key (length ns) 'min (shown (apply min ns)) 'max (shown (apply max ns)) 'mean (shown (/ (apply + ns) (length ns)))))
+;; basic-tally : (listof jsexpr) -> Tally   booleans, nulls, lists, errors and the rest, counted
+(define (basic-tally vs)
+  (define (error? v) (and (hash? v) (hash-has-key? v 'error)))
+  (for/hasheq ([k (in-list '(true false null empty nonEmpty other errors))]
+               [pred (in-list (list (lambda (v) (eq? v #t)) (lambda (v) (eq? v #f)) (lambda (v) (eq? v 'null)) null? pair?
+                                    (lambda (v) (not (or (boolean? v) (eq? v 'null) (list? v) (error? v))))
+                                    error?))]
+               #:when (ormap pred vs))
+    (values k (count pred vs))))
 
 ;; ---- explain ------------------------------------------------------------------------------------
 ;; walk : ELM pred -> (listof node)   every node satisfying pred, in order, not looking inside them
@@ -557,6 +564,15 @@
                   '("\"High\" is null for every patient (it compares with 'mmol/L': a value in a unit that does not convert to that one gives null); `explain` one patient to see its values")))
   (check-equal? (tally (list (hasheq 'value 8.9 'unit "%" 'code "%") (hasheq 'value 6.4 'code "%") 'null))
                 (hasheq 'quantities 2 'min 6.4 'max 8.9 'mean 7.65 'unit "%" 'null 1))
+  ;; a Tally of each kind: a few texts, numbers, and the rest by what they are
+  (check-equal? (tally (list "yes" "no" "no" 'null)) (hasheq 'yes 1 'no 2 'null 1))
+  (check-equal? (tally (list 7 8.5 'null)) (hasheq 'numbers 2 'min 7 'max 8.5 'mean 7.75 'null 1))
+  (check-equal? (tally (list 1 2 3)) (hasheq 'numbers 3 'min 1 'max 3 'mean 2))
+  (check-equal? (tally (list #t #f #f 'null '() (list 1) (hasheq 'error "x") (hasheq 'a 1)))
+                (hasheq 'true 1 'false 2 'null 1 'empty 1 'nonEmpty 1 'errors 1 'other 1))
+  (check-equal? (tally (list "a" "b" "c" "d" "e" "f" "g")) (hasheq 'other 7))    ; more than six texts
+  (check-equal? (tally (list "a" 1)) (hasheq 'other 2))
+  (check-equal? (tally '()) (hasheq))
   (define dir (make-temporary-directory "cql-ws-~a"))
   (define-values (ws _w) (open-workspace dir))
   (define common "library Common version '1'\nusing FHIR version '4.0.1'\ncontext Patient\ndefine \"Adult\": AgeInYears() >= 18\n")

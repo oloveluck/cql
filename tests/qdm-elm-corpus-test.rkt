@@ -21,4 +21,4 @@
 (check-equal? (length rs) 42)
 (check-true (>= (count lib-result-parse-ok? rs) 42) "fewer QDM libraries parse than the floor")
 (check-true (>= (count lib-result-compile-ok? rs) 41) "fewer QDM libraries compile than the floor")
-(check-true (>= (sum lib-result-defs-equal) 555) "fewer ELM-equal QDM definitions than the floor")
+(check-true (>= (sum lib-result-defs-equal) 559) "fewer ELM-equal QDM definitions than the floor")

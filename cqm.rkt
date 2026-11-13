@@ -24,8 +24,7 @@
 ;;; PopulationResult: (hash code -> count), OBSERV -> (listof value).
 
 (require racket/contract racket/list racket/match racket/string
-         "interp.rkt" "value.rkt"
-         (only-in fhirpath/temporal-ops parse-fp-datetime))
+         "interp.rkt" "value.rkt")
 
 (provide
  (contract-out

@@ -11,8 +11,8 @@
 
 (require racket/date
          (only-in racket/list last)
-         (only-in fhirpath/decimal fp-decimal? parse-decimal integer->decimal decimal->exact decimal->string decimal-precision)
-         (only-in fhirpath/value fp-long? fp-quantity? fp-quantity-value fp-quantity-unit)
+         (only-in fhirpath/decimal fp-decimal? parse-decimal decimal->string decimal-precision)
+         (only-in fhirpath/value fp-quantity? fp-quantity-value fp-quantity-unit)
          (only-in fhirpath/temporal-ops
                   moment moment? moment-compare moment->string parse-fp-date parse-fp-datetime parse-fp-time calendar-problem
                   moment-kind moment-year moment-month moment-day moment-hour moment-minute moment-second

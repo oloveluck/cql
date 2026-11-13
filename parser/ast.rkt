@@ -30,6 +30,7 @@
          (struct-out cql-typeop) (struct-out cql-cast) (struct-out cql-convert) (struct-out cql-convert-unit)
          (struct-out named-type) (struct-out interval-type) (struct-out list-type)
          (struct-out dec-lit) (struct-out long-lit) (struct-out qty-lit) (struct-out ratio-lit)
+         (struct-out exn:fail:bare-unit)
          (struct-out date-lit) (struct-out datetime-lit) (struct-out time-lit)
          (contract-out
           [lower         (-> any/c any/c)]
@@ -559,7 +560,22 @@
 (define (lower-quantity qparts)
   (match qparts
     [(list num) (num-value num)]
-    [(list num (list 'unit u)) (qty-lit (num-value num) (unit->string u))]))
+    [(list num (list 'unit u)) (qty-lit (num-value num) (quantity-unit num u))]))
+
+;; quantity-unit : number-lexeme unit-datum -> string   cql.g4's `unit`: a date/time precision word
+;; (`3 days`), else a STRING (`5 'mg'`). A bare word that is no precision is not a unit — `5 mg` was
+;; read as `5 'mg'` — and is refused with what to write.
+(define precision-words
+  '(year years month months week weeks day days hour hours minute minutes second seconds millisecond milliseconds))
+(define (quantity-unit num u)
+  (define text (unit->string u))
+  (unless (or (string? u) (memq (string->symbol text) precision-words))
+    (raise (exn:fail:bare-unit
+            (format "a quantity's unit is written in quotes: ~a '~a' (only the calendar words — years, months, … milliseconds — are written bare)" num text)
+            (current-continuation-marks) num text)))
+  text)
+;; the exception a bare unit raises: the number's lexeme and the word, so the parser can say where
+(struct exn:fail:bare-unit exn:fail (number unit))
 
 (define (num-value tok) (if (regexp-match? #rx"[.]" tok) (dec-lit tok) (string->number tok)))
 

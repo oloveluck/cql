@@ -2,8 +2,8 @@
 
 ;;; run.rkt — the `raco cql --tck` entry point: run the vendored OFFICIAL CQL conformance suites
 ;;; (cqframework/cql-tests) and report pass/total per suite + overall, ratcheting a floor. Mirrors
-;;; fhirpath/tests/run-r5.rkt. Library-style tests and the deferred CQL slices (retrieves, queries,
-;;; timing, terminology) surface as skips/failures until those slices land — that's the honest signal.
+;;; fhirpath/tests/run-r5.rkt. A library-style test (one without an <expression>) is counted as
+;;; skipped; the vendored suites have none.
 
 (require racket/runtime-path
          (only-in racket/path file-name-from-path)
@@ -29,12 +29,9 @@
       (printf "  FAIL [~a] ~a: ~s -> expected ~a got ~a\n"
               (car f) (cadr f) (caddr f) (cadddr f) (list-ref f 4))))
   (printf "CQL conformance: ~a/~a  (skipped ~a library-style tests)\n" tp ta ts)
-  ;; ratchet: slice-1 (expression core) against the full official suite. Most remaining failures are
-  ;; the deferred slices (DateTime/Interval timing, Aggregates, Queries, quantity/UCUM, boundary ops).
-  ;; The 4 remaining misses are documented irreducible corpus edges (see CLAUDE.md): 2× the corpus
-  ;; contradicting its own literal-range rules (Floor(2147483648) vs ValueLiterals), 1× a standalone
-  ;; uncertainty bound contradicting the same corpus's arithmetic convention, 1× the
-  ;; `starts N <unit> or less on or after` timing-phrase family (a whole grammar for one test).
+  ;; the ratchet. The 3 misses are the corpus's own (TESTING.md names them): 2x it contradicts its
+  ;; literal-range rule (Floor(2147483648) expects a literal ValueLiteralsAndSelectors requires to be
+  ;; an error), 1x a standalone uncertainty bound ([17, 44]) against its own arithmetic ([16, 44]).
   (define floor 1820)
   (unless (>= tp floor)
     (eprintf "CQL conformance regressed: ~a < floor ~a\n" tp floor)

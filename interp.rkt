@@ -23,20 +23,17 @@
 
 (require racket/match
          racket/contract
-         (only-in racket/list index-of remove-duplicates take drop last append-map argmax)
+         (only-in racket/list take drop last append-map argmax)
          (only-in racket/string string-split)
          "elm/ast.rkt"
          "value.rkt"
          (only-in "error.rkt" cql-error cql-error?)
-         (only-in fhir/result/result ok err)
          (only-in fhirpath/decimal
                   fp-decimal? parse-decimal integer->decimal decimal->exact decimal->string
-                  decimal-add decimal-sub decimal-mul decimal-div decimal-cmp decimal-round decimal-negate decimal-precision)
+                  decimal-add decimal-mul decimal-div decimal-negate)
          (only-in fhirpath/value fp-long fp-long? fp-long-v fp-quantity fp-quantity? fp-quantity-value fp-quantity-unit)
-         (only-in fhirpath/quantity make-quantity quantity-add quantity-sub quantity-compare)
-         (only-in fhirpath/temporal-ops moment moment? moment-compare moment->string parse-fp-date parse-fp-datetime parse-fp-time
-                  moment-kind moment-year moment-month moment-day moment-hour moment-minute moment-second
-                  moment-frac moment-tzmin moment-prec moment-plus moment-add-ms)
+         (only-in fhirpath/quantity make-quantity quantity-add)
+         (only-in fhirpath/temporal-ops moment moment? parse-fp-date parse-fp-datetime parse-fp-time)
          "representation.rkt"
          (only-in "model/modelinfo.rkt" find-model find-model-by-url model-name model-url find-profile-class model-element-target)
          (only-in "mapping.rkt" parse-mapping map-call map-path map-field map-filter)
@@ -194,19 +191,23 @@
   (elm-term-ref "CodeSystemRef" (elm-term-ref-name r) (elm-term-ref-library r)))
 (define (obj-field o k) (let ([v (hash-ref (cql-obj-fields o) k cql-null)]) (if (cql-null? v) #f v)))
 
+;; in-library : rlib (-> value) -> value   evaluate at the library's runtime's timezone offset (the
+;; evaluation request's), else the one already in force
+(define (in-library rl thunk)
+  (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
+    (thunk)))
+;; rlib-env : rlib -> Env   a fresh environment in the library: its definitions and functions, no operands
+(define (rlib-env rl) (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (current-moment) rl (rlib-rt rl)))
+
 ;; rlib-value : rlib name -> value   a definition's value
 (define (rlib-value rl name)
-  (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
-    (force-value (hash-ref (rlib-defs rl) name (lambda () (fail (format "unknown definition ~a" name)))))))
-
+  (in-library rl (lambda () (force-value (hash-ref (rlib-defs rl) name (lambda () (fail (format "unknown definition ~a" name))))))))
+;; rlib-eval : rlib ELM -> value   one expression in the library's context
 (define (rlib-eval rl expr)
-  (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
-    ((elm-runner) expr (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (current-moment) rl (rlib-rt rl)))))
-
+  (in-library rl (lambda () ((elm-runner) expr (rlib-env rl)))))
+;; rlib-call : rlib name (listof value) -> value   a function of the library applied to values
 (define (rlib-call rl name args)
-  (parameterize ([current-evaluation-offset (or (and (rlib-rt rl) (runtime-offset (rlib-rt rl))) (current-evaluation-offset))])
-    (call-library-function rl name args #f (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (current-moment) rl (rlib-rt rl))
-                           (elm-runner))))
+  (in-library rl (lambda () (call-library-function rl name args #f (rlib-env rl) (elm-runner)))))
 
 ;; target-lib : env alias|#f -> rlib|#f   the library a qualified reference points into
 (define (target-lib env alias)
@@ -218,20 +219,20 @@
   (ienv (rlib-defs rl) (hash) (rlib-first-funcs rl) (ienv-now env) rl (ienv-rt env)))
 
 ;; ---- library driver --------------------------------------------------------
+;; run-library : elm-library -> (hash name -> CqlValue)   every expression definition of a library
+;; that needs no data, includes or parameters (a `#lang cql` module's `results`)
 (define (run-library lib)
-  (define funcs (for/hash ([s (in-list (elm-library-statements lib))] #:when (elm-function-def? s))
+  (define statements (elm-library-statements lib))
+  (define funcs (for/hash ([s (in-list statements)] #:when (elm-function-def? s))
                   (values (elm-function-def-name s) s)))
-  ;; expression defs are memoized promises so cross-references evaluate once and can forward-refer
-  (define def-boxes (make-hash))
-  (define now (current-moment))
-  (define base (ienv (make-hash) (hash) funcs now #f #f))
-  (define (env) (ienv (ienv-defs base) (ienv-operands base) funcs now #f #f))
+  ;; a definition is a memoised thunk, so a reference evaluates it once and may come before it
+  (define defs (make-hash))
+  (define env (ienv defs (hash) funcs (current-moment) #f #f))
   (define run (elm-runner))
-  (for ([s (in-list (elm-library-statements lib))] #:when (elm-def? s))
-    (hash-set! (ienv-defs base) (elm-def-name s)
-               (delay-value (lambda () (run (elm-def-expression s) (env))))))
-  (for/hash ([s (in-list (elm-library-statements lib))] #:when (elm-def? s))
-    (values (elm-def-name s) (force-value (hash-ref (ienv-defs base) (elm-def-name s))))))
+  (for ([s (in-list statements)] #:when (elm-def? s))
+    (hash-set! defs (elm-def-name s) (delay-value (lambda () (run (elm-def-expression s) env)))))
+  (for/hash ([s (in-list statements)] #:when (elm-def? s))
+    (values (elm-def-name s) (force-value (hash-ref defs (elm-def-name s))))))
 
 ;; a tiny memoizing thunk (avoids racket/promise's contract friction with our value domain)
 (define (delay-value th) (let ([done #f] [v #f]) (lambda () (unless done (set! v (th)) (set! done #t)) v)))
@@ -301,7 +302,7 @@
      (cql-code code (obj-field cs 'id) (obj-field cs 'version) display)]
     [(elm-concept codes display) (cql-concept (for/list ([c (in-list codes)]) (eval-elm c env)) display)]
     [(? elm-retrieve?) (eval-retrieve node env)]
-    [(elm-in-valueset kind code vs)
+    [(elm-in-valueset kind code vs _)
      (define c (eval-elm code env))
      (define v (eval-elm vs env))
      (in-valueset-apply kind c v env)]
@@ -507,7 +508,7 @@
      (define codes (elm-retrieve-codes node))
      (define cw (and codes (compile-elm codes)))
      (lambda (env) (retrieve node (and cw (lambda () (cw env))) env))]
-    [(elm-in-valueset kind code vs)
+    [(elm-in-valueset kind code vs _)
      (define cc (compile-elm code)) (define cv (compile-elm vs))
      (lambda (env) (let* ([c (cc env)] [v (cv env)]) (in-valueset-apply kind c v env)))]
     [(elm-precision-op op prec operands)
@@ -878,16 +879,7 @@
 
 (def-nary!  "Expand"  (lambda (vs) (expand-interval (car vs) (and (pair? (cdr vs)) (cadr vs)))))
 
-;; list operators
-;; Take(list, n) and Skip(list, n): with one argument (a query that swallowed `, n` as a second sort
-;; item: `Take(X sort by Y desc, 2)`) the error says so, where it used to be a `cadr` crash
-(define (two-args name vs)
-  (unless (= (length vs) 2)
-    (fail (format "~a takes a list and a count, got ~a argument(s) (a query inside it reads `sort by …, 2` as two sort items: put the query in parentheses)" name (length vs)))))
-(def-nary!  "Take"    (lambda (vs) (two-args "Take" vs) (lst-take (car vs) (cadr vs))))
-
-(def-nary!  "Skip"    (lambda (vs) (two-args "Skip" vs) (lst-skip (car vs) (cadr vs))))
-(def-unary! "Tail"    (lambda (x) (lst-tail x)))
+;; list operators (Skip, Take and Tail are Slices: the translator writes them so, ELM has no others)
 (def-nary!  "Slice"   (lambda (vs) (lst-slice (car vs)
                                               (if (>= (length vs) 2) (cadr vs) cql-null)
                                               (if (>= (length vs) 3) (caddr vs) cql-null))))
@@ -1100,14 +1092,6 @@
 
 ;; ---- list operators --------------------------------------------------------
 (define (lst? x) (and (list? x) #t))
-(define (lst-take x n)
-  (cond [(cql-null? x) cql-null] [(not (lst? x)) cql-null] [(cql-null? n) '()]
-        [else (let ([k (max 0 (->int-val n))]) (if (>= k (length x)) x (take x k)))]))
-(define (lst-skip x n)
-  (cond [(cql-null? x) cql-null] [(not (lst? x)) cql-null] [(cql-null? n) x]
-        [else (let ([k (max 0 (->int-val n))]) (if (>= k (length x)) '() (drop x k)))]))
-(define (lst-tail x) (cond [(cql-null? x) cql-null] [(not (lst? x)) cql-null] [(null? x) '()] [else (cdr x)]))
-
 ;; lst-slice : CqlValue CqlValue CqlValue -> CqlValue
 ;; Slice(list [, start [, end]]): null start/end default to the whole extent; a NEGATIVE index counts
 ;; from the end (-2 -> the last two). Out-of-range windows clamp to the empty list.

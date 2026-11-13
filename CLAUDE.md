@@ -118,19 +118,18 @@ operators, `if`/`case`. Layers:
   in cql/interp's cql-moment-compare, never in the shared fhirpath engine); calendar-duration `~`
   (pairwise 1 year = 12 months AND = 365 days); literal domains enforced at compile (Integer 32-bit,
   Decimal 28/8 digits); `X between A and B` desugars at the comparison level with the unit-word left
-  operand recognised as a duration (context-sensitive, like the reference grammar). The **4 remaining
-  misses are irreducible corpus edges** (were 4; the interval-phrase grammar closed the 4th): `Floor(±2^31)` expects out-of-range literals to evaluate while
-  ValueLiteralsAndSelectors requires the SAME literals to error (corpus self-contradiction, 2); one
-  standalone uncertainty bound (`[17,44]`) contradicts the same corpus's arithmetic convention
-  (`[16,44]`-derived, 1); and the `starts 1 day or less on or after day of` timing-phrase family
-  (a whole grammar for 1 test). `cql/tests/coverage.rkt` reports the live per-suite/failure-bucket
-  breakdown each iteration; `cql/tests/vendor/cql-smoke.xml` is the harness's own self-test (not part of
-  the conformance number). `raco cql <file.cql>` prints ELM JSON.
+  operand recognised as a duration (context-sensitive, like the reference grammar). The **3 remaining
+  misses are irreducible corpus edges** (the interval-phrase grammar closed a 4th): `Floor(±2^31)`
+  expects out-of-range literals to evaluate while ValueLiteralsAndSelectors requires the SAME literals
+  to error (corpus self-contradiction, 2); one standalone uncertainty bound (`[17,44]`) contradicts
+  the same corpus's arithmetic convention (`[16,44]`-derived, 1). `cql/tests/coverage.rkt` reports the
+  live per-suite/failure-bucket breakdown each iteration; `cql/tests/vendor/cql-smoke.xml` is the
+  harness's own self-test (not part of the conformance number). `raco cql <file.cql>` prints ELM JSON.
 - **Real-library corpus** (`tests/elm-corpus-test.rkt`, `tests/elm-corpus-harness.rkt`): 32 CQL
   libraries from published packages (fhir.cqf.common 4.0.1, hl7.fhir.us.cqfmeasures 5.0.0,
   hl7.fhir.uv.cql 2.0.0 — `tests/vendor/elm-corpus/SOURCE.txt`), each with the reference cql-to-elm
   translator's ELM; per library: parse, compile, and per-`define` ELM structural equality (translator
-  metadata dropped). **32/32 parse; 32/32 compile; 769/803 definitions ELM-equal** — ratcheted. The
+  metadata dropped). **32/32 parse; 32/32 compile; 786/803 definitions ELM-equal** — ratcheted. The
   grammar follows cql.g4 for terminology definitions (`code`/`concept`/`codesystems`/`display`, access
   modifiers), retrieves (`[Ctx -> Type: path in "VS"]`), `with`/`without … such that`, `sort by`,
   fluent functions, `Tuple {…}`/`Choice<…>` types, `is true`/`is false`, and the full interval-operator
@@ -176,19 +175,22 @@ operators, `if`/`case`. Layers:
   branches meet at the widest promotable type. A member value against an interval whose points are
   a choice (`Interval[C.onset, C.abatement] includes E.period`) is cast to the whole choice
   (`member-of-interval-choice`), not converted to System.
-- Remaining ELM differences (37 definitions, ratcheted; `tests/elm-corpus-test.rkt` prints them
-  CLASSIFIED by the kind and path of the first difference, largest class first, with examples — the
-  work list): EXM108's day-of-procedure phrases and typed unions (a union of differently-typed queries
-  the reference casts to a choice list); a CodeRef through an include alias inside `such that`;
-  `condition.onset during encounter.period` where the two packages' translators pick DIFFERENT choice
-  members (CQF Measures: Period; the CQL IG: dateTime); ratio/quantity instance details and
-  Message operands in FHIRHelpers; a handful of single cases the output names.
+- Remaining ELM differences (17 definitions, ratcheted; `tests/elm-corpus-test.rkt` prints them
+  CLASSIFIED by the nodes at the first difference — what the reference wrote and what we wrote there,
+  `Union | Retrieve`, `FunctionRef:ToConcept | Property.requestStatusReason` — largest class first,
+  with examples: the work list): EXM108's properties of a value typed as a choice of resources, and
+  its lists of mixed resource types through `Coalesce` and `in`; `condition.onset during
+  encounter.period` where the two packages' translators pick DIFFERENT choice members (CQF Measures:
+  Period; the CQL IG: dateTime); `[MedicationAdministration: "VS"]` in the CQL IG's Example, which the
+  newer translator unites with the records referencing a coded Medication (2026-11-13 pass, below).
 - The corpus harness normalises only translator-VERSION noise, on both sides: empty lists = absent
   (newer translators write `let: []`, `dateFilter: []`), structural element `type` tags
   (InstanceElement, AliasedQuerySource, …), `strict: false` (the schema default), and around value
   sets — ValueSetRef's `preserve`, its `type` under InValueSet's `valueset`/Retrieve's `codes`,
   Retrieve's default `codeComparator` "in", and a FALSE `lowClosed`/`highClosed` (fhir.cqf.common's
-  translator leaves it out; ours writes it) — the two packages disagree, so neither form is held.
+  translator leaves it out; ours writes it) — the two packages disagree, so neither form is held;
+  likewise an empty String literal's `value`, a Ratio's parts' `type`, and the ORDER of a
+  ChoiceTypeSpecifier's choices (the reference's is a Java HashSet's iteration order).
   Includes resolve within the package, else from another corpus package (CQF Measures includes
   FHIRHelpers 4.0.1 but ships only its ELM; the source is in fhir.cqf.common).
 - **Execution over a model's data** (`run.rkt`, `representation.rkt`, interp's runtime libraries): data
@@ -216,12 +218,13 @@ operators, `if`/`case`. Layers:
   (numer/denom/denomexcl/neg-ip, `-FAIL-`). **71/76 agree** — ratcheted; the 5 disagreements are named in
   the test with the evidence (timezone-problem cases the library itself flags, a case identical to a
   passing one, two MeasureReports inconsistent with the data or with proportion scoring).
-- **Deferred CQL slices**: retrieves (`[Condition: "vs"]`) + a FHIR data-source/retrieve layer (absent —
-  `navigate.rkt` assumes in-memory roots), queries (`with`/`where`/`return`/`sort`/`aggregate`),
-  terminology-backed membership via the `tx-service`, FHIR model-info from `full-field-specs`, ELM XML
-  output, temporal literals as canonical ELM Date/DateTime/Time constructor nodes (slice-1 emits them as
-  a Literal carrying the lexeme — round-trips through our interpreter), and full agreement with the reference
-  translator's ELM (the corpus above measures it).
+- **Not implemented** (the manual's Limits say the user-facing ones): ELM as XML; a retrieve's date
+  range and profile conformance (only type and code filter); `collapse … per` applies no `per`; a code
+  element followed through a reference (`[MedicationRequest: "VS"]` for a `medicationReference` — the
+  2026-11-13 pass, below); FHIR Measures beyond patient-based proportion scoring; FHIR versions other
+  than 4.0.1. (This list once named retrieves, queries, terminology membership and canonical temporal
+  literals as deferred: all four are implemented — a `@`-literal has been a Date/DateTime/Time
+  constructor node since the HL7 suite work.)
 - **Measures as an operation** (`measure.rkt`): `evaluate-measure` runs a Measure over
   `current-data-source` (fhir/data-source: a Bundle in memory, a directory, or fhir-server's store) —
   its Library and includes as Library resources, value sets from the source then
@@ -333,7 +336,7 @@ operators, `if`/`case`. Layers:
     Decimal; model instances equal when of one class with equal data (CQL's structural equality; the
     FHIR snapshot is unchanged).
     `tests/qicore-elm-corpus-test.rkt`: 98 libraries of ecqm-content-qicore-2024 (CC0), 98 compile,
-    1854/2144 definitions ELM-equal (was 409 before the mappings). `tests/qicore-measure-test.rkt`: 4
+    1854/2144 definitions ELM-equal (was 409 before the mappings; 1932 since the 2026-11-13 pass). `tests/qicore-measure-test.rkt`: 4
     eCQMs over 190 MADiE cases, 188 agree (2 named: values exported as concepts where the case
     describes a percentage). `tests/mapping-model-test.rkt`: NotDone both ways, ConvertQuantity, US Core.
   - **QDM** (cqm-models JSON). `model/qdm.representation.rktd` declares it, with four representation
@@ -358,7 +361,7 @@ operators, `if`/`case`. Layers:
     translator's recovery leaves Null there; an error is more honest). `raco cql … --parameter
     "name=<CQL expression>"`.
     `tests/qdm-elm-corpus-test.rkt`: cqm-execution's 42 fixture libraries (Apache-2.0), 41 compile,
-    555/723 ELM-equal (the reference ELM is from older translators). `tests/qdm-measure-test.rkt`: 33
+    555/723 ELM-equal (the reference ELM is from older translators; 559 since the 2026-11-13 pass). `tests/qdm-measure-test.rkt`: 33
     patients of 19 measures; all 31 of cqm-execution's own enabled assertions hold (transcribed with
     their line numbers); 16/26 agree with the stored expectedValues, the 10 named (QDM 5.3 measures
     reading principalDiagnosis over 5.5 data — cqm-execution disables those tests; stale observations;
@@ -490,3 +493,87 @@ operators, `if`/`case`. Layers:
 - **A subject the data does not hold** (2026-11-13): `evaluate-measure #:subject "Patient/nobody"` is
   a `not-found` operation error; it answered an individual MeasureReport of zeros, which read as
   "evaluated, not in the initial population". `tests/measure-operation-test.rkt`.
+
+- **Quality, performance and spec alignment pass** (2026-11-13). Held to a dump of everything the
+  repository produces over its corpora (the ELM, errors and warnings of the 172 corpus libraries; the
+  ELM and value of the HL7 suite's 3,608 expressions and outputs; every define of the eCQMs over the
+  76 patients; the QI-Core and QDM measure cases): every value, error, warning and population is the
+  one it was; the ELM changed only where it is said below. Tests 713 -> 850.
+  - **The ELM, aligned with the reference translator** (each shape pinned in
+    `tests/elm-shape-test.rkt`; FHIR corpus 770 -> 786/803, QI-Core 1854 -> 1932/2144, QDM 555 ->
+    559/723). A union chain of seven or more operands was regrouped a second time on the way down
+    (`regrouped`, a weak table marking only the top node): a chain is now made a UnionTree once
+    (`union-tree`, `compile-union`, `union-nodes`). `"VS" contains x` compiled to Contains(ValueSetRef, x)
+    and FAILED when run ("In: not a list or interval"): it is InValueSet, the value set also as
+    `valuesetExpression` (`compile-membership`, `elm-in-valueset`'s `as-expression?`). Expand and
+    Collapse are binary (a Null `per`, `with-default-operands`); a point beside an interval under an
+    operator that relates intervals is `if P is null then null else Interval[P, P]`
+    (`point->interval`); `/` converts Integer and Long operands (ToDecimal); a multi-source query
+    without a return returns, distinct, the Tuple of its aliases; an aggregate's accumulator is a
+    QueryLetRef; list elements meet at one type as if/case branches do, and `List<T> { … }` holds Ts
+    (`cql-typed-list`: the type was dropped); branches of different types meet at their choice, each
+    cast to it (`branch-choice`; not among tuples); a choice among Coalesce's arguments is read through
+    the member that converts; Combine's list of model strings is converted item by item; Skip, Take
+    and Tail are Slices, function or method (`slice`: ELM has no operators of those names — the
+    interpreter's are gone, a null count takes nothing either way; a NEGATIVE count is now Slice's
+    index from the end, as the HL7 suite defines Slice, where `Take(X, -1)` was empty and
+    `Skip(X, -1)` everything — the specification's prose says empty for both).
+  - **The ELM JSON, aligned with the schema** (elm/json.rkt): a Quantity's `value` is a JSON number
+    (`decimal-json`; the lexeme only where no double holds it — the corpus comparison's number
+    normalisation had hidden the string); a Ratio's parts carry no `type`; an operator without
+    operands has no `operand` element (`Today`); a Query's `aggregate` clause is written (it was
+    dropped: an aggregating query read, in JSON, as one returning its rows).
+  - **A unit is a string or a calendar word** (cql.g4's `unit`): `5 mg` was read as `5 'mg'`; it is a
+    parse error at the word (`quantity-unit`, `exn:fail:bare-unit`, `bare-unit-token`). guide.md's
+    common problems has it, guide-test checks it.
+  - **The corpus report says what differs** (`tests/elm-corpus-harness.rkt`): a mismatch is classified
+    by the nodes at its first difference (`difference`, `node-name`: `Union | Retrieve`,
+    `FunctionRef:ToValue | Property.performed`), keys compared in name order; it was the JSON path.
+    Not held, with the reason in the harness: an empty String literal's `value`, a Ratio's parts'
+    `type`, the order of a ChoiceTypeSpecifier's choices (the reference's is a Java HashSet's
+    iteration order: the bucket of each class name's hash — it fits the six pairs checked).
+  - **Parsing** (parser/parse.rkt; it is 95% of translating: 60 µs a token, quadratic in a list's
+    elements). A definition is parsed once (`chunk-cache`, keyed by its tokens' types and values:
+    `chunk-key`, `parsed-chunk`; each use gets fresh definition structs over the shared bodies, so
+    each keeps its own position): FHIRHelpers 555 ms, then 8 ms after an edit to one definition or
+    under another source name; the QI-Core corpus 16.4 -> 12.5 s. A definition that is one long list
+    is parsed element by element (`parse-long-list`, lists of 50 elements and more; any element that
+    fails is left to the whole parse, so errors are unchanged): OpioidData's 1,000 tuples 27 -> 5 s,
+    the QDM corpus 29.3 -> 6.9 s. The three caches are bounded (`cached`: emptied at their limit) —
+    a language server parsed every keystroke's text into a table that only grew.
+  - **Translating** (compile.rkt; QI-Core corpus 620 -> 390 ms): `ctype->elm-name` built three regexps
+    per type name (a fifth of the time); `parse-mapping` is memoised (mapping.rkt); `make-lctx`'s
+    overloads were appended quadratically.
+  - **A stale translation, fixed** (run.rkt `translation`, `include-closure`, `same-libraries?`): the
+    compiled ELM was cached by the library's AST alone, so in a long-lived process an included
+    library edited between two runs left the includer running ELM typed by the old one (a call kept
+    naming F(Integer) after the argument became a Decimal). It is reused while the include closure
+    is the same objects. workspace.rkt's `built-models` kept a model per edit of a logical model.
+  - **Quality**: one reading of a model's conversion (`conversion`, `type-conversion`, `converted`:
+    it was written three times), `member-spec`, `assemble/collecting` (the accumulating compiles'
+    shared half), one list of calendar units, `system-ops` without its repeated keys, no `set!` of a
+    parameter; workspace.rkt's Tally stated and split (`tally`, `number-tally`, `basic-tally`);
+    error.rkt's `at-the-name` as `mentioned`, `definition-body`, `line+column`, with the tests it
+    lacked; requirements.rkt's code filter written once; interp.rkt's `in-library`/`rlib-env`,
+    `run-library` without its dead table; 50 unused imports; stale comments (tests/run.rkt, the
+    "reduced Query shape" note, the "Deferred CQL slices" list above).
+  - **Decided against / left** (TESTING.md and the manual's Limits say the user-facing ones):
+    `[MedicationRequest: "VS"]` followed through a `medicationReference` — the reference translator
+    unites the retrieve with `[T] MR with [Medication] M such that M.id = Last(Split(MR.medication.reference, '/'))
+    and M.code in "VS"`. Written, model-neutral (a representation setting, `code-references`), and
+    measured: QI-Core +28 definitions, FHIR +1 — and one MADiE case (Controlling High Blood Pressure,
+    `DENEXPass DementiaMedAsReferenceCQLIT412`) then answers the exclusion its NAME expects and its
+    stored report does not (the report was recorded by an engine that did not follow the reference).
+    Lowering 188/190 is the owner's call, so it is not in. What it takes: FHIR's representation
+    declaring `(code-references ("medication" . "Medication"))`; in `compile-retrieve`, for such an
+    element whose choice has a member with a `reference`, the Union with that query (a mapping model
+    reads `id.value` and `medication.reference.value`, FHIR converts with FHIRHelpers.ToString; a
+    code filter is `Equivalent(ToConcept(M.code), ToConcept(code))`); and the corpus harness comparing
+    fhir.cqf.common and CQF Measures 5.0.0, whose translator predates it, without the query.
+    A UsingDef's `version` for a mapping model (the reference
+    writes the ModelInfo's targetVersion, i.e. none; the runtime reads ours to find the model);
+    `includes.path` and `identifier.system` with a namespace (the translator's options, not the
+    library's text); a property of a choice of resources resolved per member; `collapse … per`;
+    Round/Ln/Ceiling over Integers (Decimal-only in the reference: no corpus evidence); a warning
+    when the data's FHIR version is not the library's (FHIR JSON does not state its version; a
+    workspace already refuses the mismatch).

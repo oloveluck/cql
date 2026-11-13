@@ -8,7 +8,7 @@
 
 (require racket/contract racket/string racket/list
          fhir/lang/support fhir/lang/declared
-         (only-in fhir/result/result ok? err? ok-value err-error)
+         (only-in fhir/result/result err? ok-value err-error)
          (only-in "parser/parse.rkt" parse-cql)
          (only-in "compile.rkt" compile-library/diagnostics)
          (only-in "error.rkt" cql-error-diagnostic cql-error-message cql-error-phase at-the-name))

@@ -100,7 +100,8 @@
 (struct elm-term-ref     (kind name library) #:prefab)
 (struct elm-code         (code system display) #:prefab) ; Code 'c' from "CS" ; system elm-term-ref
 (struct elm-concept      (codes display)     #:prefab)
-(struct elm-in-valueset  (kind code valueset) #:prefab) ; kind "InValueSet"|"AnyInValueSet"
+(struct elm-in-valueset  (kind code valueset as-expression?) #:prefab) ; kind "InValueSet"|"AnyInValueSet" ;
+;;   as-expression?: the value set is written as `valuesetExpression` as well (`"VS" contains x`), not as `valueset` alone (`x in "VS"`)
 (struct elm-precision-op (op precision operands) #:prefab) ; CalculateAgeAt etc. ; precision "Year"…
 ;; minimum/maximum T: which 'min|'max ; value-type the qualified type name ; boundary the value as ELM
 ;; (the interpreter evaluates the boundary; JSON writes MinValue/MaxValue)

@@ -232,6 +232,8 @@ models:
   a CQL value (`Patient.gender = 'female'`, `O.status = 'final'`) needs FHIRHelpers to convert it
   (4.4.000 for QI-Core); without it the comparison would read the raw FHIR value. `AgeInYears()`,
   retrieves and value-set membership need no include.
+- `a quantity's unit is written in quotes: 5 'mg'`: a unit is a string (`5 'mg'`, `130 'mm[Hg]'`);
+  only the calendar words are written bare (`3 days`, `1 year`). `5 mg` is not CQL.
 - A define is null when you expected false: an operand was null (CQL's logic is three-valued).
   Explain it for that patient, or guard with `is null` / `Coalesce`.
 - A timing test on a choice element is never true: in a FHIR 4.0.1 library,

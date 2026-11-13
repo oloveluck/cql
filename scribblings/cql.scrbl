@@ -339,6 +339,12 @@ computed, and @tt{$evaluate-measure} reads @tt{measure}, @tt{periodStart}, @tt{p
 library runs over data: that definition reports its error and the others are answered.}
 @item{@bold{QDM versions.} A measure written for one version of QDM reads data of another as it is: a
 QDM 5.3 measure's @tt{principalDiagnosis} is simply absent from QDM 5.5 data.}
+@item{@bold{A code through a reference.} A retrieve filters by the code its records hold:
+@tt{[MedicationRequest: "Blood Thinners"]} finds the requests whose @tt{medication} is coded in the
+value set, not those that name a Medication resource by reference. (The reference translator also
+looks the referenced Medication up.)}
+@item{@bold{@tt{collapse … per}.} The @tt{per} quantity is read and not applied: intervals are merged
+when they overlap or meet.}
 @item{@bold{ELM} is written as JSON only, not XML.}]
 
 @section[#:tag "words"]{Words used here}
@@ -370,7 +376,7 @@ Against published work, not only its own examples:
 @item{HL7's CQL test suite: 1820 of 1823 expressions give the expected value. The three that do not
 are places where the suite disagrees with itself.}
 @item{Published libraries, compared definition by definition with the ELM the reference translator
-produces: 770 of 803 identical for 32 FHIR libraries, 1854 of 2144 for the 98 QI-Core libraries of
+produces: 786 of 803 identical for 32 FHIR libraries, 1932 of 2144 for the 98 QI-Core libraries of
 the 2024 quality measures.}
 @item{Published measures over their own test patients: 71 of 76 for four FHIR measures, 188 of 190
 for four QI-Core measures; for QDM, all 31 of cqm-execution's own checks.}]

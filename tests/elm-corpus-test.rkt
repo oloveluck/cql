@@ -18,4 +18,4 @@
 (check-equal? (length rs) 32)
 (check-true (>= (count lib-result-parse-ok? rs) 32) "fewer corpus libraries parse than the floor")
 (check-true (>= (count lib-result-compile-ok? rs) 32) "fewer corpus libraries compile than the floor")
-(check-true (>= (sum lib-result-defs-equal) 770) "fewer ELM-equal definitions than the floor")
+(check-true (>= (sum lib-result-defs-equal) 786) "fewer ELM-equal definitions than the floor")

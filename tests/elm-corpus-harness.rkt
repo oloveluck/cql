@@ -14,7 +14,12 @@
 ;;; Nothing here evaluates CQL (that needs retrieves + a data source); this is the translation oracle.
 ;;;
 ;;; Data: (lib-result package name parse-ok? compile-ok? error defs-total defs-present defs-equal
-;;;                   mismatches)   mismatches : (listof (list def-name first-difference))
+;;;                   mismatches)   mismatches : (listof (list def-name Difference))
+;;; A Difference is (difference reference ours what): the first place the two trees part, as the node
+;;; each has there ("Union", "FunctionRef:ToConcept", "Property.code", "As as {…}Concept") and what
+;;; parts (`missing operand`, `extra type`, `length 2 1`, `"in"|"~"`); keys are compared in name
+;;; order, so the first difference is the same every run. Classified by the pair of nodes, it says
+;;; what the reference translator wrote that this one did not ("Union | Retrieve").
 
 (require racket/contract racket/list racket/string racket/file racket/path racket/match json
          (only-in cql/parser/parse parse-cql)
@@ -55,6 +60,10 @@
 ;; The same for the empty String literal: hl7.fhir.uv.cql's translator leaves its `value` out, the
 ;; others (and ours) write `"value": ""`; and for a Ratio's parts, which fhir.cqf.common's translator
 ;; tags `"type": "Quantity"` and the newer ones (and the schema, which declares them Quantity) do not.
+;; The ORDER of a ChoiceTypeSpecifier's choices is not held either: for the choice a union of
+;; differently typed lists is cast to, the reference's is the iteration order of a Java HashSet of the
+;; types (Procedure before MedicationRequest, MedicationRequest before MedicationAdministration: their
+;; names' hash buckets), which says nothing about the choice; ours is the order of the operands.
 (define (normalize-elm j [key #f])
   (cond [(hash? j) (for/hash ([(k v) (in-hash j)]
                               #:unless (and (eq? k 'value) (equal? v "") (equal? (hash-ref j 'type #f) "Literal"))
@@ -70,26 +79,57 @@
                               #:unless (and (eq? k 'type) (equal? v "ValueSetRef") (memq key '(valueset codes)))
                               #:unless (and (eq? k 'type) (equal? v "Quantity") (memq key '(numerator denominator)))
                               #:unless (and (eq? k 'codeComparator) (equal? v "in")))
-                     (values k (normalize-elm v k)))]
+                     (values k (if (eq? k 'choice)
+                                   (sort (normalize-elm v k) string<? #:key canonical-text)
+                                   (normalize-elm v k))))]
         [(list? j) (map (lambda (x) (normalize-elm x key)) j)]
         [(number? j) (number->string j)]
         [else j]))
+
+;; canonical-text : jsexpr -> string   one text per value, whatever order a hash holds its keys in
+(define (canonical-text j)
+  (cond [(hash? j) (format "{~a}" (string-join (for/list ([k (in-list (sort (hash-keys j) symbol<?))])
+                                                 (format "~a:~a" k (canonical-text (hash-ref j k))))
+                                               ","))]
+        [(list? j) (format "[~a]" (string-join (map canonical-text j) ","))]
+        [else (format "~s" j)]))
 
 (define (defs-of lib-js)
   (define stmts (let ([s (hash-ref lib-js 'statements #f)]) (if (hash? s) (hash-ref s 'def '()) '())))
   (for/hash ([d (in-list stmts)] #:when (hash? d)) (values (hash-ref d 'name #f) d)))
 
-(define (first-diff a b path)
+;; difference : the first place two normalised trees part (see the data definition above)
+(struct difference (reference ours what) #:transparent)
+
+;; node-name : jsexpr -> string   an ELM node by its type and what names it
+(define (node-name n)
+  (cond [(hash? n)
+         (string-append (format "~a" (hash-ref n 'type "{}"))
+                        (cond [(hash-ref n 'name #f) => (lambda (x) (format ":~a" x))]
+                              [(hash-ref n 'path #f) => (lambda (x) (format ".~a" x))]
+                              [else ""])
+                        (cond [(hash-ref n 'asType #f) => (lambda (t) (format " as ~a" t))]
+                              [(hash-ref n 'asTypeSpecifier #f) " as <specifier>"]
+                              [else ""]))]
+        [(list? n) (format "[~a]" (length n))]
+        [else (format "~s" n)]))
+
+;; first-diff : jsexpr jsexpr [enclosing nodes] -> Difference|#f
+(define (first-diff a b [pa #f] [pb #f])
   (cond [(and (hash? a) (hash? b))
-         (or (for/or ([(k v) (in-hash a)])
-               (if (hash-has-key? b k) (first-diff v (hash-ref b k) (cons k path)) (list 'missing (reverse (cons k path)))))
-             (for/or ([k (in-hash-keys b)]) (and (not (hash-has-key? a k)) (list 'extra (reverse (cons k path))))))]
+         (or (for/or ([k (in-list (sort (hash-keys a) symbol<?))])
+               (if (hash-has-key? b k)
+                   (first-diff (hash-ref a k) (hash-ref b k) a b)
+                   (difference (node-name a) (node-name b) (format "missing ~a" k))))
+             (for/or ([k (in-list (sort (hash-keys b) symbol<?))])
+               (and (not (hash-has-key? a k)) (difference (node-name a) (node-name b) (format "extra ~a" k)))))]
         [(and (list? a) (list? b))
          (if (= (length a) (length b))
-             (for/or ([x a] [y b] [i (in-naturals)]) (first-diff x y (cons i path)))
-             (list 'length (reverse path) (length a) (length b)))]
+             (for/or ([x (in-list a)] [y (in-list b)]) (first-diff x y pa pb))
+             (difference (node-name pa) (node-name pb) (format "length ~a ~a" (length a) (length b))))]
         [(equal? a b) #f]
-        [else (list 'differs (reverse path) a b)]))
+        [(or (hash? a) (hash? b)) (difference (node-name a) (node-name b) "")]
+        [else (difference (node-name pa) (node-name pb) (format "~s|~s" a b))]))
 
 (define (error-text e) (if (cql-error? e) (cql-error-string e) (format "~a" e)))
 
@@ -123,7 +163,7 @@
                (define od (normalize-elm (hash-ref o 'expression (hash))))
                (if (equal? rd od)
                    (values (add1 p) (add1 e) ms)
-                   (values (add1 p) e (cons (list n (first-diff rd od '())) ms)))])))
+                   (values (add1 p) e (cons (list n (first-diff rd od)) ms)))])))
         (lib-result pkg name #t #t #f (hash-count ref-defs) present equal (reverse mismatches))])]))
 
 ;; package-resolver : dir -> (sym version -> cql-library|#f)
@@ -171,18 +211,19 @@
           (sum lib-result-defs-present) (sum lib-result-defs-total) (sum lib-result-defs-equal))
   (for ([r (in-list rs)] #:when (lib-result-error r))
     (printf "    ~a: ~a\n" (lib-result-name r) (lib-result-error r)))
-  (define (class-of d)
-    (cons (car d) (string-join (for/list ([seg (in-list (cadr d))] #:unless (number? seg)) (format "~a" seg)) ".")))
-  (define (short v) (let ([s (format "~s" v)]) (if (> (string-length s) 70) (string-append (substring s 0 70) "…") s)))
+  (define (short s) (if (> (string-length s) 90) (string-append (substring s 0 90) "…") s))
+  ;; class : (cons reference-node our-node) -> (listof (list library definition Difference)), in corpus order
   (define classes
-    (sort (for*/fold ([h (hash)] #:result (hash->list h))
+    (sort (for*/fold ([h (hash)] #:result (for/list ([(k v) (in-hash h)]) (cons k (reverse v))))
                      ([r (in-list rs)] [m (in-list (lib-result-mismatches r))])
-            (hash-update h (class-of (cadr m)) (lambda (l) (cons (list (lib-result-name r) (car m) (cadr m)) l)) '()))
-          > #:key (lambda (c) (length (cdr c)))))
-  (printf "  difference classes (first difference, reference vs ours), largest first:\n")
+            (define d (cadr m))
+            (hash-update h (cons (difference-reference d) (difference-ours d))
+                         (lambda (l) (cons (list (lib-result-name r) (car m) d) l)) '()))
+          (lambda (x y) (or (> (length (cdr x)) (length (cdr y)))
+                            (and (= (length (cdr x)) (length (cdr y))) (string<? (format "~a" (car x)) (format "~a" (car y))))))))
+  (printf "  difference classes (the nodes at the first difference: reference | ours), largest first:\n")
   (for ([c (in-list classes)])
-    (printf "    ~a  ~a ~a\n" (length (cdr c)) (car (car c)) (cdr (car c)))
-    (for ([ex (in-list (take (reverse (cdr c)) (min 3 (length (cdr c)))))])
-      (define d (caddr ex))
-      (printf "        ~a/~a: ~a\n" (car ex) (cadr ex)
-              (if (eq? (car d) 'differs) (format "~a  |  ~a" (short (caddr d)) (short (cadddr d))) (string-join (map short (cddr d)) " "))))))
+    (printf "    ~a  ~a  |  ~a\n" (length (cdr c)) (short (car (car c))) (short (cdr (car c))))
+    (for ([ex (in-list (take (cdr c) (min 3 (length (cdr c)))))])
+      (printf "        ~a/~a~a\n" (car ex) (cadr ex)
+              (let ([w (difference-what (caddr ex))]) (if (string=? w "") "" (string-append ": " (short w))))))))

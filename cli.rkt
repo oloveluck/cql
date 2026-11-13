@@ -20,7 +20,7 @@
 (require (only-in racket/file file->string)
          (only-in racket/match match)
          (only-in cql/parser/parse parse-cql)
-         (only-in cql/compile compile-library compile-library/errors compile-library/diagnostics current-library-resolver)
+         (only-in cql/compile compile-library/diagnostics current-library-resolver)
          (only-in cql/elm/json elm->json-string)
          (only-in cql/error cql-error-string)
          (only-in fhir/result/result ok? ok-value err-error)
