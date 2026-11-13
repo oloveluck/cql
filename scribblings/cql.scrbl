@@ -5,144 +5,229 @@
 
 @title{cql: Clinical Quality Language}
 
-@hyperlink["https://cql.hl7.org/"]{CQL}, compiled and run. You write a library in a @tt{.cql} file; it is
-compiled to ELM (the standard machine form) and the ELM is run over one patient's JSON data:
-retrieves, value set membership, queries, the implicit FHIRHelpers conversions, and measure
-populations. The data model is whatever the library's @tt{using} names: FHIR R4, QI-Core and US Core
-(views over FHIR), QDM (the cqm-models JSON of Bonnie, MADiE and cqm-execution), or a model you
-describe (@secref["models"]). A @tt{.cql} file is a Racket module whose definitions a program
-evaluates over a patient's data.
+@hyperlink["https://cql.hl7.org/"]{Clinical Quality Language} (CQL) is how health care writes down
+clinical logic so that a computer can run it and a clinician can still read it: "women aged 50 to
+74 with no mammogram in the last two years", "patients whose latest HbA1c is above 9 %". It is the
+language quality measures and decision-support rules are published in.
 
-Held to published suites: cqframework/cql-tests 1820 of 1823; 32 published FHIR libraries compile,
-770 of 803 definitions identical to the reference translator's ELM; the 98 libraries of the 2024
-QI-Core eCQMs compile, 1854 of 2144 identical; four FHIR eCQMs agree with 71 of 76 test patients,
-four QI-Core eCQMs with 188 of 190 test cases; QDM measures pass all 31 of cqm-execution's own
-assertions. Part of the @hyperlink["https://github.com/oloveluck/fhir"]{fhir} family.
+This package runs CQL. You write a @italic{library}, a file of named definitions, and run it over a
+patient's record. Each definition gets a value for that patient: true or false, a number, a date, a
+list of the records that matched. A mistake in the library is reported at its line before anything
+runs.
+
+Part of the @hyperlink["https://oloveluck.github.io/fhir/"]{fhir} family of FHIR languages and tools.
 
 @table-of-contents[]
 
-@section{Quick start}
+@section{What you can do with it}
 
-@bold{1. Install.} The packages are not on the Racket package server yet; clone the repositories
-side by side and install from source:
+@itemlist[
+@item{@bold{Ask a question of one patient's record}: @secref["first"].}
+@item{@bold{Check a library as you write it}: every definition is checked against the shape of the
+data, and a misspelt name is reported with the one you probably meant.}
+@item{@bold{Compute a quality measure}: which patients count in the denominator and the numerator
+(@secref["measures"]).}
+@item{@bold{Use a library from a program}: as a function from a patient's data to answers
+(@secref["module"]).}
+@item{@bold{Work over data that is not FHIR}: QI-Core, US Core, QDM, or a model of your own
+(@secref["models"]).}]
 
-@verbatim{
-raco pkg install --link --auto fhir/fhir fhirpath cql
-}
+@section[#:tag "first"]{A first example}
 
-@bold{2. Write a library.}
+@bold{1. Install} the tools as the @hyperlink["https://oloveluck.github.io/fhir/"]{family's front
+page} describes. The command is then @tt{raco cql} (or @tt{cql}, if you built the standalone tools).
 
-@verbatim|{#lang cql
-library BloodPressureScreening version '1.0.0'
+@bold{2. Have a patient.} A patient's record is a folder of FHIR resources as JSON files. Here it is
+three files in @tt{patient/}: the patient, and two HbA1c results (a blood test used to follow
+diabetes), each naming the patient it belongs to.
+
+@verbatim|{
+{"resourceType": "Patient", "id": "ann", "gender": "female",
+ "birthDate": "1974-12-25"}
+
+{"resourceType": "Observation", "id": "a1c-1", "status": "final",
+ "code": {"coding": [{"system": "http://loinc.org", "code": "4548-4"}]},
+ "subject": {"reference": "Patient/ann"}, "effectiveDateTime": "2025-03-01",
+ "valueQuantity": {"value": 7.2, "unit": "%",
+                   "system": "http://unitsofmeasure.org", "code": "%"}}
+}|
+
+The second result is the same with id @tt{a1c-2}, date @tt{2025-09-01} and value @tt{9.4}.
+
+@bold{3. Write a library}, @tt{adults.cql}:
+
+@verbatim|{library Adults version '1.0.0'
 using FHIR version '4.0.1'
-parameter "Panel Codes" List<System.String> default { '85354-9', '55284-4' }
+include FHIRHelpers version '4.0.1'
+
+codesystem "LOINC": 'http://loinc.org'
+code "HbA1c": '4548-4' from "LOINC"
+
 context Patient
 
-define "Readings":
-  [Observation] O where exists (O.code.coding C where C.code.value in "Panel Codes")
+define "Female": Patient.gender = 'female'
+define "Age": AgeInYears()
+define "Adult Female": "Female" and "Age" >= 18
 
-define "Systolic Values":
-  "Readings" O return singleton from (O.component C
-                                        where exists (C.code.coding K where K.code.value = '8480-6')
-                                        return (C.value as FHIR.Quantity).value.value)
+define "HbA1c Results": [Observation: "HbA1c"]
+define "Tested": exists "HbA1c Results"
+define "Highest HbA1c": Max("HbA1c Results" O return (O.value as Quantity).value)}|
 
-define "Highest Systolic": Max("Systolic Values")
-define "Hypertensive": "Highest Systolic" >= 140}|
+Reading it from the top:
 
-@bold{3. Run it over a patient's resources} (a directory of FHIR JSON files or Bundles, one Patient
-among them):
+@itemlist[
+@item{@tt{using FHIR} says the data is FHIR, so the library can talk about @tt{Patient} and
+@tt{Observation}. @tt{include FHIRHelpers} brings in the standard helper library that lets you
+compare FHIR values with plain ones (@tt{Patient.gender = 'female'}). It comes with this package.}
+@item{@tt{codesystem} and @tt{code} give a name to the code for an HbA1c test, so the logic below can
+say @tt{"HbA1c"} instead of a number.}
+@item{@tt{context Patient} means every definition is about one patient at a time.}
+@item{Each @tt{define} names an answer. A definition can use the ones above it:
+@tt{"Adult Female"} is built from @tt{"Female"} and @tt{"Age"}.}
+@item{@tt{[Observation: "HbA1c"]} is a @italic{retrieve}: the patient's Observations with that
+code. The last line takes the number out of each and keeps the largest.}]
+
+@bold{4. Run it} over the patient:
 
 @verbatim{
-$ raco cql screening.cql --data patient/
-Readings: { Observation(...), Observation(...) }
-Systolic Values: { 152, 138 }
-Highest Systolic: 152
-Hypertensive: true
+$ raco cql adults.cql --data patient/ --now 2026-01-01 \
+    --define "Adult Female" --define "Tested" --define "Highest HbA1c"
+Adult Female: true
+Tested: true
+Highest HbA1c: 9.4
 }
 
-A mistake is reported on its line, naming the definition: @tt{screening.cql:12:1: cql compile error:
-in define "Systolic Values": unknown function 'Mx'}. Without @litchar{--data}, @tt{raco cql screening.cql} prints
-the ELM JSON.
+@litchar{--define} picks the answers to print; without it you get every definition, including the
+two matching Observations in full. @litchar{--now} fixes today's date, which @tt{AgeInYears} needs:
+leave it out and the age is as of today.
+
+@bold{5. Make a mistake.} Write @tt{AgeInYear()} and the library is refused, at the place:
+
+@verbatim{
+$ raco cql adults.cql
+adults.cql:11:15: cql compile error: in define "Age": unknown function 'AgeInYear'
+  (did you mean `AgeInYears` or `AgeInYearsAt`?)
+ 11 | define "Age": AgeInYear()
+    |               ^^^^^^^^^
+}
+
+Run without @litchar{--data}, a correct library prints its @italic{ELM}: the form CQL is translated
+into before it runs, which is what other CQL engines exchange (@secref["words"]).
 
 @section{Writing a library}
 
-A file is one library: a header, then definitions. @tt{using FHIR version '4.0.1'} loads the FHIR
-model (other models: @secref["models"]), so @tt{[Observation]} retrieves resources and @tt{O.code.coding} navigates them;
-@tt{context Patient} scopes retrieves to one patient; @tt{parameter} declares an input (with a
-@tt{default}); @tt{include} brings in another library under an alias; @tt{valueset "Name": 'url'}
-makes @tt{[Observation: "Name"]} a retrieve filtered by membership. Names with spaces are quoted
-with @tt{"…"}, strings with @tt{'…'}. Without FHIRHelpers, FHIR primitives are navigated to their
-@tt{.value}; a library that includes FHIRHelpers gets the implicit conversions the reference
-translator makes. The language reference is @hyperlink["https://cql.hl7.org/"]{cql.hl7.org}.
+A file is one library: a header, then definitions.
 
-A trap worth knowing: a timing phrase on a choice element reads only the member the translator
-picks. In a FHIR 4.0.1 library, @tt{O.effective during "Measurement Period"} casts @tt{effective} to
-a Period, so an Observation with @tt{effectiveDateTime} gives null; write
-@tt{(O.effective as dateTime) during "Measurement Period"}. The repository's @tt{guide.md} (a
-cheat sheet, a worked example and the common problems, each checked by its tests) has more.
+@itemlist[
+@item{@bold{The data model.} @tt{using FHIR version '4.0.1'} is what makes @tt{[Observation]} and
+@tt{O.code} mean something. Other models are in @secref["models"].}
+@item{@bold{Names.} A name with spaces is written in double quotes (@tt{"Adult Female"}); text is
+written in single quotes (@tt{'female'}).}
+@item{@bold{Retrieves.} @tt{[Observation]} is all of the patient's Observations;
+@tt{[Observation: "HbA1c"]} only those with that code; @tt{[Observation: "Diabetes Labs"]} those
+whose code is in a value set you named with @tt{valueset "Diabetes Labs": '<its url>'}.}
+@item{@bold{Queries.} @tt{"HbA1c Results" O where O.status = 'final' return O.value} reads "for each
+result O, keep the final ones, give its value". @tt{sort by}, @tt{First}, @tt{Last}, @tt{Count},
+@tt{Max} and the rest work on the list.}
+@item{@bold{Parameters.} @tt{parameter "Measurement Period" Interval<DateTime>} declares an input
+that is given when the library runs.}
+@item{@bold{Other libraries.} @tt{include Common version '1.0.0' called C} lets you write
+@tt{C."Some Definition"}. An included library is looked for beside the file.}
+@item{@bold{Nothing there.} A missing value is @tt{null}, and most operations on null give null:
+comparing a result with no value to 9 is neither true nor false. @tt{Coalesce}, @tt{exists} and
+@tt{is null} are how you say what should happen then.}]
 
-@section{Using it}
+Two things catch most newcomers:
+
+@itemlist[
+@item{@bold{Forgetting FHIRHelpers.} Without @tt{include FHIRHelpers}, @tt{Patient.gender = 'female'}
+compares a FHIR value with a plain one. The library is refused with a message naming the include to
+add.}
+@item{@bold{Dates that can be written two ways.} An Observation's time is either one moment
+(@tt{effectiveDateTime}) or a span (@tt{effectivePeriod}). @tt{O.effective during "Measurement
+Period"} reads only the span, so a result with a single moment gives null. Say which you mean:
+@tt{(O.effective as dateTime) during "Measurement Period"}. The translator warns about this, with
+the cast to write.}]
+
+The language itself is described at @hyperlink["https://cql.hl7.org/"]{cql.hl7.org}. The
+repository's @tt{guide.md} has a cheat sheet and worked recipes (the latest value per patient, a
+time window, "never tested"), each one run by the tests.
+
+@section{Running it}
 
 @subsection{Command line}
 
 @tabular[#:style 'boxed #:sep @hspace[2]
 (list (list @tt{raco cql lib.cql} "the ELM JSON")
       (list @tt{raco cql lib.cql --data patient/} "run it; every definition as name: value")
-      (list @tt{raco cql lib.cql --data bundle.json --define Hypertensive} "just the named definitions")
+      (list @tt{raco cql lib.cql --data bundle.json --define Tested} "just the named definitions; repeat it")
+      (list @tt{raco cql lib.cql --data p/ --now 2026-01-01} @elem{what @tt{Today()} and @tt{Now()} answer, so a result can be repeated})
       (list @tt{raco cql lib.cql --data p/ --valuesets vs/} "ValueSet resources (with expansions) for the library's value sets")
       (list @tt{raco cql measure.cql --data p/ --libraries libs/} @elem{includes found as @tt{libs/<Name>.cql}; else beside the file; else the bundled FHIRHelpers 4.0.1 and 4.4.000})
       (list @tt{raco cql lib.cql --data p/ --parameter "Measurement Period=Interval[…]"} "a parameter as a CQL expression; repeat it")
       (list @tt{raco cql lib.cql --data patient.json} "a QDM patient document (cqm-models) is one patient's record too")
       (list @tt{raco cql --tck [-v]} "the cqframework/cql-tests suite, floor-ratcheted"))]
 
-@litchar{--format text|json|outcome} chooses how errors are reported (all of them, not just the
-first). Exit codes: 0, 1 on a CQL error or a suite regression, 2 on usage.
+@litchar{--data} is one patient's record: a folder of JSON files, one file, or a Bundle. Every
+mistake in a library is reported, not just the first; @litchar{--format text|json|outcome} chooses
+the form (text for a person, JSON or a FHIR OperationOutcome for a program). The command exits with
+0 when all is well, 1 on a CQL error and 2 when it was called wrongly.
 
-@subsection{As a module}
+@subsection[#:tag "module"]{As a module, from Racket}
 
-@racket[(require "screening.cql")] compiles the library when the program compiles; a parse or
-translation error is a compile error positioned in the file. Its includes resolve to
-@tt{<Name>.cql} beside the file, else to a bundled library (FHIRHelpers). The module provides @racket[evaluate],
-the library over one patient's resources (the Patient among them), answering every definition's
-value by name; @racket[(results)] for a library with no retrieves; and the library's @racket[elm].
-Requiring the module also registers it as a Library resource, so measure evaluation finds it by name.
+A CQL file whose first line is @tt{#lang cql} is a Racket module, so a program can require it and
+call it. The library is checked when the program is built: a mistake in the CQL stops the build, at
+its line.
 
 @racketblock[
-(require (only-in "screening.cql" [evaluate screen]))
-(screen (cons patient observations) #:parameters (hash "Panel Codes" '("85354-9" "55284-4")))
-(code:comment "=> (hash \"Readings\" ... \"Highest Systolic\" 152 \"Hypertensive\" #t ...)")
+(require json (only-in "adults.cql" evaluate))
+(define (read-file f) (call-with-input-file f read-json))
+(define record (map read-file '("patient/patient.json" "patient/a1c-1.json" "patient/a1c-2.json")))
+(define answers (evaluate record #:now "2026-01-01"))
+(hash-ref answers "Adult Female")                           (code:comment "#t")
+(hash-ref answers "Age")                                    (code:comment "51")
+(evaluate record #:now "2026-01-01" #:define "Tested")      (code:comment "#t: one definition")
 ]
 
-The data is JSON in the library's model (FHIR resources, a QDM patient document).
-@racket[#:valuesets] takes ValueSet resources with expansions (or cqm-models value set arrays).
+@racket[evaluate] takes one patient's records (the Patient among them) and answers every
+definition by name. @racket[#:parameters] gives the library's parameters, @racket[#:valuesets] the
+ValueSet resources it needs. The module also provides @racket[(results)] for a library that reads
+no data, and the library's @racket[elm]. An included library is found beside the file, else among
+the ones that come with the package (FHIRHelpers).
 
 @subsection{Values}
 
-Integers, strings and booleans are Racket's; @tt{null} is @racket[cql-null]; lists are lists; a
+The answers are Racket values. Integers, strings and booleans are Racket's; @tt{null} is @racket[cql-null]; lists are lists; a
 Decimal is fhirpath's @racket[fp-decimal], a Quantity an @racket[fp-quantity], a date or time a
 @racket[moment]; intervals, tuples, codes and concepts have their own structs
 (@secref["cql-values"]). @racket[render] prints any of them the way the command line does.
 
-@subsection{From Racket}
+@subsection{The pieces, from Racket}
+
+The steps the module form does for you, one at a time: read the text, translate it to ELM, run it.
+
 
 @racketblock[
 (require cql/parser/parse cql/compile cql/elm/json cql/run fhir/result/result)
-(define lib (ok-value (parse-cql text #:source "screening.cql")))
+(define lib (ok-value (parse-cql text #:source "adults.cql")))
 (elm->json-string (ok-value (compile-library lib)))                   (code:comment "the ELM")
-(evaluate-library lib resources #:parameters (hash "Panel Codes" codes))
+(evaluate-library lib resources)                                       (code:comment "name -> value")
 (code:comment "with includes found in a directory (then the bundled ones), parameters as CQL")
 (define rl (load-runtime-library lib #:resolver (directory-resolver "cql/")
                                      #:data (resources->data resources)
                                      #:valuesets (valuesets->terminology value-sets)
                                      #:parameters (hash "Measurement Period"
                                                         (cql-value "Interval[@2024-01-01T00:00:00Z, @2025-01-01T00:00:00Z)"))))
-(rlib-value rl "Hypertensive")
+(rlib-value rl "Tested")
 ]
 
-@subsection{Measures}
+@subsection[#:tag "measures"]{Measures}
 
-@tt{Measure/$evaluate-measure} runs a Measure's library over a data source holding the patients,
-the Library resources and the value sets, and answers a MeasureReport:
+A quality measure is a library plus a statement of which of its definitions are the measure's
+populations: who is eligible (the denominator) and who met the goal (the numerator). FHIR writes
+that statement as a Measure resource, and the operation @tt{$evaluate-measure} runs it and answers a
+MeasureReport with the counts. It needs somewhere to find the patients, the libraries and the value
+sets; here, a folder:
 
 @racketblock[
 (require fhir/operation fhir/data-source cql/measure)
@@ -172,7 +257,9 @@ cqm-execution computes them:
 
 @section[#:tag "models"]{Data models}
 
-A library's @tt{using} names its model. Installed:
+CQL does not know what a patient record looks like; a @italic{data model} tells it. The model
+names the kinds of record (Observation, Encounter …), what each contains, and which element holds
+its code. A library's @tt{using} line picks the model. These come installed:
 
 @itemlist[
 @item{@bold{FHIR 4.0.1}, the ModelInfo the reference translator ships. Include FHIRHelpers for the
@@ -187,8 +274,9 @@ value set both ways: by code, and by the value set the action was not done for.}
 naming its class under @tt{_type}; a @tt{Positive…}/@tt{Negative…} retrieve selects the data
 elements without or with a @tt{negationRationale}.}]
 
-Any other model is two pieces of data: its ModelInfo (the reference translator's format) and its
-@deftech{representation}, how its JSON looks. A representation is a settings file
+You can add a model of your own without writing code. It is two pieces of data: its ModelInfo (the
+standard description of a model, the same file other CQL tools read) and its
+@deftech{representation}, which says how its records are written as JSON. A representation is a settings file
 (@tt{<model>.representation.rktd} beside the ModelInfo, in a directory named by @tt{CQL_MODEL_PATH}),
 an association list of:
 
@@ -209,42 +297,80 @@ A model can also be made from logical StructureDefinitions (FSH @tt{Logical:}):
 @tt{cql/model/structure-definitions}, which a workspace's @tt{models} setting uses. The engine names
 no model: a test fails if its code ever does.
 
-@section{In an editor, for an agent}
+@section{In an editor, and for an AI agent}
 
-@tt{cql/support} is what the family's language server (fhir-lsp) loads for CQL: a library's
-diagnostics (parse, then every definition translated), the libraries beside it as its project, the
-declarations as an outline, hover, go to definition (an include alias leads to the library's file
-beside it), and completion of declared names and keywords. It is a @tt{fhir/lang/support} value.
-@tt{cql/workspace} is what fhir-mcp runs for an agent: a library run over every patient of the data,
-and one patient's answer explained define by define down to the retrieves. It also provides the
-repository's @tt{guide.md} as @racket[guide], which fhir-mcp serves as @tt{learn://cql}. Without MCP,
-the repository's Claude skill (@tt{.claude/skills/cql}) gives an agent the same workflow with the
-command line and the Racket API.
+@itemlist[
+@item{@bold{In an editor.} The family's language server,
+@hyperlink["https://oloveluck.github.io/fhir/fhir-lsp/index.html"]{fhir-lsp}, underlines a
+library's mistakes as you type, lists its definitions, jumps from a name to where it is defined
+(into an included library too) and completes names.}
+@item{@bold{For an agent.} In an
+@hyperlink["https://oloveluck.github.io/fhir/fhir-mcp/index.html"]{fhir-mcp} workspace a library
+runs over every patient in the data at once, and @tt{explain} shows why one patient got the answer
+they did: each definition's value, down to which records a retrieve kept. The repository's
+@tt{guide.md} is the language written for an agent to read (fhir-mcp serves it as @tt{learn://cql}),
+and @tt{.claude/skills/cql} is the same workflow for an agent using the command line.}]
 
 @section{Limits}
 
 @itemlist[
-@item{@bold{Data models.} No FHIR R5 ModelInfo. A retrieve filters by type and code;
-@tt{dateProperty} and @tt{dateRange} are not applied, and a retrieve's template (profile) does not
-filter records. The Patient context applies when the data holds exactly one patient, related through
-the model's context relationships (FHIR: @tt{subject}, @tt{patient}, @tt{performer}…). A QDM measure
-written for one QDM version reads data of another as it is: a QDM 5.3 measure's
-@tt{principalDiagnosis} is absent from QDM 5.5 data.}
-@item{@bold{Terminology.} Membership comes from the ValueSet resources supplied: their
-@tt{expansion}, else enumerated concepts. Filters and nested value sets are not evaluated and the
-terminology service is not called; a value set not supplied is an error.}
-@item{@bold{FHIR Measures.} Proportion scoring, patient-based, from the first library and the first
-group's population codes; @tt{Measure.scoring} is not read. No stratifiers, supplemental data or
-measure observations. @tt{$evaluate-measure} reads @tt{measure}, @tt{periodStart},
-@tt{periodEnd} and @tt{subject}. (cqm-models measure documents get every scoring, strata and
-observations: @racket[cqm-measure-populations].)}
-@item{@bold{Translation errors.} A definition that does not translate does not stop its library from
-running: it raises its translation error when evaluated (the reference translator's error recovery
-writes a Null there).}
-@item{@bold{ELM} is emitted as JSON only. Of 803 definitions in the published FHIR corpus, 33 differ
-from the reference translator in named categories, which @tt{tests/elm-corpus-test.rkt} prints
-classified (choice operands in timing phrases, typed unions, ratio details in FHIRHelpers, one
-measure's day-of-procedure phrases).}]
+@item{@bold{FHIR version.} The FHIR model installed is 4.0.1 (R4). There is none for R5.}
+@item{@bold{What a retrieve filters by.} The record's type and its code. A date range written inside
+a retrieve is not applied (write it as a @tt{where}), and naming a profile in a retrieve does not
+filter out records that do not conform to it.}
+@item{@bold{One patient at a time.} The Patient context applies when the data holds exactly one
+patient; records are tied to the patient through the links the model declares (in FHIR:
+@tt{subject}, @tt{patient}, @tt{performer} …).}
+@item{@bold{Value sets must be given.} Membership is decided from the ValueSet resources you supply:
+their listed expansion, else the codes they enumerate. A value set defined by a rule ("all
+descendants of …") is not worked out here, and a value set that is not supplied is an error rather
+than an empty answer.}
+@item{@bold{FHIR Measures.} Proportion measures, counted per patient, using the first library and
+the first group's populations. Stratifiers, supplemental data and measure observations are not
+computed, and @tt{$evaluate-measure} reads @tt{measure}, @tt{periodStart}, @tt{periodEnd} and
+@tt{subject} only. (Measures in the cqm-models format get every kind of scoring:
+@racket[cqm-measure-populations].)}
+@item{@bold{A definition that does not translate} does not stop the rest of its library when the
+library runs over data: that definition reports its error and the others are answered.}
+@item{@bold{QDM versions.} A measure written for one version of QDM reads data of another as it is: a
+QDM 5.3 measure's @tt{principalDiagnosis} is simply absent from QDM 5.5 data.}
+@item{@bold{ELM} is written as JSON only, not XML.}]
+
+@section[#:tag "words"]{Words used here}
+
+@itemlist[
+@item{@bold{Library}: one CQL file: a header and a list of definitions.}
+@item{@bold{Definition} (a @tt{define}): a named expression; its value for a patient is an answer.}
+@item{@bold{Retrieve}: the square-bracket expression that fetches a patient's records of one kind,
+@tt{[Observation: "HbA1c"]}.}
+@item{@bold{ELM} (Expression Logical Model): the standard machine-readable form of a library. CQL is
+translated to ELM, and the ELM is what runs. Tools exchange it as JSON.}
+@item{@bold{Data model}, @bold{ModelInfo}: the description of the records a library talks about.
+ModelInfo is the standard file format for one.}
+@item{@bold{FHIRHelpers}: the standard library that converts between FHIR's values and CQL's own
+(a FHIR @tt{code} and a plain string, a FHIR Quantity and a CQL Quantity).}
+@item{@bold{Value set}: a named set of codes; @bold{code system}: where codes come from (LOINC,
+SNOMED CT).}
+@item{@bold{Measure}, @bold{population}: a quality measure and its counted groups: initial
+population, denominator, numerator, exclusions.}
+@item{@bold{QI-Core}, @bold{US Core}: FHIR as profiled for United States quality measurement and
+interoperability. @bold{QDM}: the Quality Data Model, an older, non-FHIR model for measures;
+@bold{cqm-models} is the JSON format its tools (Bonnie, MADiE, cqm-execution) exchange.}]
+
+@section{How it is tested}
+
+Against published work, not only its own examples:
+
+@itemlist[
+@item{HL7's CQL test suite: 1820 of 1823 expressions give the expected value. The three that do not
+are places where the suite disagrees with itself.}
+@item{Published libraries, compared definition by definition with the ELM the reference translator
+produces: 770 of 803 identical for 32 FHIR libraries, 1854 of 2144 for the 98 QI-Core libraries of
+the 2024 quality measures.}
+@item{Published measures over their own test patients: 71 of 76 for four FHIR measures, 188 of 190
+for four QI-Core measures; for QDM, all 31 of cqm-execution's own checks.}]
+
+The repository's @tt{TESTING.md} names every case that differs and why.
 
 @section{Reference}
 
