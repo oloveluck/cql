@@ -2,19 +2,23 @@
 
 ;;; parse.rkt — the CQL parse API: string -> Result<AST>.
 ;;;
-;;; Mirrors fhirpath/parser/parse.rkt: string -> tokens (lexer) -> brag datum (grammar) -> compact
-;;; prefab AST (lower). `parse-cql` reads a whole library; `parse-cql-expr` reads a single bare
-;;; expression (used by the conformance harness on cql-tests `<expression>` fragments). A parse
-;;; failure is caught and returned as (err (cql-error 'parse …)). Results are memoized (prefab ASTs
-;;; are immutable, so sharing is safe).
+;;; Mirrors fhirpath/parser/parse.rkt: string -> tokens (lexer) -> the grammar's datum -> compact
+;;; prefab AST (lower). The datum is descent.rkt's when it reads the tokens (a recursive-descent
+;;; reader, linear in the tokens, that gives exactly the datum brag would), else brag's parse of
+;;; grammar.rkt — the definition of CQL text, and the one that reports every syntax error.
+;;; `parse-cql` reads a whole library; `parse-cql-expr` reads a single bare expression (used by the
+;;; conformance harness on cql-tests `<expression>` fragments). A parse failure is caught and
+;;; returned as (err (cql-error 'parse …)). Results are memoized (prefab ASTs are immutable, so
+;;; sharing is safe).
 
 (require racket/contract racket/match
-         (only-in racket/list take drop last)
+         (only-in racket/list take drop last filter-map)
          (prefix-in g: "grammar.rkt")
          "lexer.rkt"
          (only-in brag/support srcloc-token? srcloc-token-token srcloc-token-srcloc token-struct? token-struct-type
                   token-struct-skip? token token-struct-val)
          "ast.rkt"
+         (only-in "descent.rkt" descend-library)
          (only-in "../error.rkt" cql-error)
          (only-in fhir/diagnostic exn->diagnostic diagnostic->string diagnostic diagnostic-loc loc loc-line loc-column loc-position
                   loc-source exn:fail:diagnostic error-position attach-loc! attached-loc)
@@ -24,7 +28,18 @@
  (contract-out
   ;; (ok cql-library) | (err cql-error) — a parse error carries its diagnostic (positions in `source`)
   [parse-cql      (->* (string?) (#:source (or/c string? path? #f)) (or/c ok? err?))]
-  [parse-cql-expr (-> string? (or/c ok? err?))]))  ; (ok expr-AST)   | (err cql-error)
+  [parse-cql-expr (-> string? (or/c ok? err?))]   ; (ok expr-AST)   | (err cql-error)
+  ;; the same, read by brag's parser of the grammar alone (descent.rkt left out), nothing cached:
+  ;; the reference tests/descent-test.rkt holds the production reading to
+  [parse-cql/brag      (->* (string?) (#:source (or/c string? path? #f)) (or/c ok? err?))]
+  [parse-cql-expr/brag (-> string? (or/c ok? err?))]
+  ;; current-brag-reader : brag's parse of a token list to its datum (raising when they do not
+  ;; parse); a test may give one that remembers what brag answered, since a datum does not depend
+  ;; on where the tokens stand
+  [current-brag-reader (parameter/c (-> list? any/c))]
+  ;; definition-chunks : input-port -> (listof (listof token))   a library's text, split before
+  ;; each definition (below)
+  [definition-chunks (-> input-port? (listof list?))]))
 
 ;; a bare expression (and a long list's element) is parsed as the body of this throwaway definition
 (define expr-prefix "define __expr__: ")
@@ -33,23 +48,42 @@
 ;; parses a document at every keystroke and a workspace server lives for days, so each cache is
 ;; BOUNDED: when it reaches its limit it is emptied (the next parse of a text fills it again; nothing
 ;; relies on a cached AST being the same object beyond one evaluation, whose resolver holds it).
+;; Each cache is a pair of tables: the production reading's, and brag's alone (`…/brag`, the
+;; reference the descent test compares with), so neither ever answers with the other's result.
 ;;   lib-cache   : (cons text source) -> Result<cql-library>
 ;;   expr-cache  : text -> Result<expr>
 ;;   chunk-cache : ChunkKey -> cql-library      one definition's tokens -> its AST (below)
-(define lib-cache (make-hash))
-(define expr-cache (make-hash))
-(define chunk-cache (make-hash))
+(define (tables) (cons (make-hash) (make-hash)))
+(define lib-cache (tables))
+(define expr-cache (tables))
+(define chunk-cache (tables))
 (define lib-cache-limit 512)
 (define expr-cache-limit 16384)
 (define chunk-cache-limit 16384)
-;; cached : table key limit (-> value) -> value   hash-ref!, emptying a table that has reached its limit
-(define (cached table key limit compute)
+;; cached : (cons table table) key limit (-> value) -> value   hash-ref! in the reading's table,
+;; emptying a table that has reached its limit
+(define (cached tables key limit compute)
+  (define table (if (descend?) (car tables) (cdr tables)))
   (hash-ref table key
             (lambda ()
               (define v (compute))
               (when (>= (hash-count table) limit) (hash-clear! table))
               (hash-set! table key v)
               v)))
+
+;; descend? : the reading tries descent.rkt first (#f: brag's parser alone, for the reference)
+(define descend? (make-parameter #t))
+(define (parse-cql/brag str #:source [source #f])
+  (parameterize ([descend? #f]) (parse-cql str #:source source)))
+(define (parse-cql-expr/brag str)
+  (parameterize ([descend? #f]) (parse-cql-expr str)))
+;; read-datum : tokens -> Datum   the grammar's datum for these tokens (skipped ones included or
+;; not): descent.rkt's, else brag's parse — whose exception, when the tokens do not parse, is the
+;; parse error
+(define (read-datum toks)
+  (or (and (descend?) (descend-library (filter-map probe-token toks)))
+      ((current-brag-reader) toks)))
+(define current-brag-reader (make-parameter (lambda (toks) (g:parse-to-datum (list->token-thunk toks)))))
 
 (define (parse-cql str #:source [source #f])
   (cached lib-cache (cons str source) lib-cache-limit
@@ -66,8 +100,8 @@
 ;; positions go to diagnostics, and a parse that fails raises and is not kept — so a definition met
 ;; again is not parsed again: the same library under another source name, an `include` or a value
 ;; set declared by a hundred libraries, FHIRHelpers 4.0.1's functions in FHIRHelpers 4.4.000, and
-;; every definition of a document but the one being edited (the grammar's parser costs ~60 µs a
-;; token; of the 5,001 definitions of the QI-Core corpus 1,896 repeat an earlier one).
+;; every definition of a document but the one being edited (of the 5,001 definitions of the QI-Core
+;; corpus 1,896 repeat an earlier one).
 ;; chunk-key : tokens -> ChunkKey
 (define (chunk-key chunk)
   (for*/list ([t (in-list chunk)] [k (in-value (probe-token t))] #:when k)
@@ -82,11 +116,15 @@
   (apply make-prefab-struct (prefab-struct-key d) (cdr (vector->list (struct->vector d)))))
 ;; parse-chunk : tokens -> cql-library   raises the grammar's exception when the chunk does not parse
 (define (parse-chunk chunk)
-  (or (and (> (length chunk) long-list-tokens) (parse-long-list chunk #:at-least long-list-elements))
-      (lower-library (g:parse-to-datum (list->token-thunk chunk)))))
+  (cond
+    [(and (descend?) (descend-library (filter-map probe-token chunk))) => lower-library]
+    [else (or (and (> (length chunk) long-list-tokens) (parse-long-list chunk #:at-least long-list-elements))
+              (lower-library ((current-brag-reader) chunk)))]))
 
 ;; ---- a definition that is one long list ------------------------------------------------------
-;; The grammar's parser is QUADRATIC in the number of a list's elements (100 elements: 0.1-0.3 s;
+;; (Descent reads such a list in linear time — OpioidData's 93,000 tokens in 0.2 s; what follows is
+;; for a long list it leaves to brag, an element it does not read going to brag alone.)
+;; brag's parser is QUADRATIC in the number of a list's elements (100 elements: 0.1-0.3 s;
 ;; 400: 1-3 s; 800: 3-8 s), and memory with it: a code table written as a list of a thousand tuples
 ;; (`define "DrugIngredients": { {…}, {…}, … }`, 93,000 tokens in one of the QDM corpus's
 ;; libraries) took 27 s, 18 of them collecting garbage. Such a definition — its body exactly a
@@ -114,8 +152,7 @@
                      (and es (>= (length es) at-least) es)))
   (with-handlers ([exn:fail? (lambda (_) #f)])
     (match (and elements
-                (cql-library-defs (lower-library (g:parse-to-datum
-                                                  (list->token-thunk (append (take toks (add1 open-index)) (list (last toks))))))))
+                (cql-library-defs (lower-library (read-datum (append (take toks (add1 open-index)) (list (last toks)))))))
       [(list (cql-def name access (cql-list '())))
        (cql-library #f #f (list (cql-def name access (cql-list (map parse-element elements)))))]
       [(list (cql-func name access operands result-type (cql-list '()) fluent?))
@@ -142,7 +179,7 @@
     (let loop () (let ([t (next)]) (if (void? t) '() (cons t (loop)))))))
 (define (parse-element toks)
   (match (cql-library-defs (cached chunk-cache (cons 'element (chunk-key toks)) chunk-cache-limit
-                                   (lambda () (lower-library (g:parse-to-datum (list->token-thunk (append element-prefix toks)))))))
+                                   (lambda () (lower-library (read-datum (append element-prefix toks))))))
     [(list (cql-def _ _ body)) body]))
 ;; located : cql-library tokens source -> cql-library   each definition remembers where it starts
 ;; (fhir/diagnostic attach-loc!) so translation errors can point at it
@@ -179,8 +216,8 @@
     u))
 
 ;; brag's general CFG parser is superlinear in input length, and FHIRHelpers is ~600 lines: parsing
-;; it whole takes seconds. A library is a sequence of definitions, so we parse DEFINITION BY
-;; DEFINITION: the token stream splits before every definition keyword in column 0 (where every
+;; it whole took seconds. A library is a sequence of definitions, so we parse DEFINITION BY
+;; DEFINITION (each chunk is also what descent reads, what the cache keeps, and where brag reports): the token stream splits before every definition keyword in column 0 (where every
 ;; real-world library starts its definitions; continuation lines are indented). Each chunk is a
 ;; valid library on its own; tokens keep their original source locations, so errors still point
 ;; into the file. (Same technique as fsh/parser/parse.rkt's rule-by-rule parsing.)
@@ -240,9 +277,15 @@
   (cached expr-cache str expr-cache-limit
           (lambda ()
             (with-handlers ([exn:fail? (lambda (e) (parse-failure e #f #:prefix (string-length expr-prefix)))])
-              (define lib (lower-library
-                           (g:parse-to-datum
-                            (tokenize (open-input-string (string-append expr-prefix str))))))
+              (define text (string-append expr-prefix str))
+              ;; a text that does not lex is left to brag's parser, which reads tokens as it goes
+              ;; (so a syntax error before the bad character is the one reported, as it was)
+              (define toks (with-handlers ([exn:fail? (lambda (_) #f)])
+                             (let ([next (tokenize (open-input-string text))])
+                               (let loop () (let ([t (next)]) (if (void? t) '() (cons t (loop))))))))
+              (define lib (lower-library (if toks
+                                             (read-datum toks)
+                                             (g:parse-to-datum (tokenize (open-input-string text))))))
               (define defs (cql-library-defs lib))
               (cond
                 [(and (pair? defs) (cql-def? (car defs))) (ok (cql-def-body (car defs)))]
@@ -400,11 +443,12 @@
   (check-equal? (chunk-key (car (definition-chunks (open-input-string "define X: /* c */ 1 +  2 // d"))))
                 (chunk-key (car (definition-chunks (open-input-string "define X: 1 + 2")))))
   ;; a cache that reaches its limit is emptied and filled again
-  (let ([t (make-hash)] [computed 0])
+  (let ([t (tables)] [computed 0])
     (define (get k) (cached t k 2 (lambda () (set! computed (add1 computed)) (* k k))))
     (check-equal? (list (get 1) (get 1) (get 2) (get 3) (get 1)) '(1 1 4 9 1))
     (check-equal? computed 4)
-    (check-equal? (hash-count t) 2))
+    (check-equal? (hash-count (car t)) 2)
+    (check-equal? (hash-count (cdr t)) 0))                     ; brag's reading keeps its own
 
   ;; ---- a definition that is one long list, parsed element by element --------------------------
   (define (chunk-of text) (car (definition-chunks (open-input-string text))))

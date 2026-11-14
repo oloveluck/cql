@@ -17,8 +17,9 @@ operators, `if`/`case`. Layers:
 - `cql/parser/` — a **fork-and-extend** of `fhirpath/parser/` (brag grammars can't be imported): a
   `br-parser-tools` `lexer.rkt` (CQL keywords, `'…'` strings, `"…"` delimited ids, `42L` longs), a
   `#lang brag` `grammar.rkt` (a superset precedence cascade + library/definition/interval/list/tuple/
-  if/case productions), prefab `ast.rkt` + `lower` (the fhirpath pattern), and a memoized `parse.rkt`
-  (`parse-cql` → `Result<cql-library>`, `parse-cql-expr` for bare-expression fragments).
+  if/case productions), prefab `ast.rkt` + `lower` (the fhirpath pattern), a memoized `parse.rkt`
+  (`parse-cql` → `Result<cql-library>`, `parse-cql-expr` for bare-expression fragments), and
+  `descent.rkt`, the hand-written reader that gives brag's datum fast (below, "Read by descent").
 - `cql/elm/` — prefab ELM node structs (`ast.rkt`; binary/n-ary/unary operators share the ELM
   OperatorExpression shape via generic `elm-nary`/`elm-unary` carrying the ELM type string) + `json.rkt`
   emitting **canonical ELM JSON** via `racket/json` (NOT `serialize/to-json.rkt`, which is FHIR-specific);
@@ -139,7 +140,8 @@ operators, `if`/`case`. Layers:
   (`period.start`, `System.Code`, `define fluent function version`). A query may be the RIGHT operand
   of a set operator only (on the left it would end a greedy where/aggregate body early — a TCK test
   caught that). Libraries parse DEFINITION BY DEFINITION (`parse.rkt` splits the token stream before
-  each definition keyword in column 0): brag's CFG parser is superlinear, FHIRHelpers took seconds whole.
+  each definition keyword in column 0): brag's CFG parser is superlinear, FHIRHelpers took seconds whole
+  (descent reads it in 17 ms now; the chunk stays the unit of caching and of brag's error report).
 - **Typed translation over a data model** (`compile.rkt`, `model/`): `using FHIR version '4.0.1'` loads
   the reference translator's own FHIR ModelInfo (`model/fhir-modelinfo-4.0.1.xml.gz`, cqframework,
   Apache-2.0; `model/gen-modelinfo.rkt` derives the compact `fhir-4.0.1.rktd` that
@@ -532,8 +534,8 @@ operators, `if`/`case`. Layers:
     Not held, with the reason in the harness: an empty String literal's `value`, a Ratio's parts'
     `type`, the order of a ChoiceTypeSpecifier's choices (the reference's is a Java HashSet's
     iteration order: the bucket of each class name's hash — it fits the six pairs checked).
-  - **Parsing** (parser/parse.rkt; it is 95% of translating: 60 µs a token, quadratic in a list's
-    elements). A definition is parsed once (`chunk-cache`, keyed by its tokens' types and values:
+  - **Parsing** (parser/parse.rkt; it was 95% of translating: 60 µs a token, quadratic in a list's
+    elements — until the descent reader, 2026-11-14, below). A definition is parsed once (`chunk-cache`, keyed by its tokens' types and values:
     `chunk-key`, `parsed-chunk`; each use gets fresh definition structs over the shared bodies, so
     each keeps its own position): FHIRHelpers 555 ms, then 8 ms after an edit to one definition or
     under another source name; the QI-Core corpus 16.4 -> 12.5 s. A definition that is one long list
@@ -577,3 +579,38 @@ operators, `if`/`case`. Layers:
     Round/Ln/Ceiling over Integers (Decimal-only in the reference: no corpus evidence); a warning
     when the data's FHIR version is not the library's (FHIR JSON does not state its version; a
     workspace already refuses the mismatch).
+
+- **Read by descent, held to the grammar** (2026-11-14). The owner: keep brag "for testing since it
+  helps tie the implementation to the published antlr grammar". So `parser/grammar.rkt` (brag, the
+  port of cql.g4) stays the definition of CQL text, and `parser/descent.rkt` (`descend-library`)
+  reads it fast: recursive descent over a chunk's tokens, rule by rule, producing EXACTLY the datum
+  `g:parse-to-datum` would (rule names, `/` cuts, `@` splices, the closed/-open cascade), so the
+  lowering, the chunk cache and the definition splitting are unchanged. It only ever ACCEPTS: on a
+  token it does not expect it answers #f and parse.rkt (`read-datum`, `parse-chunk`) hands the same
+  tokens to brag, whose datum or positioned error is the one returned — every syntax error is still
+  brag's. Where the grammar reads a text two ways brag's choice is its own, and descent leaves the
+  text to it (the header of descent.rkt lists each, with the two readings): a query whose clause an
+  enclosing query's tail could take (the cursor's `tail?` flag), a comma that may be a query's (let
+  items, sort items, `from` sources) or the enclosing list's/tuple's (the `comma` flag: #f, 'list,
+  'keyed), `distinct`/`flatten` before a bare query, `return distinct`, a number before
+  `as`/`is`/`in`/`contains`/`code`/`concept` unless an operand follows, `in`/`contains` before
+  `+`/`-`, `Code 'x' from A.B`, `minimum System.Decimal`, `duration/difference in … between A and B`
+  with an operator after B, `starts`/`ends` before an offset without `or less`/`or more`. The
+  generated inputs found three of those (the datum differed from brag's) before they were refused:
+  the `between` term, the dotted `minimum` type, a let item where a tuple element could stand.
+  `parse-cql/brag`, `parse-cql-expr/brag` (brag alone, with caches of their own: each cache is a pair
+  of tables) and `current-brag-reader` are exported for the test. `parse-long-list` stays: it is
+  only reached for a long list descent leaves to brag (none in the corpora).
+  `tests/descent-test.rkt` holds the two to the same Outcome: at the seam, every distinct definition
+  chunk of every library the repository holds (the ELM, QI-Core, QDM and eCQM corpora, libraries/,
+  examples/, guide.md's blocks: 4,516) gives brag's datum exactly — descent reads 4,474 of the 4,511
+  brag reads; whole libraries through `parse-cql` (184), every HL7 suite expression and output (2,161
+  distinct; descent reads all 2,160 the grammar reads), 3,000 generated expressions, 600 generated
+  libraries and 3,000 token soups (seeded): 0 disagreements. A planted bug (between-tail's operands
+  swapped) fails it in five of the six groups. Measured (same machine, medians of 3, wall time with
+  the process start): `raco cql --tck` 9.2 -> 0.9 s; tests/elm-corpus-test 7.6 -> 2.0 s;
+  qicore-elm-corpus-test 23.6 -> 3.4 s; qdm-elm-corpus-test 12.6 -> 2.0 s; FHIRHelpers parsed cold
+  624 -> 14 ms; OpioidData's 93,000-token list 7.5 s -> 150 ms; all 187 .cql files 36.9 -> 2.1 s;
+  tests/bench.rkt 14.5 -> 4.3 s; `raco test .` 155 -> 149 s (the descent test itself
+  ~85 s of it: brag reads every chunk once there). Floors unchanged: TCK 1820/1823, ELM 786/803,
+  QI-Core 1932/2144 and 188/190, QDM 559/723, 31/31, 16/26, eCQM 71/76.

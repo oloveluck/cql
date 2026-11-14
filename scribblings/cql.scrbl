@@ -379,7 +379,11 @@ are places where the suite disagrees with itself.}
 produces: 786 of 803 identical for 32 FHIR libraries, 1932 of 2144 for the 98 QI-Core libraries of
 the 2024 quality measures.}
 @item{Published measures over their own test patients: 71 of 76 for four FHIR measures, 188 of 190
-for four QI-Core measures; for QDM, all 31 of cqm-execution's own checks.}]
+for four QI-Core measures; for QDM, all 31 of cqm-execution's own checks.}
+@item{Libraries are read by a hand-written parser, for speed. The parser generated from the grammar
+(a port of the published cql.g4) is kept as the reference: it reports every syntax error, reads
+the few texts the grammar allows two readings of, and a test requires both to read every library
+and suite expression the repository holds, and thousands of generated ones, to the same result.}]
 
 The repository's @tt{TESTING.md} names every case that differs and why.
 
