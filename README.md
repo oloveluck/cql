@@ -1,8 +1,9 @@
 # cql — Clinical Quality Language
 
-> Part of [fhir](https://github.com/oloveluck/fhir), a FHIR implementation designed to be used by
-> AI agents: one line per problem, at its place, with what would fix it; a guide written for an
-> agent to read; the same language inside the `fhir-mcp` workspace.
+> Part of [fhir](https://github.com/oloveluck/fhir), a toolkit for AI agents on FHIR: an
+> agent reads and writes FHIR's languages, and the JSON is what they compile to. A CQL library is
+> 13% of the tokens of the ELM it compiles to; a mistake is one line, at its place, with what
+> would fix it.
 
 [CQL](https://cql.hl7.org/) is the language health care writes clinical logic in: quality measures,
 decision-support rules, cohort definitions. This package runs it. You write a library of named
