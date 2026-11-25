@@ -46,5 +46,8 @@ for d in sorted(glob.glob(os.path.join(src, "cqm_measures", "*"))):
     shutil.copy(os.path.join(d, "value_sets.json"), out)
     pdir = os.path.join(here, "patients", name)
     os.makedirs(pdir, exist_ok=True)
-    for p in pats: shutil.copy(p, pdir)
+    # a name with < or > cannot be a file on Windows (the repository could not be checked out there):
+    # `<` is kept as `_lt_`, `>` as `_gt_`; the contents are copied as they are (SOURCE.txt)
+    for p in pats:
+        shutil.copy(p, os.path.join(pdir, os.path.basename(p).replace("<", "_lt_").replace(">", "_gt_")))
     print(name, len(m["cql_libraries"]), "libraries,", len(pats), "patients")

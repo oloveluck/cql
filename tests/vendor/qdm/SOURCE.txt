@@ -21,6 +21,12 @@ patients/<Measure>/<case>.json
     the expectedValues Bonnie stored. Held by tests/qdm-measure-test.rkt, against both
     cqm-execution's own assertions (spec/models/calculator.spec.js, enabled tests, transcribed with
     their line numbers) and the stored values.
+    Two file names are NOT the source's: cqm-execution names two CMS137v7 patients
+    `Dependency<60daysSB4_DENEXPop>18StratPass.json` and `Therapy<14DaysDx_NUMERPop1_13-18Pass.json`,
+    and Windows holds no file whose name has `<` or `>` — the repository could not be checked out
+    there at all (found by the first Windows build of the family, 2026-11-25). They are kept as
+    `Dependency_lt_60daysSB4_DENEXPop_gt_18StratPass.json` and
+    `Therapy_lt_14DaysDx_NUMERPop1_13-18Pass.json`; their contents are the source's, byte for byte.
 
 Known properties of the fixtures, named in the tests:
   - several QDM 5.3 measures read Encounter.principalDiagnosis, but the patients are QDM 5.5 data
