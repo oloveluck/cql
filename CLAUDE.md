@@ -614,3 +614,11 @@ operators, `if`/`case`. Layers:
   tests/bench.rkt 14.5 -> 4.3 s; `raco test .` 155 -> 149 s (the descent test itself
   ~85 s of it: brag reads every chunk once there). Floors unchanged: TCK 1820/1823, ELM 786/803,
   QI-Core 1932/2144 and 188/190, QDM 559/723, 31/31, 16/26, eCQM 71/76.
+
+- **File names every system can hold** (2026-11-25): two vendored QDM patients were named with
+  `<` and `>` (cqm-execution's own names), and Windows holds no such file: the repository could
+  not be checked out or installed there (the first Windows build of the family stopped at it).
+  They are `Dependency_lt_60daysSB4_DENEXPop_gt_18StratPass.json` and
+  `Therapy_lt_14DaysDx_NUMERPop1_13-18Pass.json` now, contents unchanged; `tests/vendor/qdm/
+  SOURCE.txt` says so and `extract.py` writes those names. A vendored file's NAME is the one thing
+  that may differ from its source, and only for this reason.
