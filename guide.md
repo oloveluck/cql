@@ -72,7 +72,7 @@ define "Results": [Observation: "HbA1c code"] O where O.status in { 'final', 'am
 define "Latest": Last("Results" O sort by (effective as dateTime))
 define "Latest Value": "Latest".value as Quantity
 define "Latest Number": "Latest Value".value
-define "Latest Result": ToString("Latest Number") + ' ' + "Latest Value".unit
+define "Latest Result": ToString("Latest Number") + ' ' + Coalesce("Latest Value".unit, "Latest Value".code)
 define "Latest Date": "Latest".effective as dateTime
 define "Poorly Controlled": "Latest Value" > 9 '%'
 define "No HbA1c": "Latest" is null
@@ -84,7 +84,8 @@ define "Name": Combine(First(Patient.name).given, ' ') + ' ' + First(Patient.nam
 ```
 With results of 9.6% (January) and 8.9% (June), `Latest Value` is the June Quantity (8.9 %),
 `Latest Number` is 8.9 (to sort or compute with) and `Latest Result` is `8.9 %`, the value with its unit
-as a person reads it (plain columns for a table, where a Quantity would be a JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null`
+as a person reads it (the Quantity's `unit` when the record has one, else its UCUM `code`: data
+written in FSH, as SUSHI writes it, carries the code alone) (plain columns for a table, where a Quantity would be a JSON object), and `Poorly Controlled` is `false`; with no result it is `null`, so ask `"Latest" is null`
 for "never tested" (or `Coalesce("Poorly Controlled", false)` when a table should say false for them).
 `Name` is the patient's given names and family name, for a table a person reads.
 
