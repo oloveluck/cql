@@ -622,3 +622,8 @@ operators, `if`/`case`. Layers:
   `Therapy_lt_14DaysDx_NUMERPop1_13-18Pass.json` now, contents unchanged; `tests/vendor/qdm/
   SOURCE.txt` says so and `extract.py` writes those names. A vendored file's NAME is the one thing
   that may differ from its source, and only for this reason.
+
+- **A run's translation error at the name** (2026-11-28): `workspace.rkt`'s `prepare` raised a
+  library's translation error without its text, so `at-the-name` never ran and the error was at
+  the define's first column (`Bad.cql:2:1` for `define A: Lst(1)`); it is `2:11`, as `raco cql`
+  says it. Found from Python (fhir-api's `run`, a notebook's `%%cql`). The workspace test has it.

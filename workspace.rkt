@@ -151,8 +151,8 @@
   (or (let ([d (cql-error-diagnostic e)]) (and d (if text (at-the-name d text) d)))
       (diagnostic 'cql (case (cql-error-phase e) [(translate) 'compile] [(interpret) 'run] [else (cql-error-phase e)])
                   'error (cql-error-message e) (loc (and path (path-string path)) #f #f #f #f))))
-(define (raise-cql e path)
-  (define d (->diagnostic e path))
+(define (raise-cql e path [text #f])
+  (define d (->diagnostic e path text))
   (raise (exn:fail:diagnostic (cql-error-string e) (current-continuation-marks) d)))
 
 ;; the workspace's libraries: name -> cql-library (each .cql file that parses), read per call
@@ -324,7 +324,7 @@
   (define c (parameterize ([current-library-resolver resolver]) (compile-library lib)))
   (when (err? c)
     (if (or path (library-text? text))
-        (raise-cql (err-error c) path)
+        (raise-cql (err-error c) path src)       ; a name's error at the name, as raco cql says it
         (with-handlers ([exn:fail? (lambda (e) (query-error e ws))]) (raise-cql (err-error c) path))))
   (define vdiags (version-diagnostics ws lib src (or path "query")))
   (when (pair? vdiags) (raise (exn:fail:diagnostic "FHIR version" (current-continuation-marks) (car vdiags))))
@@ -555,7 +555,7 @@
 
 (module+ test
   (require rackunit racket/file fhir/registry (only-in fhir/data-source resources->data-source)
-           (only-in fhir/diagnostic diagnostic-message diagnostic-loc loc-line))
+           (only-in fhir/diagnostic diagnostic-message diagnostic-loc loc-line loc-column))
   ;; a define answering Quantities is summarised as numbers are, with its unit (it read {"other": 2})
   ;; a define null for every patient is said, with the units it compares with (an LDL rule in mmol/L
   ;; over mg/dL data was null for all and said nothing); one with a value for someone is not
@@ -635,6 +635,12 @@
     ;; a qualified name misspelt: the nearest define of that library, written as it is referenced
     (check-exn #rx"unknown identifier 'Gap.Gpa' [(]did you mean `Gap.\"Gap\"`[?][)]"
                (lambda () (run ws #f "Gap.\"Gpa\"" (hasheq))))
+    ;; a library run with a misspelt function: its error at the name, as raco cql gives it (it
+    ;; was at the define's first column)
+    (check-exn (lambda (e) (and (exn:fail:diagnostic? e)
+                                (let ([l (diagnostic-loc (exn:fail:diagnostic-diagnostic e))])
+                                  (equal? (list (loc-line l) (loc-column l)) '(2 11)))))
+               (lambda () (run ws #f "library Bad\ndefine A: Lst(1)\n" (hasheq))))
     ;; parameters are CQL expressions
     (define plib "library P\nusing FHIR version '4.0.1'\nparameter \"Cutoff\" Integer\ncontext Patient\ndefine \"Twice\": \"Cutoff\" * 2\n")
     (define pq (run ws #f plib (hasheq 'parameters (hasheq 'Cutoff "3 + 4") 'over "Patient/a")))
